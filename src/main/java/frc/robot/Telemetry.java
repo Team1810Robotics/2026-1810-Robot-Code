@@ -19,6 +19,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
+//TODO: Copy new
+//TODDO: Update to use DogLog (or just stop signal logger)
 public class Telemetry {
 	private final double MaxSpeed;
 

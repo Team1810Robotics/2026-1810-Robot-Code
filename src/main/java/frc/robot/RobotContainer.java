@@ -16,8 +16,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
+import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 
@@ -37,7 +37,7 @@ public class RobotContainer {
 
 	private final CommandXboxController driverXbox = new CommandXboxController(0);
 
-	public static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+	private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 	private static final Vision frontVision = new Vision(VisionConstants.FRONT_LIMELIGHT_NAME);
 	private static final Vision rearVision = new Vision(VisionConstants.REAR_LIMELIGHT_NAME);
 
@@ -76,10 +76,11 @@ public class RobotContainer {
 		drivetrain.registerTelemetry(logger::telemeterize);
 	}
 
+	/** Configure DogLog options and PowerDistribution */
 	public void configureDogLog() {
-		DogLog.setOptions(new DogLogOptions().withCaptureDs(true));
-		DogLog.setOptions(new DogLogOptions().withNtPublish(true));
-		DogLog.setOptions(new DogLogOptions().withLogExtras(true));
+		DogLog.setOptions(
+		        new DogLogOptions().withCaptureDs(true).withNtPublish(true).withCaptureNt(true).withLogExtras(true));
+
 		DogLog.setPdh(new PowerDistribution());
 	}
 
@@ -93,5 +94,9 @@ public class RobotContainer {
 
 	public static Vision getRearVision() {
 		return rearVision;
+	}
+
+	public static CommandSwerveDrivetrain getDrivetrain() {
+		return drivetrain;
 	}
 }

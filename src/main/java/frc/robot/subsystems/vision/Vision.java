@@ -18,7 +18,7 @@ public class Vision extends SubsystemBase {
 	}
 
 	public void setRobotOrientation() {
-		double yaw = RobotContainer.drivetrain.getState().Pose.getRotation().getDegrees();
+		double yaw = RobotContainer.getDrivetrain().getState().Pose.getRotation().getDegrees();
 
 		LimelightHelpers.SetRobotOrientation(name, yaw, 0, 0, 0, 0, 0);
 	}
@@ -34,11 +34,11 @@ public class Vision extends SubsystemBase {
 
 	@Override
 	public void periodic() {
-		setRobotOrientation(RobotContainer.drivetrain.getState().Pose.getRotation().getDegrees());
+		setRobotOrientation(RobotContainer.getDrivetrain().getState().Pose.getRotation().getDegrees());
 
 		PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name);
 
-		RobotContainer.drivetrain.addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
+		RobotContainer.getDrivetrain().addVisionMeasurement(poseEstimate.pose, poseEstimate.timestampSeconds);
 
 		DogLog.log("Vision/" + name + "/Pose", poseEstimate.pose);
 	}
