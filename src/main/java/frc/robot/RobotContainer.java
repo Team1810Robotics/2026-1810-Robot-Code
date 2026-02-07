@@ -20,7 +20,7 @@ import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
-
+import frc.robot.subsystems.indexer.IndexerSubsystem;
 public class RobotContainer {
 	private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
 	private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
@@ -36,12 +36,11 @@ public class RobotContainer {
 	private final Telemetry logger = new Telemetry(MaxSpeed);
 
 	private final static CommandXboxController driverXbox = new CommandXboxController(0);// controllers
-    public final static CommandXboxController manipulatorXbox = new CommandXboxController(1); //controllers
-
 
 	private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 	private static final Vision frontVision = new Vision(VisionConstants.FRONT_LIMELIGHT_NAME);
 	private static final Vision rearVision = new Vision(VisionConstants.REAR_LIMELIGHT_NAME);
+	public static final IndexerSubsystem spindexerSubsystem = new IndexerSubsystem();
 
 	public RobotContainer() {
 		configureBindings();
@@ -60,6 +59,8 @@ public class RobotContainer {
 		                .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate) // Drive counterclockwise with
 		                                                                              // negative X (left)
 				));
+
+		driverXbox.a().whileTrue(Commands.run(() -> spindexerSubsystem.run(1, 1), spindexerSubsystem));
 
 		driverXbox.a().whileTrue(drivetrain.applyRequest(() -> brake));
 		driverXbox.b().whileTrue(drivetrain.applyRequest(
