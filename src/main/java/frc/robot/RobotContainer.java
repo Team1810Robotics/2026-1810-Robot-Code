@@ -35,7 +35,9 @@ public class RobotContainer {
 
 	private final Telemetry logger = new Telemetry(MaxSpeed);
 
-	private final CommandXboxController driverXbox = new CommandXboxController(0);
+	private final static CommandXboxController driverXbox = new CommandXboxController(0);// controllers
+    public final static CommandXboxController manipulatorXbox = new CommandXboxController(1); //controllers
+
 
 	private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 	private static final Vision frontVision = new Vision(VisionConstants.FRONT_LIMELIGHT_NAME);
