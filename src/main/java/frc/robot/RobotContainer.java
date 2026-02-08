@@ -18,85 +18,88 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.subsystems.indexer.IndexerSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
+@SuppressWarnings("unused")
 public class RobotContainer {
-	private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-	private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second
-	                                                                                  // max angular velocity
+  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
 
-	/* Setting up bindings for necessary control of the swerve drive platform */
-	private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDeadband(MaxSpeed * 0.1)
-	        .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-	        .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-	private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-	private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+  private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
-	private final Telemetry logger = new Telemetry(MaxSpeed);
+  /* Setting up bindings for necessary control of the swerve drive platform */
+  private final SwerveRequest.FieldCentric drive =
+      new SwerveRequest.FieldCentric()
+          .withDeadband(MaxSpeed * 0.1)
+          .withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+          .withDriveRequestType(
+              DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+  private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-	private final CommandXboxController driverXbox = new CommandXboxController(0);
+  private static final CommandXboxController driverXbox =
+      new CommandXboxController(0); // controllers
 
-	private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-	private static final Vision frontVision = new Vision(VisionConstants.FRONT_LIMELIGHT_NAME);
-	private static final Vision rearVision = new Vision(VisionConstants.REAR_LIMELIGHT_NAME);
+  private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+  private static final VisionSubsystem frontVision = VisionSubsystem.getFrontInstance();
+  private static final VisionSubsystem rearVision = VisionSubsystem.getRearInstance();
+  public static final IndexerSubsystem spindexerSubsystem = new IndexerSubsystem();
 
-	public RobotContainer() {
-		configureBindings();
-		configureDogLog();
-	}
+  public RobotContainer() {
+    configureBindings();
+    configureDogLog();
+  }
 
-	private void configureBindings() {
-		// Note that X is defined as forward according to WPILib convention,
-		// and Y is defined as to the left according to WPILib convention.
-		drivetrain.setDefaultCommand(
-		        // Drivetrain will execute this command periodically
-		        drivetrain.applyRequest(() -> drive.withVelocityX(-driverXbox.getLeftY() * MaxSpeed) // Drive forward
-		                                                                                             // with negative Y
-		                                                                                             // (forward)
-		                .withVelocityY(-driverXbox.getLeftX() * MaxSpeed) // Drive left with negative X (left)
-		                .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate) // Drive counterclockwise with
-		                                                                              // negative X (left)
-				));
+  private void configureBindings() {
 
-		driverXbox.a().whileTrue(drivetrain.applyRequest(() -> brake));
-		driverXbox.b().whileTrue(drivetrain.applyRequest(
-		        () -> point.withModuleDirection(new Rotation2d(-driverXbox.getLeftY(), -driverXbox.getLeftX()))));
+    drivetrain.setDefaultCommand(
+        drivetrain.applyRequest(
+            () ->
+                drive
+                    .withVelocityX(-driverXbox.getLeftY() * MaxSpeed)
+                    .withVelocityY(-driverXbox.getLeftX() * MaxSpeed)
+                    .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate)));
 
-		// Run SysId routines when holding back/start and X/Y.
-		// Note that each routine should be run exactly once in a single log.
-		driverXbox.back().and(driverXbox.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-		driverXbox.back().and(driverXbox.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-		driverXbox.start().and(driverXbox.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-		driverXbox.start().and(driverXbox.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    driverXbox.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
-		// reset the field-centric heading on left bumper press
-		driverXbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    driverXbox
+        .b()
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    point.withModuleDirection(
+                        new Rotation2d(-driverXbox.getLeftY(), -driverXbox.getLeftX()))));
 
-		drivetrain.registerTelemetry(logger::telemeterize);
-	}
+    // Run SysId routines when holding back/start and X/Y.
+    // Note that each routine should be run exactly once in a single log.
+    driverXbox.back().and(driverXbox.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    driverXbox.back().and(driverXbox.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    driverXbox
+        .start()
+        .and(driverXbox.y())
+        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    driverXbox
+        .start()
+        .and(driverXbox.x())
+        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-	/** Configure DogLog options and PowerDistribution */
-	public void configureDogLog() {
-		DogLog.setOptions(
-		        new DogLogOptions().withCaptureDs(true).withNtPublish(true).withCaptureNt(true).withLogExtras(true));
+    // reset the field-centric heading on left bumper press
+    driverXbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+  }
 
-		DogLog.setPdh(new PowerDistribution());
-	}
+  /** Configure DogLog options and PowerDistribution */
+  public void configureDogLog() {
+    DogLog.setOptions(
+        new DogLogOptions().withCaptureDs(true).withNtPublish(true).withLogExtras(true));
 
-	public Command getAutonomousCommand() {
-		return Commands.print("No autonomous command configured");
-	}
+    DogLog.setPdh(new PowerDistribution());
+  }
 
-	public static Vision getFrontVision() {
-		return frontVision;
-	}
+  public Command getAutonomousCommand() {
+    return Commands.print("No autonomous command configured");
+  }
 
-	public static Vision getRearVision() {
-		return rearVision;
-	}
-
-	public static CommandSwerveDrivetrain getDrivetrain() {
-		return drivetrain;
-	}
+  public static CommandSwerveDrivetrain getDrivetrain() {
+    return drivetrain;
+  }
 }
