@@ -111,7 +111,7 @@ tasks.withType(JavaCompile) {
 spotless {
     java {
         target 'src/**/*.java'
-        eclipse().configFile('config/eclipse-java-formatter.xml')
+        googleJavaFormat()
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
