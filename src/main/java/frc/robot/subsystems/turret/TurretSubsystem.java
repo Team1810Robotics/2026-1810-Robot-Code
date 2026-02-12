@@ -30,9 +30,7 @@ public class TurretSubsystem extends SubsystemBase {
   public final DoubleSubscriber kV = DogLog.tunable("Turret/Gains/kV", 0.0);
   public final DoubleSubscriber kA = DogLog.tunable("Turret/Gains/kA", 0.0);
 
-  private static TurretSubsystem instance;
-
-  private TurretSubsystem() {
+  public TurretSubsystem() {
     turretMotor = new TalonFX(TurretConstants.TURRET_MOTOR_ID);
 
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -89,12 +87,5 @@ public class TurretSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     updateGains();
-  }
-
-  public static TurretSubsystem getInstance() {
-    if (instance == null) {
-      instance = new TurretSubsystem();
-    }
-    return instance;
   }
 }

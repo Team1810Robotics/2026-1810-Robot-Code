@@ -18,7 +18,10 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
+import frc.robot.subsystems.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.indexer.IndexerSubsystem;
+import frc.robot.subsystems.turret.TurretSubsystem;
+import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
@@ -40,10 +43,15 @@ public class RobotContainer {
   private static final CommandXboxController driverXbox =
       new CommandXboxController(0); // controllers
 
+  // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-  private static final VisionSubsystem frontVision = VisionSubsystem.getFrontInstance();
-  private static final VisionSubsystem rearVision = VisionSubsystem.getRearInstance();
-  public static final IndexerSubsystem spindexerSubsystem = new IndexerSubsystem();
+  private static final VisionSubsystem frontVision =
+      new VisionSubsystem(VisionConstants.FRONT_LIMELIGHT_NAME);
+  private static final VisionSubsystem rearVision =
+      new VisionSubsystem(VisionConstants.REAR_LIMELIGHT_NAME);
+  private static final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
+  private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
+  private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
 
   public RobotContainer() {
     configureBindings();
@@ -101,5 +109,25 @@ public class RobotContainer {
 
   public static CommandSwerveDrivetrain getDrivetrain() {
     return drivetrain;
+  }
+
+  public static VisionSubsystem getFrontVisionSubsystem() {
+    return frontVision;
+  }
+
+  public static VisionSubsystem getRearVisionSubsystem() {
+    return rearVision;
+  }
+
+  public static IndexerSubsystem getIndexerSubsystem() {
+    return indexerSubsystem;
+  }
+
+  public static TurretSubsystem getTurretSubsystem() {
+    return turretSubsystem;
+  }
+
+  public static FlywheelSubsystem getFlywheelSubsystem() {
+    return flywheelSubsystem;
   }
 }
