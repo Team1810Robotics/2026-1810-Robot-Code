@@ -16,15 +16,12 @@ public class VisionSubsystem extends SubsystemBase {
 
   private final CommandSwerveDrivetrain drivetrain;
 
-  private static VisionSubsystem frontInstance = null;
-  private static VisionSubsystem rearInstance = null;
-
   /**
    * Constructor for VisionSubsystem.
    *
    * @param name The name of the Limelight camera to use (e.g., "front_ll" or "rear_ll").
    */
-  private VisionSubsystem(String name) {
+  public VisionSubsystem(String name) {
     this.limelightName = name;
     this.drivetrain = RobotContainer.getDrivetrain();
 
@@ -82,19 +79,5 @@ public class VisionSubsystem extends SubsystemBase {
     drivetrain.addVisionMeasurement(botPoseMT2.pose, botPoseMT2.timestampSeconds);
 
     DogLog.log("Vision/BotPose", getBotpose().pose);
-  }
-
-  public static VisionSubsystem getFrontInstance() {
-    if (frontInstance == null) {
-      frontInstance = new VisionSubsystem(VisionConstants.FRONT_LIMELIGHT_NAME);
-    }
-    return frontInstance;
-  }
-
-  public static VisionSubsystem getRearInstance() {
-    if (rearInstance == null) {
-      rearInstance = new VisionSubsystem(VisionConstants.REAR_LIMELIGHT_NAME);
-    }
-    return rearInstance;
   }
 }
