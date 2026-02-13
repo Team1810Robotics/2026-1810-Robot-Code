@@ -57,14 +57,14 @@ public class VisionSubsystem extends SubsystemBase {
           limelightName, 4); // Set IMU mode to 4 while bot is enabled, check docs for more details
     }
 
-    // Update bot orientation for MT2 pose estimation
+    // Update bot orientation for MT2 pose estimation + LL imu fusing
     LimelightHelpers.SetRobotOrientation(
         limelightName,
         drivetrain.getState().Pose.getRotation().getDegrees(),
         drivetrain.getState().Speeds.omegaRadiansPerSecond,
+        drivetrain.getPigeon2().getPitch().getValueAsDouble(),
         0,
-        0,
-        0,
+        drivetrain.getPigeon2().getRoll().getValueAsDouble(),
         0);
 
     if (!targetValid()) {
