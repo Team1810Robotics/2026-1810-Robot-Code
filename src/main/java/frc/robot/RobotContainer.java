@@ -88,10 +88,7 @@ public class RobotContainer {
     // reset the field-centric heading on left bumper press
     driverXbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-
-
-
-    driverXbox.rightBumper().whileTrue(new Shoot(flywheelSubsystem, hoodSubsystem, indexerSubsystem));
+    driverXbox.rightBumper().whileTrue(new Shoot());
   }
 
   /** Configure DogLog options and PowerDistribution */

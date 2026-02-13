@@ -85,7 +85,8 @@ public class FlywheelSubsystem extends SubsystemBase {
   }
 
   public boolean atTargetVelocity() {
-    return Math.abs(rightMotor.getVelocity().getValueAsDouble() - targetVelocity) < 10; // TODO: Tune this threshold
+    return Math.abs(rightMotor.getVelocity().getValueAsDouble() - targetVelocity)
+        < 10; // TODO: Tune this threshold
   }
 
   public void stop() {

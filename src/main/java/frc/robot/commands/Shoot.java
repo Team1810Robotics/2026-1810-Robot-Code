@@ -9,41 +9,41 @@ import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 
 public class Shoot extends Command {
-    private final FlywheelSubsystem flywheelSubsystem;
-    private final HoodSubsystem hoodSubsystem;
-    private final IndexerSubsystem indexerSubsystem;
-    
-    private boolean hasSpunUp = false;
+  private final FlywheelSubsystem flywheelSubsystem;
+  private final HoodSubsystem hoodSubsystem;
+  private final IndexerSubsystem indexerSubsystem;
 
-    public Shoot() {
-        this.flywheelSubsystem = RobotContainer.getFlywheelSubsystem();
-        this.hoodSubsystem = RobotContainer.getHoodSubsystem();
-        this.indexerSubsystem = RobotContainer.getIndexerSubsystem();
+  private boolean hasSpunUp = false;
 
-        addRequirements(flywheelSubsystem, hoodSubsystem, indexerSubsystem);
+  public Shoot() {
+    this.flywheelSubsystem = RobotContainer.getFlywheelSubsystem();
+    this.hoodSubsystem = RobotContainer.getHoodSubsystem();
+    this.indexerSubsystem = RobotContainer.getIndexerSubsystem();
+
+    addRequirements(flywheelSubsystem, hoodSubsystem, indexerSubsystem);
+  }
+
+  @Override
+  public void execute() {
+    ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+    if (!params.isValid()) return;
+
+    hoodSubsystem.setPosition(params.hoodAngle());
+    flywheelSubsystem.setVelocity(params.flywheelVelocity());
+
+    if (!hasSpunUp && flywheelSubsystem.atTargetVelocity()) {
+      hasSpunUp = true;
     }
 
-    @Override
-    public void execute() {
-        ShotParameters params = ShotCalculator.getInstance().calculateParameters();
-        if (!params.isValid()) return;
-
-        hoodSubsystem.setPosition(params.hoodAngle());
-        flywheelSubsystem.setVelocity(params.flywheelVelocity());
-
-        if (!hasSpunUp && flywheelSubsystem.atTargetVelocity()) {
-            hasSpunUp = true;
-        }
-
-        if (hasSpunUp) {
-            indexerSubsystem.run(1, 1);
-        }
+    if (hasSpunUp) {
+      indexerSubsystem.run(1, 1);
     }
+  }
 
-    @Override
-    public void end(boolean interrupted) {
-        hoodSubsystem.stop();
-        flywheelSubsystem.stop();
-        indexerSubsystem.fullstop();
-    }
+  @Override
+  public void end(boolean interrupted) {
+    hoodSubsystem.stop();
+    flywheelSubsystem.stop();
+    indexerSubsystem.fullstop();
+  }
 }

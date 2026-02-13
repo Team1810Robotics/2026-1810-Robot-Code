@@ -15,5 +15,6 @@ public class TurretConstants {
   public static final Angle MIN_ANGLE = Degrees.of(2.5); // Minimum angle in degrees
   public static final Angle MAX_ANGLE = Degrees.of(357.5); // Maximum angle in degrees
 
-  public static final Transform3d ROBOT_TO_TURRET = new Transform3d(0.059, 0.059, .283, Rotation3d.kZero);
+  public static final Transform3d ROBOT_TO_TURRET =
+      new Transform3d(0.059, 0.059, .283, Rotation3d.kZero);
 }

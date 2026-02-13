@@ -16,8 +16,6 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.shooter.ShotCalculator;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -50,7 +48,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.StatorCurrentLimit = 120;
-    
+
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 40;
 
@@ -113,7 +111,7 @@ public class TurretSubsystem extends SubsystemBase {
   public void periodic() {
     updateGains();
     log();
-    
+
     // ShotParameters params = ShotCalculator.getInstance().calculateParameters();
     // if (!params.isValid()) return;
     // setTurretAngle(params.turretAngle());
