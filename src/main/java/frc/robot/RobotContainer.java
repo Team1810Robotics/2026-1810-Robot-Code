@@ -26,7 +26,7 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
-  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .25;
 
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
@@ -45,13 +45,13 @@ public class RobotContainer {
 
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-  private static final VisionSubsystem frontVision =
-      new VisionSubsystem(VisionConstants.FRONT_LIMELIGHT_NAME);
-  private static final VisionSubsystem rearVision =
-      new VisionSubsystem(VisionConstants.REAR_LIMELIGHT_NAME);
-  private static final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
-  private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
-  private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
+  // private static final VisionSubsystem frontVision =
+  //     new VisionSubsystem(VisionConstants.FRONT_LIMELIGHT_NAME);
+  // private static final VisionSubsystem rearVision =
+  //     new VisionSubsystem(VisionConstants.REAR_LIMELIGHT_NAME);
+  // private static final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
+  // private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
+  // private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
 
   public RobotContainer() {
     configureBindings();
@@ -111,23 +111,23 @@ public class RobotContainer {
     return drivetrain;
   }
 
-  public static VisionSubsystem getFrontVisionSubsystem() {
-    return frontVision;
-  }
+  // public static VisionSubsystem getFrontVisionSubsystem() {
+  //   return frontVision;
+  // }
 
-  public static VisionSubsystem getRearVisionSubsystem() {
-    return rearVision;
-  }
+  // public static VisionSubsystem getRearVisionSubsystem() {
+  //   return rearVision;
+  // }
 
-  public static IndexerSubsystem getIndexerSubsystem() {
-    return indexerSubsystem;
-  }
+  // public static IndexerSubsystem getIndexerSubsystem() {
+  //   return indexerSubsystem;
+  // }
 
-  public static TurretSubsystem getTurretSubsystem() {
-    return turretSubsystem;
-  }
+  // public static TurretSubsystem getTurretSubsystem() {
+  //   return turretSubsystem;
+  // }
 
-  public static FlywheelSubsystem getFlywheelSubsystem() {
-    return flywheelSubsystem;
-  }
+  // public static FlywheelSubsystem getFlywheelSubsystem() {
+  //   return flywheelSubsystem;
+  // }
 }

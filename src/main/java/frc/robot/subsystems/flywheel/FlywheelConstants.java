@@ -1,8 +1,8 @@
 package frc.robot.subsystems.flywheel;
 
 public class FlywheelConstants {
-  public static final int LEADER_ID = 0;
-  public static final int FOLLOWER_ID = 0;
+  public static final int LEADER_ID = 19;
+  public static final int FOLLOWER_ID = 20;
 
   public static final double kP = 0;
   public static final double kI = 0;
