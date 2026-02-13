@@ -27,7 +27,7 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
-  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .25;
 
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
@@ -54,6 +54,7 @@ public class RobotContainer {
   private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
+
 
   public RobotContainer() {
     configureBindings();
@@ -130,4 +131,5 @@ public class RobotContainer {
   public static HoodSubsystem getHoodSubsystem() {
     return hoodSubsystem;
   }
+
 }

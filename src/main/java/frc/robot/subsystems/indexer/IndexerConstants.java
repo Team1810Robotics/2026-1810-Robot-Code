@@ -1,8 +1,8 @@
 package frc.robot.subsystems.indexer;
 
 public class IndexerConstants {
-  public static int SPIN_MOTOR = 14;
-  public static int KICKER_MOTOR = 14;
+  public static int SPIN_MOTOR = 17;
+  public static int KICKER_MOTOR = 16;
 
   public enum Mode {
     IN,

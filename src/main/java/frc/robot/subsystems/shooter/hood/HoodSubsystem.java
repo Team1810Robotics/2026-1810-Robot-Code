@@ -86,7 +86,6 @@ public class HoodSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    updateGains();
     log();
   }
 }

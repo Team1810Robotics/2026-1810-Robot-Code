@@ -109,7 +109,6 @@ public class TurretSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    updateGains();
     log();
 
     // ShotParameters params = ShotCalculator.getInstance().calculateParameters();

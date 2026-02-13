@@ -122,7 +122,6 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    updateGains();
     log();
   }
 }
