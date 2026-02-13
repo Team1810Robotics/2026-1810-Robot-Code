@@ -1,7 +1,8 @@
-package frc.robot.subsystems.turret;
+package frc.robot.subsystems.shooter.turret;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -12,7 +13,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -43,6 +48,12 @@ public class TurretSubsystem extends SubsystemBase {
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = TurretConstants.MIN_ANGLE.in(Degrees);
 
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
+    config.CurrentLimits.StatorCurrentLimit = 120;
+    
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+    config.CurrentLimits.SupplyCurrentLimit = 40;
+
     turretMotor.getConfigurator().apply(config);
 
     turretEncoder = new DutyCycleEncoder(TurretConstants.TURRET_ENCODER_ID);
@@ -72,6 +83,14 @@ public class TurretSubsystem extends SubsystemBase {
     turretMotor.setControl(positionRequest.withPosition(rotations));
   }
 
+  public Command setTurretAngleCommand(Rotation2d targetAngle) {
+    return Commands.startEnd(() -> setTurretAngle(targetAngle), () -> stop(), this);
+  }
+
+  public void stop() {
+    turretMotor.stopMotor();
+  }
+
   public void updateGains() {
     Slot0Configs slot0Configs = new Slot0Configs();
     slot0Configs.kP = kP.get();
@@ -84,8 +103,19 @@ public class TurretSubsystem extends SubsystemBase {
     turretMotor.getConfigurator().apply(slot0Configs);
   }
 
+  public void log() {
+    DogLog.log("Turret/Motor Position", getTurretAngle().getDegrees(), Degrees);
+    DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
+    DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
+  }
+
   @Override
   public void periodic() {
     updateGains();
+    log();
+    
+    // ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+    // if (!params.isValid()) return;
+    // setTurretAngle(params.turretAngle());
   }
 }

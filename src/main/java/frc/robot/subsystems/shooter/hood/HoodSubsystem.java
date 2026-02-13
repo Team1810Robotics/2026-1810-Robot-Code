@@ -1,6 +1,8 @@
-package frc.robot.subsystems.hood;
+package frc.robot.subsystems.shooter.hood;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -12,7 +14,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.flywheel.FlywheelConstants;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants;
 
 public class HoodSubsystem extends SubsystemBase {
   private final TalonFX hoodMotor;
@@ -34,7 +36,7 @@ public class HoodSubsystem extends SubsystemBase {
     cfg.CurrentLimits.SupplyCurrentLimitEnable = true;
     cfg.CurrentLimits.SupplyCurrentLimit = 40;
 
-    cfg.Feedback.SensorToMechanismRatio = 0; // TODO: go harass austin
+    cfg.Feedback.SensorToMechanismRatio = 8; // TODO: this may be wrong
 
     cfg.Slot0.kP = FlywheelConstants.kP;
     cfg.Slot0.kI = FlywheelConstants.kI;
@@ -73,7 +75,18 @@ public class HoodSubsystem extends SubsystemBase {
     hoodMotor.getConfigurator().apply(slot0Configs);
   }
 
+  public void log() {
+    DogLog.log("Hood/Position", getPosition().getDegrees(), Degrees);
+    DogLog.log("Hood/Volts", hoodMotor.getMotorVoltage().getValueAsDouble(), Volts);
+  }
+
   public void stop() {
     hoodMotor.stopMotor();
+  }
+
+  @Override
+  public void periodic() {
+      updateGains(); 
+      log();
   }
 }
