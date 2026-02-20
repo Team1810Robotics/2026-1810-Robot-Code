@@ -131,7 +131,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
 
-    configureAutoBuilder();
+    // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
   }
 
@@ -155,7 +155,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
 
-    configureAutoBuilder();
+    // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
   }
 
@@ -190,7 +190,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       startSimThread();
     }
 
-    configureAutoBuilder();
+    // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
   }
 

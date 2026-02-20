@@ -10,12 +10,17 @@ import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.shooter.ShotCalculator;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -85,6 +90,15 @@ public class TurretSubsystem extends SubsystemBase {
     return Commands.startEnd(() -> setTurretAngle(targetAngle), () -> stop(), this);
   }
 
+  public Command setFieldRelativeAngle() {
+    Rotation2d angle = ShotCalculator.getInstance().calculateParameters().turretAngle();
+    Pose2d botPose = RobotContainer.getDrivetrain().getPose();
+
+    angle = angle.minus(botPose.getRotation());
+
+    return setTurretAngleCommand(angle);
+  }
+
   public void stop() {
     turretMotor.stopMotor();
   }
@@ -105,6 +119,7 @@ public class TurretSubsystem extends SubsystemBase {
     DogLog.log("Turret/Motor Position", getTurretAngle().getDegrees(), Degrees);
     DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
+    DogLog.log("Turret/Pose", new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(getTurretAngle())));
   }
 
   @Override
@@ -114,5 +129,18 @@ public class TurretSubsystem extends SubsystemBase {
     // ShotParameters params = ShotCalculator.getInstance().calculateParameters();
     // if (!params.isValid()) return;
     // setTurretAngle(params.turretAngle());
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    Rotation2d angle = ShotCalculator.getInstance().calculateParameters().turretAngle();
+    Pose2d botPose = RobotContainer.getDrivetrain().getPose();
+
+    angle = angle.minus(botPose.getRotation());
+
+
+      Pose3d turretPose = new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(angle));
+
+      DogLog.log("Turret/Pose", turretPose); 
   }
 }
