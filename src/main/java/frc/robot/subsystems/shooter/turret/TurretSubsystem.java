@@ -119,7 +119,6 @@ public class TurretSubsystem extends SubsystemBase {
     DogLog.log("Turret/Motor Position", getTurretAngle().getDegrees(), Degrees);
     DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
-    DogLog.log("Turret/Pose", new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(getTurretAngle())));
   }
 
   @Override
@@ -139,8 +138,8 @@ public class TurretSubsystem extends SubsystemBase {
     angle = angle.minus(botPose.getRotation());
 
 
-      Pose3d turretPose = new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(angle));
+    Pose3d turretPose = new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(angle));
 
-      DogLog.log("Turret/Pose", turretPose); 
+    DogLog.log("Turret/Pose", turretPose); 
   }
 }

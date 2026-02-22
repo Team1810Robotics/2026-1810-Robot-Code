@@ -20,6 +20,8 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+
+    Mechanism3d.getInstance().log();
   }
 
   @Override
