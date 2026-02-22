@@ -55,7 +55,6 @@ public class RobotContainer {
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
 
-
   public RobotContainer() {
     configureBindings();
     configureDogLog();
@@ -131,5 +130,4 @@ public class RobotContainer {
   public static HoodSubsystem getHoodSubsystem() {
     return hoodSubsystem;
   }
-
 }
