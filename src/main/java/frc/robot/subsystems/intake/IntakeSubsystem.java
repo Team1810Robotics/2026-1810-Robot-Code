@@ -5,10 +5,8 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
-import dev.doglog.DogLog;
-
 import com.revrobotics.spark.config.SparkMaxConfig;
+import dev.doglog.DogLog;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -140,6 +138,5 @@ public class IntakeSubsystem extends SubsystemBase {
     DogLog.log("Intake/RollerState", rollerState);
     DogLog.log("Intake/DeployState", deployState);
     DogLog.log("Intake/IntakeState", state);
-
   }
 }

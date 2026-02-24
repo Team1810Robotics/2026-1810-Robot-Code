@@ -45,27 +45,27 @@ public class IntakeConstants {
     }
   }
 
-public enum IntakeState {
-  OUT_INTAKE(rollerState.INTAKE, deployState.DEPLOY),
-  OUT_STOP(rollerState.STOP, deployState.DEPLOY),
-  RETRACT(rollerState.STOP, deployState.RETRACT);
+  public enum IntakeState {
+    OUT_INTAKE(rollerState.INTAKE, deployState.DEPLOY),
+    OUT_STOP(rollerState.STOP, deployState.DEPLOY),
+    RETRACT(rollerState.STOP, deployState.RETRACT);
 
-  private final rollerState roller;
-  private final deployState deploy;
+    private final rollerState roller;
+    private final deployState deploy;
 
-  private IntakeState(rollerState roller, deployState deploy) {
-    this.roller = roller;
-    this.deploy = deploy;
+    private IntakeState(rollerState roller, deployState deploy) {
+      this.roller = roller;
+      this.deploy = deploy;
+    }
+
+    public rollerState getRollerState() {
+      return this.roller;
+    }
+
+    public deployState getDeployState() {
+      return this.deploy;
+    }
   }
-
-  public rollerState getRollerState() {
-    return this.roller;
-  }
-
-  public deployState getDeployState() {
-    return this.deploy;
-  }
-}
 }
 
 // I'm special.
