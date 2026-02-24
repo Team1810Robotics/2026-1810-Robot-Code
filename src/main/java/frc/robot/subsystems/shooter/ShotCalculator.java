@@ -2,6 +2,9 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import java.util.Optional;
+
+import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -14,6 +17,7 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.FieldConstants;
+import frc.robot.util.Region;
 
 public class ShotCalculator {
   private static ShotCalculator instance;
@@ -43,9 +47,38 @@ public class ShotCalculator {
 
   public ShotParameters calculateParameters() {
     Pose2d robotPose = RobotContainer.getDrivetrain().getPose();
+    Optional<Region> robotRegion =
+        Region.getRegion(robotPose);
 
-    Translation2d target =
-        AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
+    if (robotRegion.isEmpty()) {
+      return new ShotParameters(false, Rotation2d.kZero, Rotation2d.kZero, RadiansPerSecond.of(0));
+    }
+
+    Translation2d target;
+
+    switch (robotRegion.get()) {
+      case BLUE_ALLIANCE_ZONE:
+        target = FieldConstants.Hub.topCenterPoint.toTranslation2d();
+        break;
+      case RED_ALLIANCE_ZONE:
+        target = FieldConstants.Hub.topCenterPoint.toTranslation2d();
+        break;
+      case UPPER_NEUTRAL_ZONE:
+        target =
+            new Translation2d(
+                FieldConstants.LinesVertical.allianceZone / 2, FieldConstants.fieldWidth * (2.0 / 3.0));
+        break;
+      case LOWER_NEUTRAL_ZONE:
+        target =
+            new Translation2d(
+                FieldConstants.LinesVertical.allianceZone / 2, FieldConstants.fieldWidth * (1.0 / 3.0));
+        break;
+      default:
+        target = new Translation2d();
+        break;
+    }
+
+    target = AllianceFlipUtil.apply(target);
 
     Transform2d robotToTurret =
         new Transform2d(
@@ -61,6 +94,10 @@ public class ShotCalculator {
     Rotation2d turretAngle = target.minus(turretPose.getTranslation()).getAngle();
     Rotation2d hoodAngle = hoodMap.get(distanceToTarget);
     AngularVelocity flywheelVelocity = RadiansPerSecond.of(flywheelMap.get(distanceToTarget));
+
+    DogLog.log("ShotCalculator/DistanceToTarget", distanceToTarget);
+    DogLog.log("ShotCalculator/Target", new Pose2d(target, Rotation2d.kZero));
+    DogLog.log("ShotCalculator/Region", robotRegion.get().name());
 
     return new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
   }

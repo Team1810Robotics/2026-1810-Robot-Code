@@ -137,9 +137,9 @@ public class TurretSubsystem extends SubsystemBase {
 
     angle = angle.minus(botPose.getRotation());
 
+    Pose3d turretPose =
+        new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(angle));
 
-    Pose3d turretPose = new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(angle));
-
-    DogLog.log("Turret/Pose", turretPose); 
+    DogLog.log("Turret/Pose", turretPose);
   }
 }

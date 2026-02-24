@@ -5,18 +5,24 @@ public class IndexerConstants {
   public static byte KICKER_MOTOR = 16;
 
   public enum indexerState {
-    INT(1),
-    OUT(-1),
-    STOP(0);
+    IN(1, 1),
+    OUT(-1, -1),
+    STOP(0, 0);
 
-    private double power;
+    private double spinPower;
+    private double kickPower;
 
-    private indexerState(double power) {
-      this.power = power;
+    private indexerState(double spinPower, double kickPower) {
+      this.spinPower = spinPower;
+      this.kickPower = kickPower;
     }
 
-    public double getPower() {
-      return power;
+    public double getSpinPower() {
+      return spinPower;
+    }
+
+    public double getKickPower() {
+      return kickPower;
     }
   }
 }
