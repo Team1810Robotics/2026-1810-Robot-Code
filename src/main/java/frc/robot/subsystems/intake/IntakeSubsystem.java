@@ -5,6 +5,9 @@ import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import dev.doglog.DogLog;
+
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
@@ -12,7 +15,9 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.intake.IntakeConstants.intakeState;
+import frc.robot.subsystems.intake.IntakeConstants.IntakeState;
+import frc.robot.subsystems.intake.IntakeConstants.deployState;
+import frc.robot.subsystems.intake.IntakeConstants.rollerState;
 
 public class IntakeSubsystem extends SubsystemBase {
   private SparkMax leftMotor;
@@ -21,6 +26,11 @@ public class IntakeSubsystem extends SubsystemBase {
   private DutyCycleEncoder leftEncoder;
   private DutyCycleEncoder rightEncoder;
   private final PIDController intakePIDController;
+
+  private IntakeState state;
+
+  private rollerState rollerState;
+  private deployState deployState;
 
   public IntakeSubsystem() {
     rollerMotor = new SparkMax(IntakeConstants.ROLLER_MOTOR, MotorType.kBrushless);
@@ -56,22 +66,24 @@ public class IntakeSubsystem extends SubsystemBase {
         new PIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD);
   }
 
-  public void deploy(double setpoint) {
+  public void deploy(deployState state) {
+    this.deployState = state;
+
     if (leftEncoder.isConnected() && rightEncoder.isConnected()) {
-      double output = intakePIDController.calculate(getLeftMeasurement(), setpoint);
+      double output = intakePIDController.calculate(getLeftMeasurement(), state.getPosition());
       leftMotor.setVoltage(output);
     } else {
-      System.out.println("Intake Encoder Disconnected");
       fullStop();
     }
   }
 
-  public Command deployCommand(double setPoint) {
-    return Commands.startEnd(() -> deploy(setPoint), () -> stopDeploy(), this);
+  public Command deployCommand(deployState state) {
+    return Commands.startEnd(() -> deploy(state), () -> stopDeploy(), this);
   }
 
-  public void intake(intakeState state) {
-    if (state == intakeState.STOP) {
+  public void roller(rollerState state) {
+    this.rollerState = state;
+    if (state == rollerState.STOP) {
       stopRoller();
       return;
     }
@@ -79,8 +91,15 @@ public class IntakeSubsystem extends SubsystemBase {
     rollerMotor.set(state.getPower());
   }
 
-  public Command intakeCommand(intakeState state) {
-    return Commands.startEnd(() -> intake(state), () -> stopRoller(), this);
+  public Command rollerCommand(rollerState state) {
+    return Commands.startEnd(() -> roller(state), () -> stopRoller(), this);
+  }
+
+  public void setIntakeState(IntakeState state) {
+    this.state = state;
+
+    roller(state.getRollerState());
+    deploy(state.getDeployState());
   }
 
   public void stopRoller() {
@@ -109,5 +128,18 @@ public class IntakeSubsystem extends SubsystemBase {
     double degrees = Units.rotationsToDegrees(position);
 
     return degrees;
+  }
+
+  public void log() {
+    DogLog.log("Intake/LeftEncoder/Connected", leftEncoder.isConnected());
+    DogLog.log("Intake/LeftEncoder/Position", getLeftMeasurement());
+
+    DogLog.log("Intake/RightEncoder/Connected", rightEncoder.isConnected());
+    DogLog.log("Intake/RightEncoder/Position", getRightMeasurement());
+
+    DogLog.log("Intake/RollerState", rollerState);
+    DogLog.log("Intake/DeployState", deployState);
+    DogLog.log("Intake/IntakeState", state);
+
   }
 }

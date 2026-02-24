@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
+import frc.robot.subsystems.indexer.IndexerConstants.indexerState;
 import frc.robot.subsystems.indexer.IndexerSubsystem;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
@@ -36,7 +37,7 @@ public class Shoot extends Command {
     }
 
     if (hasSpunUp) {
-      indexerSubsystem.run(1, 1);
+      indexerSubsystem.index(indexerState.IN);
     }
   }
 
@@ -44,6 +45,6 @@ public class Shoot extends Command {
   public void end(boolean interrupted) {
     hoodSubsystem.stop();
     flywheelSubsystem.stop();
-    indexerSubsystem.fullstop();
+    indexerSubsystem.fullStop();
   }
 }

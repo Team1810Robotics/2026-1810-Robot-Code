@@ -6,12 +6,14 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.intake.IntakeConstants.intakeState;
+import frc.robot.subsystems.indexer.IndexerConstants.indexerState;
 
 public class IndexerSubsystem extends SubsystemBase {
-  private SparkMax spinMotor;
-  private SparkMax kickerMotor;
+  private final SparkMax spinMotor;
+  private final SparkMax kickerMotor;
 
   public IndexerSubsystem() {
     spinMotor = new SparkMax(IndexerConstants.SPIN_MOTOR, MotorType.kBrushless);
@@ -32,31 +34,30 @@ public class IndexerSubsystem extends SubsystemBase {
         kickerMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
-  public void intake(intakeState state) {
-    if (state == intakeState.STOP) {
-      fullstop();
+  public void index(indexerState state) {
+    if (state == indexerState.STOP) {
+      fullStop();
       return;
     }
 
-    spinMotor.set(state.getPower());
-    kickerMotor.set(state.getPower());
+    spinMotor.set(state.getSpinPower());
+    kickerMotor.set(state.getKickPower());
   }
 
-  public void run(double spinSpeed, double kickSpeed) {
-    spinMotor.set(spinSpeed);
-    kickerMotor.set(kickSpeed);
+  public Command indexCommand(indexerState state) {
+    return Commands.startEnd(() -> index(state), () -> fullStop(), this);
   }
 
-  public void fullstop() {
+  public void fullStop() {
+    stopSpindexer();
+    stopKicker();
+  }
+
+  public void stopSpindexer() {
     spinMotor.stopMotor();
-    kickerMotor.stopMotor();
   }
 
-  public void spinstop() {
-    spinMotor.stopMotor();
-  }
-
-  public void feedstop() {
+  public void stopKicker() {
     kickerMotor.stopMotor();
   }
 }
