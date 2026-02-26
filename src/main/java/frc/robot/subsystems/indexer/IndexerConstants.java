@@ -1,12 +1,12 @@
 package frc.robot.subsystems.indexer;
 
 public class IndexerConstants {
-  public static byte SPIN_MOTOR = 17;
-  public static byte KICKER_MOTOR = 16;
+  public static byte SPIN_MOTOR = 13;
+  public static byte KICKER_MOTOR = 12;
 
   public enum indexerState {
-    IN(1, 1),
-    OUT(-1, -1),
+    IN(.4167, 1),
+    OUT(-.3, -.1),
     STOP(0, 0);
 
     private double spinPower;

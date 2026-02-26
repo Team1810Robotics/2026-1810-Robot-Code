@@ -6,8 +6,10 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.revrobotics.util.StatusLogger;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -18,7 +20,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.Shoot;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
+import frc.robot.subsystems.indexer.IndexerConstants.indexerState;
 import frc.robot.subsystems.indexer.IndexerSubsystem;
+import frc.robot.subsystems.intake.IntakeConstants.deployState;
+import frc.robot.subsystems.intake.IntakeConstants.rollerState;
+import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.turret.TurretSubsystem;
@@ -27,7 +33,7 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
-  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .5;
 
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
@@ -54,10 +60,14 @@ public class RobotContainer {
   private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
+  private static final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
 
   public RobotContainer() {
     configureBindings();
     configureDogLog();
+
+    StatusLogger.disableAutoLogging();
+    SignalLogger.stop();
   }
 
   private void configureBindings() {
@@ -69,8 +79,6 @@ public class RobotContainer {
                     .withVelocityX(-driverXbox.getLeftY() * MaxSpeed)
                     .withVelocityY(-driverXbox.getLeftX() * MaxSpeed)
                     .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate)));
-
-    driverXbox.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -85,10 +93,25 @@ public class RobotContainer {
         .and(driverXbox.x())
         .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
+    driverXbox.a().whileTrue(intakeSubsystem.rollerCommand(rollerState.INTAKE));
+    driverXbox
+        .y()
+        .whileTrue(
+            intakeSubsystem
+                .rollerCommand(rollerState.OUT)
+                .alongWith(indexerSubsystem.indexCommand(indexerState.OUT)));
+
+    driverXbox.x().whileTrue(indexerSubsystem.indexCommand(indexerState.IN));
+
+    driverXbox.rightBumper().whileTrue(new Shoot());
+
+    driverXbox.leftTrigger().onTrue(intakeSubsystem.deployCommand(deployState.RETRACT));
+    driverXbox.rightTrigger().onTrue(intakeSubsystem.deployCommand(deployState.DEPLOY));
+
     // reset the field-centric heading on left bumper press
     driverXbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-    driverXbox.rightBumper().whileTrue(new Shoot());
+    // driverXbox.rightBumper().whileTrue(new Shoot());
   }
 
   /** Configure DogLog options and PowerDistribution */
@@ -129,5 +152,9 @@ public class RobotContainer {
 
   public static HoodSubsystem getHoodSubsystem() {
     return hoodSubsystem;
+  }
+
+  public static IntakeSubsystem getIntakeSubsystem() {
+    return intakeSubsystem;
   }
 }

@@ -1,7 +1,5 @@
 package frc.robot.subsystems.shooter.flywheel;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -12,12 +10,14 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import dev.doglog.DogLog;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -30,9 +30,16 @@ public class FlywheelSubsystem extends SubsystemBase {
   private final DoubleSubscriber kD = DogLog.tunable("Flywheel/Gains/kD", 0.0);
   private final DoubleSubscriber kS = DogLog.tunable("Flywheel/Gains/kS", 0.0);
   private final DoubleSubscriber kV = DogLog.tunable("Flywheel/Gains/kV", 0.0);
-  private final DoubleSubscriber kA = DogLog.tunable("Flywheel/Gains/kA", 0.0);
+
+  private final DoubleSubscriber velocityTarget = DogLog.tunable("Flywheel/VelocityTarget", 0.0);
+
+  private boolean isTuning = false;
+
+  private double lastkP, lastkI, lastkD, lastkS, lastkV;
 
   private double targetVelocity = 0;
+
+  private Command tuningCommand = setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()));
 
   public FlywheelSubsystem() {
     rightMotor = new TalonFX(FlywheelConstants.RIGHT_FLYWHEEL_ID);
@@ -51,13 +58,14 @@ public class FlywheelSubsystem extends SubsystemBase {
 
     cfg.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
+    cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
     cfg.Slot0.kP = FlywheelConstants.kP;
     cfg.Slot0.kI = FlywheelConstants.kI;
     cfg.Slot0.kD = FlywheelConstants.kD;
 
     cfg.Slot0.kS = FlywheelConstants.kS;
     cfg.Slot0.kV = FlywheelConstants.kV;
-    cfg.Slot0.kA = FlywheelConstants.kA;
 
     rightMotor.getConfigurator().apply(cfg);
     leftMotor.getConfigurator().apply(cfg);
@@ -65,6 +73,11 @@ public class FlywheelSubsystem extends SubsystemBase {
     leftMotor.setControl(new Follower(rightMotor.getDeviceID(), MotorAlignmentValue.Aligned));
 
     setDefaultCommand(idleMotorCommand());
+  }
+
+  public Command dutyCycleCommand(double dutyCycle) {
+    return Commands.run(() -> rightMotor.setControl(new DutyCycleOut(dutyCycle)), this)
+        .finallyDo(() -> stop());
   }
 
   public void idleMotor() {
@@ -76,17 +89,17 @@ public class FlywheelSubsystem extends SubsystemBase {
   }
 
   public void setVelocity(AngularVelocity velocity) {
-    targetVelocity = velocity.in(RadiansPerSecond);
+    targetVelocity = velocity.in(RotationsPerSecond);
     rightMotor.setControl(new VelocityVoltage(velocity));
   }
 
   public Command setVelocityCommand(AngularVelocity velocity) {
-    return Commands.startEnd(() -> setVelocity(velocity), () -> stop(), this);
+    return Commands.run(() -> setVelocity(velocity), this).finallyDo(() -> stop());
   }
 
   public boolean atTargetVelocity() {
     return Math.abs(rightMotor.getVelocity().getValueAsDouble() - targetVelocity)
-        < 10; // TODO: Tune this threshold
+        < 2; // TODO: Tune this threshold
   }
 
   public void stop() {
@@ -94,34 +107,55 @@ public class FlywheelSubsystem extends SubsystemBase {
   }
 
   public void updateGains() {
+    if (kP.get() == lastkP
+        && kI.get() == lastkI
+        && kD.get() == lastkD
+        && kS.get() == lastkS
+        && kV.get() == lastkV) {
+      return;
+    }
+
     Slot0Configs slot0Configs = new Slot0Configs();
     slot0Configs.kP = kP.get();
     slot0Configs.kI = kI.get();
     slot0Configs.kD = kD.get();
     slot0Configs.kS = kS.get();
     slot0Configs.kV = kV.get();
-    slot0Configs.kA = kA.get();
+
+    lastkP = kP.get();
+    lastkI = kI.get();
+    lastkD = kD.get();
+    lastkS = kS.get();
+    lastkV = kV.get();
 
     rightMotor.getConfigurator().apply(slot0Configs);
   }
 
   public void log() {
     DogLog.log(
-        "Flywheel/Velocity",
-        RotationsPerSecond.of(rightMotor.getVelocity().getValueAsDouble()).in(RadiansPerSecond),
-        RadiansPerSecond);
-    DogLog.log("Flywheel/Target", targetVelocity, RadiansPerSecond);
+        "Flywheel/Velocity", rightMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
+    DogLog.log("Flywheel/Target", targetVelocity, RotationsPerSecond);
     DogLog.log("Flywheel/Connected", rightMotor.isConnected());
     DogLog.log(
         "Flywheel/Acceleration",
-        RotationsPerSecondPerSecond.of(rightMotor.getAcceleration().getValueAsDouble())
-            .in(RadiansPerSecondPerSecond),
-        RadiansPerSecondPerSecond);
+        rightMotor.getAcceleration().getValueAsDouble(),
+        RotationsPerSecondPerSecond);
     DogLog.log("Flywheel/Voltage", rightMotor.getMotorVoltage().getValueAsDouble(), Volts);
+    DogLog.log("Flywheel/At Target Velocity", atTargetVelocity());
   }
 
   @Override
   public void periodic() {
     log();
+
+    if (velocityTarget.get() != 0) {
+      isTuning = true;
+      CommandScheduler.getInstance().schedule(tuningCommand);
+    }
+
+    if (isTuning && velocityTarget.get() == 0) {
+      isTuning = false;
+      CommandScheduler.getInstance().cancel(tuningCommand);
+    }
   }
 }
