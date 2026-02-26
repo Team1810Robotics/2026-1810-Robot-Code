@@ -17,11 +17,12 @@ public enum Region {
           new Translation2d(FieldConstants.fieldLength, FieldConstants.fieldWidth))),
   UPPER_NEUTRAL_ZONE(
       new Rectangle2d(
-          new Translation2d(FieldConstants.LinesVertical.allianceZone, FieldConstants.fieldWidth / 2),
+          new Translation2d(
+              FieldConstants.LinesVertical.allianceZone, FieldConstants.fieldWidth / 2),
           new Translation2d(
               FieldConstants.fieldLength - FieldConstants.LinesVertical.allianceZone,
               FieldConstants.fieldWidth))),
-    LOWER_NEUTRAL_ZONE(
+  LOWER_NEUTRAL_ZONE(
       new Rectangle2d(
           new Translation2d(FieldConstants.LinesVertical.allianceZone, 0),
           new Translation2d(
@@ -44,6 +45,6 @@ public enum Region {
         return Optional.of(r);
       }
     }
-    return Optional.empty(); 
+    return Optional.empty();
   }
 }
