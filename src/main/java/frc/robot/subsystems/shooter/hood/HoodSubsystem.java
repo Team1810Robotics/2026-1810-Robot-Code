@@ -22,11 +22,11 @@ public class HoodSubsystem extends SubsystemBase {
   private final TalonFX hoodMotor;
   private final CANcoder hoodEncoder;
 
-  private final DoubleSubscriber positionTarget = DogLog.tunable("Hood/PositionTarget", 0.0);
+  private final DoubleSubscriber tuningTarget = DogLog.tunable("Hood/TuningTarget", 0.0);
 
   private boolean isTuning = false;
 
-  private Command tuningCommand = setPositionCommand(Rotation2d.fromDegrees(positionTarget.get()));
+  private Command tuningCommand = setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()));
 
   public HoodSubsystem() {
     hoodMotor = new TalonFX(HoodConstants.HOOD_MOTOR_ID);
@@ -57,7 +57,7 @@ public class HoodSubsystem extends SubsystemBase {
     lastEncoderRaw = 0;
     unwrappedEncoder = 0;
 
-    hoodMotor.setPosition(Rotations.of(getEncoderPosition().getRotations()));
+    hoodMotor.setPosition(Rotations.of(0));
   }
 
   public void setPosition(Rotation2d position) {
@@ -110,19 +110,23 @@ public class HoodSubsystem extends SubsystemBase {
     hoodMotor.stopMotor();
   }
 
+  public Command zero() {
+    return Commands.sequence(
+        Commands.run(() -> hoodMotor.setVoltage(-1), this).withTimeout(2),
+        Commands.runOnce(() -> hoodMotor.setPosition(Degrees.of(0)), this));
+  }
+
   @Override
   public void periodic() {
     log();
-    seedMotorFromAbsolute();
+    tuningCommand = setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()));
 
-    setPosition(Rotation2d.fromDegrees(positionTarget.get()));
-
-    if (positionTarget.get() != 0) {
+    if (tuningTarget.get() != 0) {
       isTuning = true;
       CommandScheduler.getInstance().schedule(tuningCommand);
     }
 
-    if (isTuning && positionTarget.get() == 0) {
+    if (isTuning && tuningTarget.get() == 0) {
       isTuning = false;
       CommandScheduler.getInstance().cancel(tuningCommand);
     }

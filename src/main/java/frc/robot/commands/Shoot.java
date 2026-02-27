@@ -4,8 +4,12 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.indexer.IndexerConstants.indexerState;
-import frc.robot.subsystems.indexer.IndexerSubsystem;
+import frc.robot.RobotState;
+import frc.robot.RobotState.RobotStates;
+import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
+import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
+import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
+import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
 import frc.robot.subsystems.intake.IntakeConstants.rollerState;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
@@ -14,7 +18,8 @@ import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 public class Shoot extends Command {
   private final FlywheelSubsystem flywheelSubsystem;
   private final HoodSubsystem hoodSubsystem;
-  private final IndexerSubsystem indexerSubsystem;
+  private final SpindexerSubsystem spindexerSubsystem;
+  private final KickerSubsystem kickerSubsystem;
   private final IntakeSubsystem intakeSubsystem;
 
   private boolean hasSpunUp = false;
@@ -22,10 +27,12 @@ public class Shoot extends Command {
   public Shoot() {
     this.flywheelSubsystem = RobotContainer.getFlywheelSubsystem();
     this.hoodSubsystem = RobotContainer.getHoodSubsystem();
-    this.indexerSubsystem = RobotContainer.getIndexerSubsystem();
+    this.spindexerSubsystem = RobotContainer.getSpindexerSubsystem();
+    this.kickerSubsystem = RobotContainer.getKickerSubsystem();
     this.intakeSubsystem = RobotContainer.getIntakeSubsystem();
 
-    addRequirements(flywheelSubsystem, hoodSubsystem, indexerSubsystem, intakeSubsystem);
+    addRequirements(
+        flywheelSubsystem, hoodSubsystem, spindexerSubsystem, kickerSubsystem, intakeSubsystem);
   }
 
   @Override
@@ -41,7 +48,8 @@ public class Shoot extends Command {
     }
 
     if (hasSpunUp) {
-      indexerSubsystem.index(indexerState.IN);
+      spindexerSubsystem.spindex(SpindexerState.IN);
+      kickerSubsystem.kick(KickerState.IN);
       intakeSubsystem.roller(rollerState.INTAKE);
     }
   }
@@ -50,7 +58,10 @@ public class Shoot extends Command {
   public void end(boolean interrupted) {
     hoodSubsystem.stop();
     flywheelSubsystem.stop();
-    indexerSubsystem.fullStop();
+    spindexerSubsystem.stop();
+    kickerSubsystem.stop();
     intakeSubsystem.roller(rollerState.STOP);
+
+    RobotState.getInstance().setState(RobotStates.NEUTRAL);
   }
 }
