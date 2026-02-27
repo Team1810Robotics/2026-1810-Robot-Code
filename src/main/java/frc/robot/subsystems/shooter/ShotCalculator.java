@@ -14,9 +14,10 @@ import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.shooter.turret.TurretConstants;
-import frc.robot.util.AllianceFlipUtil;
-import frc.robot.util.FieldConstants;
-import frc.robot.util.Region;
+import frc.robot.util.field.FieldConstants;
+import frc.robot.util.field.Region;
+import frc.robot.util.geometry.AllianceFlipUtil;
+
 import java.util.Optional;
 
 public class ShotCalculator {
