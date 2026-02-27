@@ -1,6 +1,6 @@
 package frc.robot.subsystems.LEDs;
 
-//Its GRB for some reason 
+// Its GRB for some reason
 
 public final class LEDConstants {
   public static final int[] RED = {0, 255, 0}; // GRB values
