@@ -2,8 +2,6 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
-import java.util.Optional;
-
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,6 +16,7 @@ import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.util.AllianceFlipUtil;
 import frc.robot.util.FieldConstants;
 import frc.robot.util.Region;
+import java.util.Optional;
 
 public class ShotCalculator {
   private static ShotCalculator instance;
@@ -47,8 +46,7 @@ public class ShotCalculator {
 
   public ShotParameters calculateParameters() {
     Pose2d robotPose = RobotContainer.getDrivetrain().getPose();
-    Optional<Region> robotRegion =
-        Region.getRegion(robotPose);
+    Optional<Region> robotRegion = Region.getRegion(robotPose);
 
     if (robotRegion.isEmpty()) {
       return new ShotParameters(false, Rotation2d.kZero, Rotation2d.kZero, RadiansPerSecond.of(0));
@@ -66,12 +64,14 @@ public class ShotCalculator {
       case UPPER_NEUTRAL_ZONE:
         target =
             new Translation2d(
-                FieldConstants.LinesVertical.allianceZone / 2, FieldConstants.fieldWidth * (2.0 / 3.0));
+                FieldConstants.LinesVertical.allianceZone / 2,
+                FieldConstants.fieldWidth * (2.0 / 3.0));
         break;
       case LOWER_NEUTRAL_ZONE:
         target =
             new Translation2d(
-                FieldConstants.LinesVertical.allianceZone / 2, FieldConstants.fieldWidth * (1.0 / 3.0));
+                FieldConstants.LinesVertical.allianceZone / 2,
+                FieldConstants.fieldWidth * (1.0 / 3.0));
         break;
       default:
         target = new Translation2d();

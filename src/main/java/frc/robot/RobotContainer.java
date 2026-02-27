@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.Shoot;
+import frc.robot.subsystems.LEDs.LEDSubsystem;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.IndexerSubsystem;
@@ -24,6 +25,8 @@ import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import frc.robot.subsystems.LEDs.LEDConstants;
+import frc.robot.subsystems.LEDs.LEDSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -54,6 +57,7 @@ public class RobotContainer {
   private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
+ public final LEDSubsystem ledSubsystem = new LEDSubsystem();
 
   public RobotContainer() {
     configureBindings();
