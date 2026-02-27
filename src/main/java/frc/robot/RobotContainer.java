@@ -6,30 +6,32 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.revrobotics.util.StatusLogger;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
-import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.RobotState.RobotStates;
 import frc.robot.commands.Shoot;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
-import frc.robot.subsystems.indexer.IndexerConstants.indexerState;
-import frc.robot.subsystems.indexer.IndexerSubsystem;
+import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
+import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
+import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
+import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
 import frc.robot.subsystems.intake.IntakeConstants.deployState;
 import frc.robot.subsystems.intake.IntakeConstants.rollerState;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.turret.TurretSubsystem;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.subsystems.vision.VisionSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -52,22 +54,18 @@ public class RobotContainer {
 
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
-  private static final VisionSubsystem frontVision =
-      new VisionSubsystem(VisionConstants.FRONT_LIMELIGHT_NAME);
-  private static final VisionSubsystem rearVision =
-      new VisionSubsystem(VisionConstants.REAR_LIMELIGHT_NAME);
-  private static final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
+  private static final Vision leftVision = new Vision(VisionConstants.LEFT_LIMELIGHT_NAME);
+  private static final Vision rightVision = new Vision(VisionConstants.RIGHT_LIMELIGHT_NAME);
   private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
   private static final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+  private static final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem();
+  private static final KickerSubsystem kickerSubsystem = new KickerSubsystem();
 
   public RobotContainer() {
     configureBindings();
     configureDogLog();
-
-    StatusLogger.disableAutoLogging();
-    SignalLogger.stop();
   }
 
   private void configureBindings() {
@@ -93,23 +91,41 @@ public class RobotContainer {
         .and(driverXbox.x())
         .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    driverXbox.a().whileTrue(intakeSubsystem.rollerCommand(rollerState.INTAKE));
+    driverXbox
+        .a()
+        .and(RobotState.getInstance().stateIsNeutral)
+        .onTrue(intakeSubsystem.advanceState());
+    driverXbox
+        .a()
+        .and(RobotState.getInstance().stateIsShooting)
+        .onTrue(intakeSubsystem.delpoyCommandNoRequirements(deployState.RETRACT));
+
     driverXbox
         .y()
         .whileTrue(
             intakeSubsystem
                 .rollerCommand(rollerState.OUT)
-                .alongWith(indexerSubsystem.indexCommand(indexerState.OUT)));
+                .alongWith(spindexerSubsystem.spinCommand(SpindexerState.OUT))
+                .alongWith(kickerSubsystem.kickCommand(KickerState.OUT)));
 
-    driverXbox.x().whileTrue(indexerSubsystem.indexCommand(indexerState.IN));
-
-    driverXbox.rightBumper().whileTrue(new Shoot());
-
-    driverXbox.leftTrigger().onTrue(intakeSubsystem.deployCommand(deployState.RETRACT));
-    driverXbox.rightTrigger().onTrue(intakeSubsystem.deployCommand(deployState.DEPLOY));
+    driverXbox
+        .rightBumper()
+        .whileTrue(
+            Commands.sequence(
+                RobotState.getInstance().setStateCommand(RobotStates.SHOOTING), new Shoot()));
 
     // reset the field-centric heading on left bumper press
     driverXbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    driverXbox
+        .leftStick()
+        .onTrue(
+            Commands.runOnce(
+                () ->
+                    drivetrain.resetPose(
+                        new Pose2d(
+                            Inches.of(27 / 2).in(Meters),
+                            Inches.of(27 / 2).in(Meters),
+                            Rotation2d.kZero))));
 
     // driverXbox.rightBumper().whileTrue(new Shoot());
   }
@@ -118,8 +134,6 @@ public class RobotContainer {
   public void configureDogLog() {
     DogLog.setOptions(
         new DogLogOptions().withCaptureDs(true).withNtPublish(true).withLogExtras(true));
-
-    DogLog.setPdh(new PowerDistribution());
   }
 
   public Command getAutonomousCommand() {
@@ -130,16 +144,12 @@ public class RobotContainer {
     return drivetrain;
   }
 
-  public static VisionSubsystem getFrontVisionSubsystem() {
-    return frontVision;
+  public static Vision getLeftVision() {
+    return leftVision;
   }
 
-  public static VisionSubsystem getRearVisionSubsystem() {
-    return rearVision;
-  }
-
-  public static IndexerSubsystem getIndexerSubsystem() {
-    return indexerSubsystem;
+  public static Vision getRightVision() {
+    return rightVision;
   }
 
   public static TurretSubsystem getTurretSubsystem() {
@@ -156,5 +166,13 @@ public class RobotContainer {
 
   public static IntakeSubsystem getIntakeSubsystem() {
     return intakeSubsystem;
+  }
+
+  public static SpindexerSubsystem getSpindexerSubsystem() {
+    return spindexerSubsystem;
+  }
+
+  public static KickerSubsystem getKickerSubsystem() {
+    return kickerSubsystem;
   }
 }
