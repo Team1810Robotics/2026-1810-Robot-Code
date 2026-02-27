@@ -1,7 +1,6 @@
 package frc.robot.util;
 
 import java.util.Map;
-import java.util.Optional;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -20,32 +19,27 @@ public class HubStateUtil {
     }
 
     public record HubState(HubStateEnum state, 
-                double elapsedTime,
-                double remainingTime,
-     boolean isActive) {}
+                            double elapsedTime,
+                            double remainingTime,
+                            boolean isActive) {}
 
      private static Map<HubStateEnum, Double> shiftStartTimes = Map.of(
-        HubStateEnum.TRANSITION, 0.0,
-        HubStateEnum.SHIFT_1, 10.0,
-        HubStateEnum.SHIFT_2, 35.0,
-        HubStateEnum.SHIFT_3, 60.0,
-        HubStateEnum.SHIFT_4, 85.0,
-        HubStateEnum.ENDGAME, 110.0
+        HubStateEnum.TRANSITION, 140.0,
+        HubStateEnum.SHIFT_1, 130.0,
+        HubStateEnum.SHIFT_2, 105.0,
+        HubStateEnum.SHIFT_3, 80.0,
+        HubStateEnum.SHIFT_4, 55.0,
+        HubStateEnum.ENDGAME, 30.0
      );
 
      private static Map<HubStateEnum, Double> shiftEndTimes = Map.of(
-        HubStateEnum.TRANSITION, 10.0,
-        HubStateEnum.SHIFT_1, 35.0,
-        HubStateEnum.SHIFT_2, 60.0,
-        HubStateEnum.SHIFT_3, 85.0,
-        HubStateEnum.SHIFT_4, 110.0,
-        HubStateEnum.ENDGAME, 140.0
+        HubStateEnum.TRANSITION, 130.0,
+        HubStateEnum.SHIFT_1, 105.0,
+        HubStateEnum.SHIFT_2, 80.0,
+        HubStateEnum.SHIFT_3, 55.0,
+        HubStateEnum.SHIFT_4, 30.0,
+        HubStateEnum.ENDGAME, 0.0
      );
-
-    private static double autoDuration = 20.0;
-    private static double teleopDuration = 140.0;
-
-    private static Timer shiftTimer = new Timer();
 
     public static Alliance getAutoWinner() {
         String message = DriverStation.getGameSpecificMessage();
@@ -64,15 +58,7 @@ public class HubStateUtil {
         return alliance;
     }
 
-    public static HubState getCurrentHubState() {
-        Alliance autoWinner = getAutoWinner();
-        boolean wonAuto = autoWinner == DriverStation.getAlliance().orElse(Alliance.Blue);
-        double time = Timer.getMatchTime();
-
-        return new HubState(HubStateEnum.DISABLED, 0, 0, false);
-    }
-
-    public static Map<HubStateEnum, Boolean> getSchedule(boolean wonAuto) {
+    public static Map<HubStateEnum, Boolean> getActiveSchedule(boolean wonAuto) {
         if (wonAuto) {
             return Map.of(
                 HubStateEnum.AUTO, true,
@@ -98,5 +84,49 @@ public class HubStateUtil {
         }
     }
 
+    public static HubStateEnum getCurrentHubStateEnum() {
+        if (DriverStation.isAutonomous()) {
+            return HubStateEnum.AUTO;
+        }
+
+        if (DriverStation.isDisabled()) {
+            return HubStateEnum.DISABLED;
+        }
+
+        double time = DriverStation.getMatchTime();
+
+        for (HubStateEnum state : HubStateEnum.values()) {
+            if (shiftStartTimes.containsKey(state) && shiftEndTimes.containsKey(state)) {
+                double startTime = shiftStartTimes.get(state);
+                double endTime = shiftEndTimes.get(state);
+                if (time <= startTime && time > endTime) {
+                    return state;
+                }
+            }
+        }
+
+        throw new IllegalStateException("Current time does not fall within any defined HubStateEnum");
+    }
+
+    public static HubState getCurrentHubState() {
+        Alliance autoWinner = getAutoWinner();
+        boolean wonAuto = autoWinner == DriverStation.getAlliance().orElse(Alliance.Blue);
+        double time = Timer.getMatchTime();
+
+        Map<HubStateEnum, Boolean> schedule = getActiveSchedule(wonAuto);
+
+        HubStateEnum currentState = getCurrentHubStateEnum();
+
+        double startTime = shiftStartTimes.get(currentState);
+        double elapsedTime = startTime - time;
+        double remainingTime = time - shiftEndTimes.get(currentState);
+        boolean isActive = schedule.get(currentState);
+
+        return new HubState(currentState, elapsedTime, remainingTime, isActive);
+    }
+
+    public void log() {
+        //TODO: Implement this on a laptop with DogLog
+    }
 
 }
