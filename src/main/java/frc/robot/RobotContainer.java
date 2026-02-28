@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.RobotState.RobotStates;
 import frc.robot.commands.Shoot;
+import frc.robot.subsystems.LEDs.LEDSubsystem;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
@@ -59,6 +60,7 @@ public class RobotContainer {
   private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
+  private static final LEDSubsystem ledSubsystem = new LEDSubsystem();
   private static final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
   private static final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem();
   private static final KickerSubsystem kickerSubsystem = new KickerSubsystem();
