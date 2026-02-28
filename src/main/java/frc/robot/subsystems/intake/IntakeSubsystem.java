@@ -188,8 +188,7 @@ public class IntakeSubsystem extends SubsystemBase {
     if (encoder.isConnected()) {
       double output = intakePIDController.calculate(getPosition().getRadians(), deployTarget);
 
-      double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0,
-    0);
+      double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
 
       leftMotor.setVoltage(output + feedforwardOut);
     } else {
