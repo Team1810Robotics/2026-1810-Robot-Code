@@ -7,8 +7,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Angle;
 
 public class TurretConstants {
-  public static final int TURRET_MOTOR_ID = 22; // Replace with actual motor ID
-  public static final int TURRET_ENCODER_ID = 0; // Replace with actual encoder ID
+  public static final int TURRET_MOTOR_ID = 17; // Replace with actual motor ID
+  public static final int TURRET_ENCODER_ID = 2; // Replace with actual encoder ID
 
   public static final double GEAR_RATIO = 1.0; // Replace with actual gear ratio
 
@@ -16,5 +16,5 @@ public class TurretConstants {
   public static final Angle MAX_ANGLE = Degrees.of(357.5); // Maximum angle in degrees
 
   public static final Transform3d ROBOT_TO_TURRET =
-      new Transform3d(0.15, 0.11, .283, Rotation3d.kZero);
+      new Transform3d(-0.128, -0.128, .28, Rotation3d.kZero);
 }

@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -56,6 +57,8 @@ public class TurretSubsystem extends SubsystemBase {
 
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
     config.CurrentLimits.SupplyCurrentLimit = 40;
+
+    config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     turretMotor.getConfigurator().apply(config);
 
@@ -124,6 +127,8 @@ public class TurretSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
+
+    turretMotor.stopMotor();
 
     // ShotParameters params = ShotCalculator.getInstance().calculateParameters();
     // if (!params.isValid()) return;

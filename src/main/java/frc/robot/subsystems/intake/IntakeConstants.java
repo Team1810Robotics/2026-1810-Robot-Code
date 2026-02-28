@@ -1,21 +1,29 @@
 package frc.robot.subsystems.intake;
 
-public class IntakeConstants {
-  public static byte LEFT_MOTOR = 13;
-  public static byte RIGHT_MOTOR = 14;
-  public static byte LEFT_ENCODER_ID = 14;
-  public static byte RIGHT_ENCODER_ID = 14;
-  public static byte ROLLER_MOTOR = 15;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 
-  public static double kP = 0;
-  public static double kI = 0;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+
+public class IntakeConstants {
+  public static final int LEFT_DELPOY_MOTOR_ID = 9;
+  public static final int RIGHT_DEPLOY_MOTOR_ID = 10;
+  public static final int LEFT_ENCODER_ID = 0;
+  public static final int ROLLER_MOTOR_ID = 11;
+
+  public static double kP = 2;
   public static double kD = 0;
 
-  public static double RIGHT_ENCODER_OFFSET = 0;
-  public static double LEFT_ENCODER_OFFSET = 0;
+  public static double kS = 0.8;
+  public static double kG = 0;
+
+  public static double ENCODER_OFFSET = Units.degreesToRotations(43);
+
+  public static double GEAR_RATIO = 3;
 
   public enum rollerState {
-    INTAKE(1),
+    INTAKE(.75),
     OUT(-1),
     STOP(0);
 
@@ -31,23 +39,22 @@ public class IntakeConstants {
   }
 
   public enum deployState {
-    DEPLOY(0),
-    RETRACT(0);
+    DEPLOY(Degrees.of(14.5)),
+    RETRACT(Degrees.of(115.0));
 
-    private double position;
+    private Angle position;
 
-    private deployState(double position) {
+    private deployState(Angle position) {
       this.position = position;
     }
 
     public double getPosition() {
-      return position;
+      return position.in(Radians);
     }
   }
 
   public enum IntakeState {
     OUT_INTAKE(rollerState.INTAKE, deployState.DEPLOY),
-    OUT_STOP(rollerState.STOP, deployState.DEPLOY),
     RETRACT(rollerState.STOP, deployState.RETRACT);
 
     private final rollerState roller;

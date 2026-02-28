@@ -258,6 +258,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     DogLog.log("Drive/AngleToHub/Angle", getAngleToHub().getDegrees(), Degrees);
     DogLog.log("Drive/DistanceToHub/Distance", getDistanceToHub().in(Meters), Meters);
+
+    DogLog.log("Drive/Pigeon/Yaw", getPigeon2().getYaw().getValueAsDouble());
+    DogLog.log("Drive/Pigeon/Pitch", getPigeon2().getPitch().getValueAsDouble());
+    DogLog.log("Drive/Pigeon/Roll", getPigeon2().getRoll().getValueAsDouble());
   }
 
   private void startSimThread() {

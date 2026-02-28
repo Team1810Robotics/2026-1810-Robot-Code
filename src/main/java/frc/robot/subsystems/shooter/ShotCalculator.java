@@ -1,6 +1,7 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -93,7 +94,7 @@ public class ShotCalculator {
     boolean isValid = distanceToTarget > maxDistance || distanceToTarget < minDistance;
     Rotation2d turretAngle = target.minus(turretPose.getTranslation()).getAngle();
     Rotation2d hoodAngle = hoodMap.get(distanceToTarget);
-    AngularVelocity flywheelVelocity = RadiansPerSecond.of(flywheelMap.get(distanceToTarget));
+    AngularVelocity flywheelVelocity = RotationsPerSecond.of(flywheelMap.get(distanceToTarget));
 
     DogLog.log("ShotCalculator/DistanceToTarget", distanceToTarget);
     DogLog.log("ShotCalculator/Target", new Pose2d(target, Rotation2d.kZero));
