@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.Map;
 
+/** Utility class to determine the current "hub state" based on match time and auto results. */
 public class HubStateUtil {
   public enum Shift {
     AUTO,
@@ -17,11 +18,10 @@ public class HubStateUtil {
     DISABLED
   }
 
-  public record HubState(Shift shift, double elapsedTime, double remainingTime, boolean isActive) {}
+  public record HubState(Shift shift, double remainingTime, boolean isActive) {}
 
   private static Map<Shift, Double> shiftStartTimes =
       Map.of(
-          Shift.AUTO, 20.0,
           Shift.TRANSITION, 140.0,
           Shift.SHIFT_1, 130.0,
           Shift.SHIFT_2, 105.0,
@@ -32,7 +32,6 @@ public class HubStateUtil {
 
   private static Map<Shift, Double> shiftEndTimes =
       Map.of(
-          Shift.AUTO, 0.0,
           Shift.TRANSITION, 130.0,
           Shift.SHIFT_1, 105.0,
           Shift.SHIFT_2, 80.0,
@@ -83,24 +82,28 @@ public class HubStateUtil {
   }
 
   public static Shift getCurrentShift() {
-    if (DriverStation.isAutonomous()) {
-      return Shift.AUTO;
-    }
-
     if (DriverStation.isDisabled()) {
       return Shift.DISABLED;
     }
 
+    if (DriverStation.isAutonomous()) {
+      return Shift.AUTO;
+    }
+
     double time = DriverStation.getMatchTime();
 
-    for (Shift state : Shift.values()) {
-      if (shiftStartTimes.containsKey(state) && shiftEndTimes.containsKey(state)) {
-        double startTime = shiftStartTimes.get(state);
-        double endTime = shiftEndTimes.get(state);
-        if (time <= startTime && time > endTime) {
-          return state;
+    try {
+      for (Shift state : Shift.values()) {
+        if (shiftStartTimes.containsKey(state) && shiftEndTimes.containsKey(state)) {
+          double startTime = shiftStartTimes.get(state);
+          double endTime = shiftEndTimes.get(state);
+          if (time <= startTime && time > endTime) {
+            return state;
+          }
         }
       }
+    } catch (NullPointerException npe) {
+      return Shift.AUTO;
     }
 
     return Shift.SHIFT_1;
@@ -115,14 +118,12 @@ public class HubStateUtil {
 
     Shift currentShift = getCurrentShift();
 
-    double startTime = shiftStartTimes.get(currentShift);
-    double endTime = shiftEndTimes.get(currentShift);
+    double endTime = shiftEndTimes.getOrDefault(currentShift, 0.0);
 
-    double elapsedTime = startTime - time;
     double remainingTime = time - endTime;
     boolean isActive = schedule.get(currentShift);
 
-    return new HubState(currentShift, elapsedTime, remainingTime + 1, isActive);
+    return new HubState(currentShift, remainingTime, isActive);
   }
 
   public static void log() {
@@ -133,8 +134,7 @@ public class HubStateUtil {
     }
 
     DogLog.log("Hub/Shift", state.shift.name());
-    DogLog.log("Hub/Elapsed Time", state.elapsedTime);
-    DogLog.log("Hub/Remaining Time", state.remainingTime);
-    DogLog.log("Hub/isActive", state.isActive);
+    DogLog.log("Hub/Shift Remaining Time", state.remainingTime);
+    DogLog.log("Hub/Hub Active", state.isActive());
   }
 }
