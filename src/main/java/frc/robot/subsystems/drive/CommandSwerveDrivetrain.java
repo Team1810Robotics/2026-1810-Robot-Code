@@ -24,13 +24,14 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.field.FieldConstants;
-
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -113,6 +114,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               null,
               this));
 
+  private final Field2d field2d;
+
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
@@ -134,6 +137,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
+
+    field2d = new Field2d();
+    SmartDashboard.putData("Field", field2d);
   }
 
   /**
@@ -158,6 +164,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
+
+    field2d = new Field2d();
+    SmartDashboard.putData("Field", field2d);
   }
 
   /**
@@ -193,6 +202,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
+
+    field2d = new Field2d();
+    SmartDashboard.putData("Field", field2d);
   }
 
   /**
@@ -263,6 +275,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     DogLog.log("Drive/Pigeon/Yaw", getPigeon2().getYaw().getValueAsDouble());
     DogLog.log("Drive/Pigeon/Pitch", getPigeon2().getPitch().getValueAsDouble());
     DogLog.log("Drive/Pigeon/Roll", getPigeon2().getRoll().getValueAsDouble());
+
+    field2d.setRobotPose(state.Pose);
   }
 
   private void startSimThread() {

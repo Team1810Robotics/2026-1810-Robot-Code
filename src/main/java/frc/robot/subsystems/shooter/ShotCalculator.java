@@ -17,7 +17,6 @@ import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.util.field.FieldConstants;
 import frc.robot.util.field.Region;
 import frc.robot.util.geometry.AllianceFlipUtil;
-
 import java.util.Optional;
 
 public class ShotCalculator {
