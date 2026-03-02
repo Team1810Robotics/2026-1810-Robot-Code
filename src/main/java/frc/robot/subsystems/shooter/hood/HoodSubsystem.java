@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -26,7 +27,16 @@ public class HoodSubsystem extends SubsystemBase {
 
   private boolean isTuning = false;
 
-  private Command tuningCommand = setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()));
+  public final DoubleSubscriber kP = DogLog.tunable("Hood/Gains/kP", HoodConstants.kP);
+  public final DoubleSubscriber kD = DogLog.tunable("Hood/Gains/kD", 0.0);
+
+  public final DoubleSubscriber kS = DogLog.tunable("Hood/Gains/kS", HoodConstants.kS);
+
+  private final DoubleSubscriber target = DogLog.tunable("Hood/Target", 0.0);
+
+  private double lastkP, lastkD, lastkS;
+
+  private Command tuningCommand;
 
   public HoodSubsystem() {
     hoodMotor = new TalonFX(HoodConstants.HOOD_MOTOR_ID);
@@ -116,9 +126,28 @@ public class HoodSubsystem extends SubsystemBase {
         Commands.runOnce(() -> hoodMotor.setPosition(Degrees.of(0)), this));
   }
 
+  public void updateGains() {
+    if (kP.get() == lastkP && kD.get() == lastkD && kS.get() == lastkS) {
+      return;
+    }
+
+    Slot0Configs slot0Configs = new Slot0Configs();
+    slot0Configs.kP = kP.get();
+    slot0Configs.kD = kD.get();
+    slot0Configs.kS = kS.get();
+
+    lastkP = kP.get();
+    lastkD = kD.get();
+    lastkS = kS.get();
+
+    hoodMotor.getConfigurator().apply(slot0Configs);
+  }
+
   @Override
   public void periodic() {
     log();
+    updateGains();
+
     tuningCommand = setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()));
 
     if (tuningTarget.get() != 0) {

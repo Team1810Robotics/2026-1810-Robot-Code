@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.revrobotics.util.StatusLogger;
-import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,8 +31,8 @@ public class Robot extends TimedRobot {
 
     Mechanism3d.getInstance().log();
     HubStateUtil.log();
-
-    DogLog.log("Robot/RobotState", RobotState.getInstance().robotState.name());
+    RobotState.getInstance().log();
+    
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
   }
 

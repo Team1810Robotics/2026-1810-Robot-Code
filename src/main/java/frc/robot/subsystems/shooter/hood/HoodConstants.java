@@ -7,7 +7,7 @@ public class HoodConstants {
   public static final double GEAR_RATIO_MOTOR = 8 * 18.2;
   public static final double GEAR_RATIO_ENCODER = 18.2;
 
-  public static final double kP = 70;
+  public static final double kP = 300.0;
 
-  public static final double kS = 0.225;
+  public static final double kS = 0.23;
 }

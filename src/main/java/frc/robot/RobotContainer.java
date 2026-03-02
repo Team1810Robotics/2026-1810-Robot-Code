@@ -12,11 +12,14 @@ import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.RobotState.RobotStates;
+import frc.robot.commands.Intake;
 import frc.robot.commands.Shoot;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
@@ -24,9 +27,9 @@ import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
-import frc.robot.subsystems.intake.IntakeConstants.deployState;
-import frc.robot.subsystems.intake.IntakeConstants.rollerState;
-import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.intake.IntakeStates;
+import frc.robot.subsystems.intake.deploy.DeploySubsystem;
+import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.turret.TurretSubsystem;
@@ -54,12 +57,17 @@ public class RobotContainer {
 
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
   private static final Vision leftVision = new Vision(VisionConstants.LEFT_LIMELIGHT_NAME);
   private static final Vision rightVision = new Vision(VisionConstants.RIGHT_LIMELIGHT_NAME);
+
   private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
-  private static final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+
+  private static final DeploySubsystem deploySubsystem = new DeploySubsystem();
+  private static final RollerSubsystem rollerSubsystem = new RollerSubsystem();
+
   private static final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem();
   private static final KickerSubsystem kickerSubsystem = new KickerSubsystem();
 
@@ -93,20 +101,21 @@ public class RobotContainer {
 
     driverXbox
         .a()
-        .and(RobotState.getInstance().stateIsNeutral)
-        .onTrue(intakeSubsystem.advanceState());
+        .and(RobotState.getInstance().checkIntakeState(IntakeStates.INTAKE))
+        .onTrue(new Intake(IntakeStates.STOP));
+
     driverXbox
         .a()
-        .and(RobotState.getInstance().stateIsShooting)
-        .onTrue(intakeSubsystem.delpoyCommandNoRequirements(deployState.RETRACT));
+        .and(RobotState.getInstance().checkIntakeState(IntakeStates.STOP))
+        .onTrue(new Intake(IntakeStates.INTAKE));
 
     driverXbox
         .y()
         .whileTrue(
-            intakeSubsystem
-                .rollerCommand(rollerState.OUT)
-                .alongWith(spindexerSubsystem.spinCommand(SpindexerState.OUT))
-                .alongWith(kickerSubsystem.kickCommand(KickerState.OUT)));
+            Commands.parallel(
+                new Intake(IntakeStates.OUT),
+                kickerSubsystem.kickCommand(KickerState.OUT),
+                spindexerSubsystem.spinCommand(SpindexerState.OUT)));
 
     driverXbox
         .rightBumper()
@@ -127,17 +136,19 @@ public class RobotContainer {
                             Inches.of(27 / 2).in(Meters),
                             Rotation2d.kZero))));
 
-    // driverXbox.rightBumper().whileTrue(new Shoot());
+    driverXbox.rightBumper().whileTrue(new Shoot());
   }
 
   /** Configure DogLog options and PowerDistribution */
   public void configureDogLog() {
+    DogLog.setPdh(new PowerDistribution(63, ModuleType.kRev));
+
     DogLog.setOptions(
         new DogLogOptions().withCaptureDs(true).withNtPublish(true).withLogExtras(true));
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return Commands.print("AHHHHHH");
   }
 
   public static CommandSwerveDrivetrain getDrivetrain() {
@@ -164,8 +175,12 @@ public class RobotContainer {
     return hoodSubsystem;
   }
 
-  public static IntakeSubsystem getIntakeSubsystem() {
-    return intakeSubsystem;
+  public static DeploySubsystem getDeploySubsystem() {
+    return deploySubsystem;
+  }
+
+  public static RollerSubsystem getRollerSubsystem() {
+    return rollerSubsystem;
   }
 
   public static SpindexerSubsystem getSpindexerSubsystem() {

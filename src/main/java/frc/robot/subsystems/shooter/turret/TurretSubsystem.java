@@ -102,6 +102,14 @@ public class TurretSubsystem extends SubsystemBase {
     return setTurretAngleCommand(angle);
   }
 
+  public Pose3d getTurretPose() {
+    Pose3d botPose = new Pose3d(RobotContainer.getDrivetrain().getPose());
+
+    return new Pose3d(
+        botPose.transformBy(TurretConstants.ROBOT_TO_TURRET).getTranslation(),
+        new Rotation3d(getTurretAngle()));
+  }
+
   public void stop() {
     turretMotor.stopMotor();
   }
@@ -122,13 +130,12 @@ public class TurretSubsystem extends SubsystemBase {
     DogLog.log("Turret/Motor Position", getTurretAngle().getDegrees(), Degrees);
     DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
+    DogLog.log("Turret/Pose", getTurretPose());
   }
 
   @Override
   public void periodic() {
     log();
-
-    turretMotor.stopMotor();
 
     // ShotParameters params = ShotCalculator.getInstance().calculateParameters();
     // if (!params.isValid()) return;
@@ -145,6 +152,6 @@ public class TurretSubsystem extends SubsystemBase {
     Pose3d turretPose =
         new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(angle));
 
-    DogLog.log("Turret/Pose", turretPose);
+    DogLog.log("Turret/SimPose", turretPose);
   }
 }
