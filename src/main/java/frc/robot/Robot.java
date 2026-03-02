@@ -32,7 +32,7 @@ public class Robot extends TimedRobot {
     Mechanism3d.getInstance().log();
     HubStateUtil.log();
     RobotState.getInstance().log();
-    
+
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
   }
 

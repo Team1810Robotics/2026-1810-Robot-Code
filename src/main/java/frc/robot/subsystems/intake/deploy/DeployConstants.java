@@ -24,7 +24,7 @@ public class DeployConstants {
   public enum deployState {
     DEPLOY(Degrees.of(14.5)),
     RETRACT(Degrees.of(115.0)),
-    AGITATE(Degrees.of(75.0));
+    AGITATE(Degrees.of(90.0));
 
     private Angle position;
 

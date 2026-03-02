@@ -69,12 +69,14 @@ public class DeploySubsystem extends SubsystemBase {
 
     feedforward = new ArmFeedforward(DeployConstants.kS, DeployConstants.kG, 0);
 
-    deployState = DeployConstants.deployState.RETRACT;
-
-    deployTarget = deployState.getPosition();
-
     if (encoder.get() < .4) {
+      deployState = DeployConstants.deployState.RETRACT;
+      deployTarget = deployState.getPosition();
+
       unwrappedEncoder = 1;
+    } else {
+      deployState = DeployConstants.deployState.DEPLOY;
+      deployTarget = deployState.getPosition();
     }
   }
 
@@ -84,15 +86,16 @@ public class DeploySubsystem extends SubsystemBase {
   }
 
   public Command deployCommand(deployState state) {
-    return Commands.runOnce(() -> deploy(state), this);
+    return Commands.run(() -> deploy(state), this);
   }
 
   public Command agitateCommand() {
-    return Commands.run(() -> deploy(DeployConstants.deployState.AGITATE), this)
-        .until(() -> intakePIDController.atSetpoint())
-        .andThen(Commands.run(() -> deploy(DeployConstants.deployState.DEPLOY), this))
-        .until(() -> intakePIDController.atSetpoint())
-        .finallyDo(() -> stopDeploy());
+    return Commands.sequence(
+            Commands.runOnce(() -> deploy(DeployConstants.deployState.AGITATE), this),
+            Commands.waitUntil(this::atSetpoint),
+            Commands.runOnce(() -> deploy(DeployConstants.deployState.DEPLOY), this),
+            Commands.waitUntil(this::atSetpoint))
+        .finallyDo(interrupted -> stopDeploy());
   }
 
   public Command delpoyCommandNoRequirements(deployState state) {
@@ -128,14 +131,20 @@ public class DeploySubsystem extends SubsystemBase {
     return Rotation2d.fromRadians(armRadians);
   }
 
+  public boolean atSetpoint() {
+    return Math.abs(getPosition().getRadians() - deployTarget) < Degrees.of(15).in(Radians);
+  }
+
   public void log() {
-    DogLog.log("Intake/Delpoy/Encoder/Connected", encoder.isConnected());
+    DogLog.log("Intake/Deploy/Encoder/Connected", encoder.isConnected());
     DogLog.log("Intake/Deploy/Encoder/Raw Position", encoder.get(), Rotations);
     DogLog.log("Intake/Deploy/Encoder/Position", getPosition().getDegrees(), Degrees);
 
     DogLog.log("Intake/Deploy/State", deployState.name());
 
     DogLog.log("Intake/Deploy/Target", deployTarget, Degrees);
+
+    DogLog.log("Intake/At Setpoint", atSetpoint());
   }
 
   public void updateGains() {
@@ -153,19 +162,17 @@ public class DeploySubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // if (encoder.isConnected()) {
-    //   double output =
-    //       intakePIDController.calculate(
-    //           getPosition().getRadians(), Degrees.of(target.get()).in(Radians));
+    if (encoder.isConnected()) {
+      double output = intakePIDController.calculate(getPosition().getRadians(), deployTarget);
 
-    //   double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
+      double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
 
-    //   leftMotor.setVoltage(output + feedforwardOut);
-    // } else {
-    //   stopDeploy();
-    // }
-    // updateGains();
+      double totalOutput = output + feedforwardOut;
+      DogLog.log("Intake/Deploy/Output Voltage", totalOutput); // add this
+      leftMotor.setVoltage(totalOutput);
+    }
 
+    updateGains();
     log();
   }
 }

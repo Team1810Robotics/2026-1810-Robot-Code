@@ -19,15 +19,11 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.RobotState.RobotStates;
-import frc.robot.commands.Intake;
 import frc.robot.commands.Shoot;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
-import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
-import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
-import frc.robot.subsystems.intake.IntakeStates;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
@@ -101,21 +97,8 @@ public class RobotContainer {
 
     driverXbox
         .a()
-        .and(RobotState.getInstance().checkIntakeState(IntakeStates.INTAKE))
-        .onTrue(new Intake(IntakeStates.STOP));
-
-    driverXbox
-        .a()
-        .and(RobotState.getInstance().checkIntakeState(IntakeStates.STOP))
-        .onTrue(new Intake(IntakeStates.INTAKE));
-
-    driverXbox
-        .y()
-        .whileTrue(
-            Commands.parallel(
-                new Intake(IntakeStates.OUT),
-                kickerSubsystem.kickCommand(KickerState.OUT),
-                spindexerSubsystem.spinCommand(SpindexerState.OUT)));
+        .and(RobotState.getInstance().checkRobotState(RobotStates.NEUTRAL))
+        .onTrue(RobotState.getInstance().advanceIntakeState());
 
     driverXbox
         .rightBumper()
@@ -124,7 +107,7 @@ public class RobotContainer {
                 RobotState.getInstance().setStateCommand(RobotStates.SHOOTING), new Shoot()));
 
     // reset the field-centric heading on left bumper press
-    driverXbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    driverXbox.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
     driverXbox
         .leftStick()
         .onTrue(

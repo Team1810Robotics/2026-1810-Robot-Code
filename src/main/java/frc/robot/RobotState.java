@@ -1,11 +1,12 @@
 package frc.robot;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.intake.IntakeStates;
+import frc.robot.subsystems.intake.deploy.DeploySubsystem;
+import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import java.util.function.BooleanSupplier;
-
-import dev.doglog.DogLog;
 
 public class RobotState {
 
@@ -30,12 +31,42 @@ public class RobotState {
     this.intakeState = state;
   }
 
-  public Command setStateCommand(IntakeStates state) {
+  public Command setIntakeStateCommand(IntakeStates state) {
     return Commands.runOnce(() -> setIntakeState(state));
   }
 
+  public Command advanceIntakeState() {
+    RollerSubsystem rollerSubsystem = RobotContainer.getRollerSubsystem();
+    DeploySubsystem deploySubsystem = RobotContainer.getDeploySubsystem();
+
+    return Commands.runOnce(
+        () -> {
+          IntakeStates next;
+
+          switch (intakeState) {
+            case INTAKE:
+              next = IntakeStates.STOP;
+              break;
+            case STOP:
+              next = IntakeStates.INTAKE;
+              break;
+            default:
+              next = IntakeStates.STOP;
+              break;
+          }
+
+          rollerSubsystem.roller(next.getRollerState());
+          deploySubsystem.deploy(next.getDeployState());
+
+          intakeState = next;
+        });
+  }
+
   public BooleanSupplier checkIntakeState(IntakeStates state) {
-    return () -> state == this.intakeState;
+    return () -> {
+      DogLog.log("RobotState/Intake State Check", this.intakeState.toString());
+      return state == this.intakeState;
+    };
   }
 
   public void log() {
