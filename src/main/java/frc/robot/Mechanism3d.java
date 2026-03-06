@@ -22,7 +22,7 @@ public class Mechanism3d {
   private TurretSubsystem turretSubsystem = RobotContainer.getTurretSubsystem();
 
   public void log() {
-    Rotation2d turretAngle = turretSubsystem.getTurretAngle();
+    Rotation2d turretAngle = turretSubsystem.getTurretAngleRobotRelative();
 
     DogLog.log(
         "Mechanisms/Turret",

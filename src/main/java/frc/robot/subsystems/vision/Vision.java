@@ -119,6 +119,11 @@ public class Vision extends SubsystemBase {
 
     PoseEstimate botPoseMT2 = getBotpose();
 
+    if (botPoseMT2 == null) {
+      log();
+      return;
+    }
+
     // Add the vision measurement to the drivetrain's pose estimator with appropriate timestamp
     drivetrain.addVisionMeasurement(botPoseMT2.pose, botPoseMT2.timestampSeconds);
 
@@ -129,7 +134,7 @@ public class Vision extends SubsystemBase {
     DogLog.log(logPrefix + "/Target Valid", targetValid());
     DogLog.log(logPrefix + "/Targets", getTargetPoses());
 
-    if (!targetValid()) {
+    if (!targetValid() || getBotpose().pose == null) {
       DogLog.log(logPrefix + "/BotPose", new Pose2d());
       return;
     }

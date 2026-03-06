@@ -12,8 +12,6 @@ import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -22,7 +20,9 @@ import frc.robot.RobotState.RobotStates;
 import frc.robot.commands.Shoot;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
+import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
+import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
@@ -54,16 +54,20 @@ public class RobotContainer {
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
+  // Vision objects
   private static final Vision leftVision = new Vision(VisionConstants.LEFT_LIMELIGHT_NAME);
   private static final Vision rightVision = new Vision(VisionConstants.RIGHT_LIMELIGHT_NAME);
 
+  // Shooter Subsystems
   private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
 
+  // Intake Subystems
   private static final DeploySubsystem deploySubsystem = new DeploySubsystem();
   private static final RollerSubsystem rollerSubsystem = new RollerSubsystem();
 
+  // Indexer Subsystems
   private static final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem();
   private static final KickerSubsystem kickerSubsystem = new KickerSubsystem();
 
@@ -106,6 +110,15 @@ public class RobotContainer {
             Commands.sequence(
                 RobotState.getInstance().setStateCommand(RobotStates.SHOOTING), new Shoot()));
 
+    driverXbox
+        .x()
+        .whileTrue(
+            Commands.parallel(
+                kickerSubsystem.kickCommand(KickerState.OUT),
+                spindexerSubsystem.spinCommand(SpindexerState.OUT)));
+
+    driverXbox.povDown().onTrue(hoodSubsystem.zero());
+
     // reset the field-centric heading on left bumper press
     driverXbox.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
     driverXbox
@@ -124,7 +137,7 @@ public class RobotContainer {
 
   /** Configure DogLog options and PowerDistribution */
   public void configureDogLog() {
-    DogLog.setPdh(new PowerDistribution(63, ModuleType.kRev));
+    // DogLog.setPdh(new PowerDistribution(63, ModuleType.kRev));
 
     DogLog.setOptions(
         new DogLogOptions().withCaptureDs(true).withNtPublish(true).withLogExtras(true));

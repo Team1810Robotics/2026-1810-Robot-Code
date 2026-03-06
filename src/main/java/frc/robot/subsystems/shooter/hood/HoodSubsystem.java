@@ -14,10 +14,13 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 public class HoodSubsystem extends SubsystemBase {
   private final TalonFX hoodMotor;
@@ -31,8 +34,6 @@ public class HoodSubsystem extends SubsystemBase {
   public final DoubleSubscriber kD = DogLog.tunable("Hood/Gains/kD", 0.0);
 
   public final DoubleSubscriber kS = DogLog.tunable("Hood/Gains/kS", HoodConstants.kS);
-
-  private final DoubleSubscriber target = DogLog.tunable("Hood/Target", 0.0);
 
   private double lastkP, lastkD, lastkS;
 
@@ -108,6 +109,10 @@ public class HoodSubsystem extends SubsystemBase {
     hoodMotor.setPosition(getEncoderPosition().getRotations());
   }
 
+  public Command applyVoltageCommand(double volts) {
+    return Commands.run(() -> hoodMotor.setVoltage(volts), this);
+  }
+
   public void log() {
     DogLog.log("Hood/MotorPosition", getMotorPosition().getDegrees(), Degrees);
     DogLog.log("Hood/EncoderPosition", getEncoderPosition().getDegrees(), Degrees);
@@ -120,10 +125,16 @@ public class HoodSubsystem extends SubsystemBase {
     hoodMotor.stopMotor();
   }
 
+  private double startTime = 0;
+
+  // thank you scream
   public Command zero() {
-    return Commands.sequence(
-        Commands.run(() -> hoodMotor.setVoltage(-1), this).withTimeout(2),
-        Commands.runOnce(() -> hoodMotor.setPosition(Degrees.of(0)), this));
+    return new SequentialCommandGroup(
+        new InstantCommand(() -> startTime = Timer.getFPGATimestamp()),
+        applyVoltageCommand(-1.0)
+            .withDeadline(
+                new WaitUntilCommand(() -> ((Timer.getFPGATimestamp() - startTime) > 1.0))),
+        new InstantCommand(() -> hoodMotor.setPosition(Rotations.of(0))));
   }
 
   public void updateGains() {
@@ -147,17 +158,5 @@ public class HoodSubsystem extends SubsystemBase {
   public void periodic() {
     log();
     updateGains();
-
-    tuningCommand = setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()));
-
-    if (tuningTarget.get() != 0) {
-      isTuning = true;
-      CommandScheduler.getInstance().schedule(tuningCommand);
-    }
-
-    if (isTuning && tuningTarget.get() == 0) {
-      isTuning = false;
-      CommandScheduler.getInstance().cancel(tuningCommand);
-    }
   }
 }

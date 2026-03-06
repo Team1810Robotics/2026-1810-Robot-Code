@@ -8,8 +8,8 @@ public class RollerConstants {
   public static final double kV = .0025;
 
   public enum rollerState {
-    INTAKE(-3000),
-    OUT(3000),
+    INTAKE(-3500),
+    OUT(3500),
     STOP(0);
 
     private double velocity;
