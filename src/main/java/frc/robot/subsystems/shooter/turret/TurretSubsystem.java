@@ -223,7 +223,7 @@ public class TurretSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (resetMotorPos > 20) {
+    if (resetMotorPos > 50) {
       turretMotor.setPosition(Rotations.of(getEncoderPosition().getRotations()));
       resetMotorPos = 0;
     }

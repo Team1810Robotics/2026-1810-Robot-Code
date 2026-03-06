@@ -21,8 +21,10 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     SignalLogger.stop();
+
     StatusLogger.disableAutoLogging();
     StatusLogger.stop();
+
     m_robotContainer = new RobotContainer();
   }
 

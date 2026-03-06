@@ -16,6 +16,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -110,7 +111,7 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   public Command applyVoltageCommand(double volts) {
-    return Commands.run(() -> hoodMotor.setVoltage(volts), this);
+    return Commands.run(() -> hoodMotor.setVoltage(volts), this).finallyDo(() -> stop());
   }
 
   public void log() {
@@ -158,5 +159,18 @@ public class HoodSubsystem extends SubsystemBase {
   public void periodic() {
     log();
     updateGains();
+
+    tuningCommand =
+        setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))
+            .until(() -> tuningTarget.get() == 0);
+
+    if (tuningTarget.get() != 0) {
+      isTuning = true;
+      CommandScheduler.getInstance().schedule(tuningCommand);
+    }
+
+    if (tuningTarget.get() == 0) {
+      isTuning = false;
+    }
   }
 }

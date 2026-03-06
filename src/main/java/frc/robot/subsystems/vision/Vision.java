@@ -134,7 +134,7 @@ public class Vision extends SubsystemBase {
     DogLog.log(logPrefix + "/Target Valid", targetValid());
     DogLog.log(logPrefix + "/Targets", getTargetPoses());
 
-    if (!targetValid() || getBotpose().pose == null) {
+    if (!targetValid() || getBotpose() == null) {
       DogLog.log(logPrefix + "/BotPose", new Pose2d());
       return;
     }
