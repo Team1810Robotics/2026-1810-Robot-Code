@@ -1,7 +1,11 @@
 package frc.robot;
 
+import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.intake.IntakeStates;
+import frc.robot.subsystems.intake.deploy.DeploySubsystem;
+import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import java.util.function.BooleanSupplier;
 
 public class RobotState {
@@ -9,16 +13,65 @@ public class RobotState {
   private RobotState() {}
 
   public RobotStates robotState = RobotStates.NEUTRAL;
+  public IntakeStates intakeState = IntakeStates.STOP;
 
-  public BooleanSupplier stateIsNeutral = () -> robotState == RobotStates.NEUTRAL;
-  public BooleanSupplier stateIsShooting = () -> robotState == RobotStates.SHOOTING;
+  public void setState(RobotStates state) {
+    this.robotState = state;
+  }
 
   public Command setStateCommand(RobotStates state) {
     return Commands.runOnce(() -> setState(state));
   }
 
-  public void setState(RobotStates state) {
-    this.robotState = state;
+  public BooleanSupplier checkRobotState(RobotStates state) {
+    return () -> state == this.robotState;
+  }
+
+  public void setIntakeState(IntakeStates state) {
+    this.intakeState = state;
+  }
+
+  public Command setIntakeStateCommand(IntakeStates state) {
+    return Commands.runOnce(() -> setIntakeState(state));
+  }
+
+  public Command advanceIntakeState() {
+    RollerSubsystem rollerSubsystem = RobotContainer.getRollerSubsystem();
+    DeploySubsystem deploySubsystem = RobotContainer.getDeploySubsystem();
+
+    return Commands.runOnce(
+        () -> {
+          IntakeStates next;
+
+          switch (intakeState) {
+            case INTAKE:
+              next = IntakeStates.STOP;
+              break;
+            case STOP:
+              next = IntakeStates.INTAKE;
+              break;
+            default:
+              next = IntakeStates.STOP;
+              break;
+          }
+
+          rollerSubsystem.roller(next.getRollerState());
+          deploySubsystem.deploy(next.getDeployState());
+
+          intakeState = next;
+        });
+  }
+
+  public BooleanSupplier checkIntakeState(IntakeStates state) {
+    return () -> {
+      DogLog.log("RobotState/Intake State Check", this.intakeState.toString());
+      return state == this.intakeState;
+    };
+  }
+
+  public void log() {
+    DogLog.log("RobotState/Robot State", robotState.toString());
+    DogLog.log("RobotState/Intake State", intakeState.toString());
   }
 
   public static RobotState instance;

@@ -24,6 +24,8 @@ public class Vision extends SubsystemBase {
 
   private final AprilTagFieldLayout layout;
 
+  private int[] ids;
+
   /**
    * Constructor for VisionSubsystem.
    *
@@ -61,11 +63,16 @@ public class Vision extends SubsystemBase {
    * @return An int array of detected AprilTag IDs, empty if none detected.
    */
   public int[] getTargetIDs() {
+    if (this.ids != null) {
+      return this.ids;
+    }
+
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
     int[] ids = new int[fiducials.length];
     for (int i = 0; i < fiducials.length; i++) {
       ids[i] = fiducials[i].id;
     }
+    this.ids = ids;
     return ids;
   }
 
@@ -119,6 +126,11 @@ public class Vision extends SubsystemBase {
 
     PoseEstimate botPoseMT2 = getBotpose();
 
+    if (botPoseMT2 == null) {
+      log();
+      return;
+    }
+
     // Add the vision measurement to the drivetrain's pose estimator with appropriate timestamp
     drivetrain.addVisionMeasurement(botPoseMT2.pose, botPoseMT2.timestampSeconds);
 
@@ -129,11 +141,15 @@ public class Vision extends SubsystemBase {
     DogLog.log(logPrefix + "/Target Valid", targetValid());
     DogLog.log(logPrefix + "/Targets", getTargetPoses());
 
-    if (!targetValid()) {
+    if (!targetValid() || getBotpose() == null) {
       DogLog.log(logPrefix + "/BotPose", new Pose2d());
       return;
     }
 
     DogLog.log(logPrefix + "/BotPose", getBotpose().pose);
+  }
+
+  public void clearCache() {
+    ids = null;
   }
 }

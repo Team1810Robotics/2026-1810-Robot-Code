@@ -6,12 +6,12 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.revrobotics.util.StatusLogger;
-import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.util.HubStateUtil;
 
 public class Robot extends TimedRobot {
@@ -21,19 +21,29 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     SignalLogger.stop();
+
     StatusLogger.disableAutoLogging();
     StatusLogger.stop();
+
     m_robotContainer = new RobotContainer();
   }
 
   @Override
   public void robotPeriodic() {
+    ShotCalculator.getInstance().clearParams();
+    RobotContainer.getDeploySubsystem().clearCache();
+    RobotContainer.getTurretSubsystem().clearCache();
+    RobotContainer.getHoodSubsystem().clearCache();
+
+    RobotContainer.getLeftVision().clearCache();
+    RobotContainer.getRightVision().clearCache();
+
     CommandScheduler.getInstance().run();
 
     Mechanism3d.getInstance().log();
     HubStateUtil.log();
+    RobotState.getInstance().log();
 
-    DogLog.log("Robot/RobotState", RobotState.getInstance().robotState.name());
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
   }
 

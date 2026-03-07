@@ -1,21 +1,22 @@
 package frc.robot.subsystems.shooter.turret;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -26,20 +27,22 @@ import frc.robot.subsystems.shooter.ShotCalculator;
 public class TurretSubsystem extends SubsystemBase {
 
   private final TalonFX turretMotor;
-
   private final DutyCycleEncoder turretEncoder;
 
-  private final PositionVoltage positionRequest = new PositionVoltage(0);
+  private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0).withSlot(0);
+  private final VelocityVoltage velocityRequest = new VelocityVoltage(0).withSlot(0);
 
-  public final DoubleSubscriber kP = DogLog.tunable("Turret/Gains/kP", 0.0);
-  public final DoubleSubscriber kI = DogLog.tunable("Turret/Gains/kI", 0.0);
-  public final DoubleSubscriber kD = DogLog.tunable("Turret/Gains/kD", 0.0);
+  private double lastEncoderRaw = 0;
+  private double unwrappedEncoder = 0;
 
-  public final DoubleSubscriber kS = DogLog.tunable("Turret/Gains/kS", 0.0);
-  public final DoubleSubscriber kV = DogLog.tunable("Turret/Gains/kV", 0.0);
-  public final DoubleSubscriber kA = DogLog.tunable("Turret/Gains/kA", 0.0);
+  private int resetMotorPos = 0;
+
+  private Rotation2d target;
+  private Rotation2d motorPosition;
+  private Rotation2d encoderPosition;
 
   public TurretSubsystem() {
+
     turretMotor = new TalonFX(TurretConstants.TURRET_MOTOR_ID);
 
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -47,10 +50,10 @@ public class TurretSubsystem extends SubsystemBase {
     config.Feedback.SensorToMechanismRatio = TurretConstants.GEAR_RATIO;
 
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = TurretConstants.MAX_ANGLE.in(Degrees);
+    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = TurretConstants.MAX_ANGLE.in(Rotations);
 
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = TurretConstants.MIN_ANGLE.in(Degrees);
+    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = TurretConstants.MIN_ANGLE.in(Rotations);
 
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.StatorCurrentLimit = 120;
@@ -60,15 +63,54 @@ public class TurretSubsystem extends SubsystemBase {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
+    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+
+    config.Slot0.kP = TurretConstants.kP;
+    config.Slot0.kD = TurretConstants.kD;
+    config.Slot0.kS = TurretConstants.kS;
+    config.Slot0.kV = TurretConstants.kV;
+
+    config.Slot0.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
+
+    config.MotionMagic.MotionMagicCruiseVelocity = TurretConstants.MOTION_MAGIC_CRUISE_VELOCITY;
+    config.MotionMagic.MotionMagicAcceleration = TurretConstants.MOTION_MAGIC_ACCELERATION;
+    config.MotionMagic.MotionMagicJerk = TurretConstants.MOTION_MAGIC_JERK;
+
     turretMotor.getConfigurator().apply(config);
 
     turretEncoder = new DutyCycleEncoder(TurretConstants.TURRET_ENCODER_ID);
+    lastEncoderRaw = turretEncoder.get(); // initialize before seedMotorFromAbsolute()
 
+    target = Rotation2d.kZero;
     seedMotorFromAbsolute();
+
+    setDefaultCommand(setFieldRelativeAngleCommand());
+  }
+
+  private void updateEncoderUnwrap() {
+    double raw = turretEncoder.get();
+    double delta = raw - lastEncoderRaw;
+
+    if (delta > 0.5) {
+      delta -= 1.0;
+    } else if (delta < -0.5) {
+      delta += 1.0;
+    }
+
+    unwrappedEncoder += delta;
+    lastEncoderRaw = raw;
   }
 
   public Rotation2d getEncoderPosition() {
-    return Rotation2d.fromRotations(turretEncoder.get());
+    if (encoderPosition != null) {
+      return encoderPosition;
+    }
+
+    double turretRot = -(unwrappedEncoder - TurretConstants.ENCODER_OFFSET);
+    double turretRad = Rotations.of(turretRot).in(Radians);
+
+    encoderPosition = Rotation2d.fromRadians(turretRad);
+    return encoderPosition;
   }
 
   public void seedMotorFromAbsolute() {
@@ -76,7 +118,29 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public Rotation2d getTurretAngle() {
-    return Rotation2d.fromRotations(turretMotor.getPosition().getValueAsDouble());
+    if (motorPosition != null) {
+      return motorPosition;
+    }
+
+    motorPosition = Rotation2d.fromRotations(turretMotor.getPosition().getValueAsDouble());
+    return motorPosition;
+  }
+
+  public Rotation2d getTurretAngleRobotRelative() {
+    return turretToRobotRelative(getTurretAngle());
+  }
+
+  public Rotation2d turretToRobotRelative(Rotation2d turretAngle) {
+    return turretAngle.minus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG));
+  }
+
+  private Rotation2d robotRelativeToTurret(Rotation2d rrAngle) {
+    Rotation2d ang =
+        rrAngle.plus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG));
+
+    DogLog.log("Turret/FieldRelative/TurretFrame", ang.getDegrees());
+
+    return ang;
   }
 
   public void setTurretAngle(Rotation2d targetAngle) {
@@ -86,65 +150,105 @@ public class TurretSubsystem extends SubsystemBase {
             TurretConstants.MIN_ANGLE.in(Rotations),
             TurretConstants.MAX_ANGLE.in(Rotations));
 
-    turretMotor.setControl(positionRequest.withPosition(rotations));
+    DogLog.log("Turret/FieldRelative/Applied", Rotations.of(rotations).in(Degrees));
+
+    target = Rotation2d.fromRotations(rotations);
+
+    turretMotor.setControl(motionMagicRequest.withPosition(rotations));
+  }
+
+  public void setTurretVelocity(double rotationsPerSecond) {
+    turretMotor.setControl(velocityRequest.withVelocity(rotationsPerSecond));
+  }
+
+  public boolean atTargetAngle() {
+    return Math.abs(target.getDegrees() - getTurretAngle().getDegrees()) < 30;
+  }
+
+  public void setRobotRelativeAngle(Rotation2d rrAngle) {
+    setTurretAngle(robotRelativeToTurret(rrAngle));
   }
 
   public Command setTurretAngleCommand(Rotation2d targetAngle) {
     return Commands.startEnd(() -> setTurretAngle(targetAngle), () -> stop(), this);
   }
 
-  public Command setFieldRelativeAngle() {
-    Rotation2d angle = ShotCalculator.getInstance().calculateParameters().turretAngle();
-    Pose2d botPose = RobotContainer.getDrivetrain().getPose();
+  public Command setRobotRelativeAngleCommand(Rotation2d rrAngle) {
+    return Commands.startEnd(() -> setRobotRelativeAngle(rrAngle), () -> stop(), this);
+  }
 
-    angle = angle.minus(botPose.getRotation());
+  // FIX: ShotCalculator now returns a field-relative angle. Subtract robot rotation here
+  // to convert to robot-relative, then convert to turret frame via robotRelativeToTurret().
+  // Previously, ShotCalculator was already subtracting robot rotation, so this method was
+  // double-subtracting and then negating — mirroring the target across the robot centerline.
+  public void setFieldRelativeAngle() {
+    Rotation2d fieldRelativeAngle =
+        ShotCalculator.getInstance().calculateParameters().turretAngle();
+    Rotation2d robotRelativeAngle =
+        fieldRelativeAngle.minus(RobotContainer.getDrivetrain().getPose().getRotation());
 
-    return setTurretAngleCommand(angle);
+    DogLog.log("Turret/FieldRelative/Calculated RR Angle", robotRelativeAngle.getDegrees());
+
+    setRobotRelativeAngle(robotRelativeAngle);
+  }
+
+  public Command setFieldRelativeAngleCommand() {
+    return Commands.run(() -> setFieldRelativeAngle(), this).andThen(() -> stop());
+  }
+
+  public Pose3d getTurretPose() {
+
+    Pose3d botPose = new Pose3d(RobotContainer.getDrivetrain().getPose());
+
+    Rotation2d rrAngle = turretToRobotRelative(getTurretAngle());
+
+    return new Pose3d(
+        botPose.transformBy(TurretConstants.ROBOT_TO_TURRET).getTranslation(),
+        new Rotation3d(0, 0, rrAngle.getRadians()));
   }
 
   public void stop() {
     turretMotor.stopMotor();
   }
 
-  public void updateGains() {
-    Slot0Configs slot0Configs = new Slot0Configs();
-    slot0Configs.kP = kP.get();
-    slot0Configs.kI = kI.get();
-    slot0Configs.kD = kD.get();
-    slot0Configs.kS = kS.get();
-    slot0Configs.kV = kV.get();
-    slot0Configs.kA = kA.get();
-
-    turretMotor.getConfigurator().apply(slot0Configs);
-  }
-
   public void log() {
-    DogLog.log("Turret/Motor Position", getTurretAngle().getDegrees(), Degrees);
+    DogLog.log("Turret/Motor Position (turret frame)", getTurretAngle().getDegrees(), Degrees);
+
     DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
+
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
   }
 
   @Override
   public void periodic() {
+    updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
+
+    if (resetMotorPos > 50) {
+      turretMotor.setPosition(Rotations.of(getEncoderPosition().getRotations()));
+      resetMotorPos = 0;
+    }
     log();
-
-    turretMotor.stopMotor();
-
-    // ShotParameters params = ShotCalculator.getInstance().calculateParameters();
-    // if (!params.isValid()) return;
-    // setTurretAngle(params.turretAngle());
+    resetMotorPos++;
   }
 
   @Override
   public void simulationPeriodic() {
-    Rotation2d angle = ShotCalculator.getInstance().calculateParameters().turretAngle();
-    Pose2d botPose = RobotContainer.getDrivetrain().getPose();
 
-    angle = angle.minus(botPose.getRotation());
+    Rotation2d fieldRelativeAngle =
+        ShotCalculator.getInstance().calculateParameters().turretAngle();
+    Rotation2d robotRelativeAngle =
+        fieldRelativeAngle.minus(RobotContainer.getDrivetrain().getPose().getRotation());
 
     Pose3d turretPose =
-        new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(angle));
+        new Pose3d(
+            TurretConstants.ROBOT_TO_TURRET.getTranslation(),
+            new Rotation3d(0, 0, robotRelativeAngle.getRadians()));
 
-    DogLog.log("Turret/Pose", turretPose);
+    DogLog.log("Turret/SimPose", turretPose);
+  }
+
+  public void clearCache() {
+    motorPosition = null;
+    encoderPosition = null;
   }
 }

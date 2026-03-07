@@ -7,13 +7,27 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.Angle;
 
 public class TurretConstants {
-  public static final int TURRET_MOTOR_ID = 17; // Replace with actual motor ID
-  public static final int TURRET_ENCODER_ID = 2; // Replace with actual encoder ID
+  public static final int TURRET_MOTOR_ID = 17;
+  public static final int TURRET_ENCODER_ID = 1;
 
-  public static final double GEAR_RATIO = 1.0; // Replace with actual gear ratio
+  public static final double ROBOT_RELATIVE_OFFSET_DEG = 140;
 
-  public static final Angle MIN_ANGLE = Degrees.of(2.5); // Minimum angle in degrees
-  public static final Angle MAX_ANGLE = Degrees.of(357.5); // Maximum angle in degrees
+  public static final double GEAR_RATIO = 4.0;
+
+  public static final Angle MIN_ANGLE = Degrees.of(-180);
+  public static final Angle MAX_ANGLE = Degrees.of(180.0);
+
+  public static final double ENCODER_OFFSET = .08;
+
+  public static final double kP = 15;
+  public static final double kS = 0.2;
+  public static final double kD = 0.01;
+  public static final double kV = 0.075;
+
+  // Motion Magic profile parameters — tune these after FF is dialed in
+  public static final double MOTION_MAGIC_CRUISE_VELOCITY = 4.0; // rot/s
+  public static final double MOTION_MAGIC_ACCELERATION = 4.0; // rot/s²
+  public static final double MOTION_MAGIC_JERK = 0.0; // 0 = trapezoidal profile
 
   public static final Transform3d ROBOT_TO_TURRET =
       new Transform3d(-0.128, -0.128, .28, Rotation3d.kZero);

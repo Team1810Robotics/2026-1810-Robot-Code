@@ -32,6 +32,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.field.FieldConstants;
+import frc.robot.util.field.Region;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -263,7 +264,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     SwerveDriveState state = getState();
 
     DogLog.log("Drive/DriveState/Pose", state.Pose);
-    DogLog.log("Drive/DriveState/Speeds", state.Speeds);
+    DogLog.log("Drive/DriveState/Robot Relative Speeds", state.Speeds);
+    DogLog.log(
+        "Drive/DriveState/Field Relative Speeds",
+        ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, state.Pose.getRotation()));
     DogLog.log("Drive/DriveState/ModuleStates", state.ModuleStates);
     DogLog.log("Drive/DriveState/ModuleTargets", state.ModuleTargets);
     DogLog.log("Drive/DriveState/ModulePositions", state.ModulePositions);
@@ -275,6 +279,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     DogLog.log("Drive/Pigeon/Yaw", getPigeon2().getYaw().getValueAsDouble());
     DogLog.log("Drive/Pigeon/Pitch", getPigeon2().getPitch().getValueAsDouble());
     DogLog.log("Drive/Pigeon/Roll", getPigeon2().getRoll().getValueAsDouble());
+
+    DogLog.log("Drive/Region", Region.getRegion(getPose()).orElse(Region.BLUE_ALLIANCE_ZONE));
 
     field2d.setRobotPose(state.Pose);
   }
@@ -383,7 +389,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return getState().Pose;
   }
 
-  public ChassisSpeeds getSpeeds() {
+  public ChassisSpeeds getRobotRelativeSpeeds() {
     return getState().Speeds;
+  }
+
+  public ChassisSpeeds getFieldRelativeSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotRelativeSpeeds(), getPose().getRotation());
   }
 }

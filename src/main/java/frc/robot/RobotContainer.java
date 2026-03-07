@@ -25,9 +25,8 @@ import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
-import frc.robot.subsystems.intake.IntakeConstants.deployState;
-import frc.robot.subsystems.intake.IntakeConstants.rollerState;
-import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.intake.deploy.DeploySubsystem;
+import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.turret.TurretSubsystem;
@@ -55,13 +54,23 @@ public class RobotContainer {
 
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+  // Vision objects
   private static final Vision leftVision = new Vision(VisionConstants.LEFT_LIMELIGHT_NAME);
   private static final Vision rightVision = new Vision(VisionConstants.RIGHT_LIMELIGHT_NAME);
+
+  // Shooter Subsystems
   private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
+
   private static final LEDSubsystem ledSubsystem = new LEDSubsystem();
-  private static final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+
+  // Intake Subystems
+  private static final DeploySubsystem deploySubsystem = new DeploySubsystem();
+  private static final RollerSubsystem rollerSubsystem = new RollerSubsystem();
+
+  // Indexer Subsystems
   private static final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem();
   private static final KickerSubsystem kickerSubsystem = new KickerSubsystem();
 
@@ -95,20 +104,8 @@ public class RobotContainer {
 
     driverXbox
         .a()
-        .and(RobotState.getInstance().stateIsNeutral)
-        .onTrue(intakeSubsystem.advanceState());
-    driverXbox
-        .a()
-        .and(RobotState.getInstance().stateIsShooting)
-        .onTrue(intakeSubsystem.delpoyCommandNoRequirements(deployState.RETRACT));
-
-    driverXbox
-        .y()
-        .whileTrue(
-            intakeSubsystem
-                .rollerCommand(rollerState.OUT)
-                .alongWith(spindexerSubsystem.spinCommand(SpindexerState.OUT))
-                .alongWith(kickerSubsystem.kickCommand(KickerState.OUT)));
+        .and(RobotState.getInstance().checkRobotState(RobotStates.NEUTRAL))
+        .onTrue(RobotState.getInstance().advanceIntakeState());
 
     driverXbox
         .rightBumper()
@@ -116,8 +113,17 @@ public class RobotContainer {
             Commands.sequence(
                 RobotState.getInstance().setStateCommand(RobotStates.SHOOTING), new Shoot()));
 
+    driverXbox
+        .x()
+        .whileTrue(
+            Commands.parallel(
+                kickerSubsystem.kickCommand(KickerState.OUT),
+                spindexerSubsystem.spinCommand(SpindexerState.OUT)));
+
+    driverXbox.povDown().onTrue(hoodSubsystem.zero());
+
     // reset the field-centric heading on left bumper press
-    driverXbox.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    driverXbox.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
     driverXbox
         .leftStick()
         .onTrue(
@@ -129,17 +135,19 @@ public class RobotContainer {
                             Inches.of(27 / 2).in(Meters),
                             Rotation2d.kZero))));
 
-    // driverXbox.rightBumper().whileTrue(new Shoot());
+    driverXbox.rightBumper().whileTrue(new Shoot());
   }
 
   /** Configure DogLog options and PowerDistribution */
   public void configureDogLog() {
+    // DogLog.setPdh(new PowerDistribution(63, ModuleType.kRev));
+
     DogLog.setOptions(
         new DogLogOptions().withCaptureDs(true).withNtPublish(true).withLogExtras(true));
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return Commands.print("AHHHHHH");
   }
 
   public static CommandSwerveDrivetrain getDrivetrain() {
@@ -166,8 +174,12 @@ public class RobotContainer {
     return hoodSubsystem;
   }
 
-  public static IntakeSubsystem getIntakeSubsystem() {
-    return intakeSubsystem;
+  public static DeploySubsystem getDeploySubsystem() {
+    return deploySubsystem;
+  }
+
+  public static RollerSubsystem getRollerSubsystem() {
+    return rollerSubsystem;
   }
 
   public static SpindexerSubsystem getSpindexerSubsystem() {
