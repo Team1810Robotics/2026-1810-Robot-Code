@@ -39,6 +39,7 @@ public class TurretSubsystem extends SubsystemBase {
   private int resetMotorPos = 0;
 
   private Rotation2d target;
+  private Rotation2d position;
 
   public TurretSubsystem() {
 
@@ -111,7 +112,12 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public Rotation2d getTurretAngle() {
-    return Rotation2d.fromRotations(turretMotor.getPosition().getValueAsDouble());
+    if (position != null) {
+      return position;
+    }
+
+    position = Rotation2d.fromRotations(turretMotor.getPosition().getValueAsDouble());
+    return position;
   }
 
   public Rotation2d getTurretAngleRobotRelative() {
@@ -202,23 +208,9 @@ public class TurretSubsystem extends SubsystemBase {
   public void log() {
     DogLog.log("Turret/Motor Position (turret frame)", getTurretAngle().getDegrees(), Degrees);
 
-    DogLog.log(
-        "Turret/Motor Position (robot relative)",
-        getTurretAngleRobotRelative().getDegrees(),
-        Degrees);
-
     DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
 
-    DogLog.log("Turret/Raw Encoder", turretEncoder.get(), Rotations);
-
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
-
-    DogLog.log(
-        "Turret/Motor Velocity", turretMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
-
-    DogLog.log("Turret/Pose", getTurretPose());
-
-    DogLog.log("Turret/Unwrapped Encoder", unwrappedEncoder);
   }
 
   @Override
@@ -245,5 +237,9 @@ public class TurretSubsystem extends SubsystemBase {
             new Rotation3d(0, 0, robotRelativeAngle.getRadians()));
 
     DogLog.log("Turret/SimPose", turretPose);
+  }
+
+  public void clearCache() {
+    position = null;
   }
 }

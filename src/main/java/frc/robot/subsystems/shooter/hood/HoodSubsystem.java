@@ -40,6 +40,8 @@ public class HoodSubsystem extends SubsystemBase {
 
   private Command tuningCommand;
 
+  private Rotation2d position;
+
   public HoodSubsystem() {
     hoodMotor = new TalonFX(HoodConstants.HOOD_MOTOR_ID);
     hoodEncoder = new CANcoder(HoodConstants.HOOD_ENCODER_ID);
@@ -81,7 +83,12 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   public Rotation2d getMotorPosition() {
-    return Rotation2d.fromRotations(hoodMotor.getPosition().getValueAsDouble());
+    if (position != null) {
+      return position;
+    }
+
+    position = Rotation2d.fromRotations(hoodMotor.getPosition().getValueAsDouble());
+    return position;
   }
 
   private double lastEncoderRaw = 0.0;
@@ -115,10 +122,7 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   public void log() {
-    DogLog.log("Hood/MotorPosition", getMotorPosition().getDegrees(), Degrees);
-    DogLog.log("Hood/EncoderPosition", getEncoderPosition().getDegrees(), Degrees);
-    DogLog.log(
-        "Hood/Raw Encoder Position", hoodEncoder.getPosition().getValueAsDouble(), Rotations);
+    DogLog.log("Hood/Position", getMotorPosition().getDegrees(), Degrees);
     DogLog.log("Hood/Volts", hoodMotor.getMotorVoltage().getValueAsDouble(), Volts);
   }
 
@@ -172,5 +176,9 @@ public class HoodSubsystem extends SubsystemBase {
     if (tuningTarget.get() == 0) {
       isTuning = false;
     }
+  }
+
+  public void clearCache() {
+    position = null;
   }
 }

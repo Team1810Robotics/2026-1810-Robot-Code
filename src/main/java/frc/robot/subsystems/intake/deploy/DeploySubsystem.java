@@ -30,7 +30,8 @@ public class DeploySubsystem extends SubsystemBase {
 
   private deployState deployState;
 
-  private double deployTarget = 0;
+  private Rotation2d deployTarget;
+  private Rotation2d position;
 
   private double lastEncoderRaw = 0.0;
   private double unwrappedEncoder = 0.0;
@@ -42,7 +43,7 @@ public class DeploySubsystem extends SubsystemBase {
 
   public double lastkP, lastkD, lastkS, lastkG;
 
-  public final DoubleSubscriber target = DogLog.tunable("Intake/DeployTarget", 0.0);
+  public final DoubleSubscriber targetSubscriber = DogLog.tunable("Intake/DeployTarget", 0.0);
 
   public DeploySubsystem() {
     leftMotor = new SparkMax(DeployConstants.LEFT_DELPOY_MOTOR_ID, MotorType.kBrushless);
@@ -108,6 +109,10 @@ public class DeploySubsystem extends SubsystemBase {
   }
 
   public Rotation2d getPosition() {
+    if (position != null) {
+      return position;
+    }
+
     double raw = encoder.get();
     double delta = raw - lastEncoderRaw;
 
@@ -127,24 +132,19 @@ public class DeploySubsystem extends SubsystemBase {
       armRotations += 1.0;
     }
 
-    double armRadians = Units.rotationsToRadians(armRotations);
-    return Rotation2d.fromRadians(armRadians);
+    position = Rotation2d.fromRotations(armRotations);
+
+    return position;
   }
 
   public boolean atSetpoint() {
-    return Math.abs(getPosition().getRadians() - deployTarget) < Degrees.of(15).in(Radians);
+    return Math.abs(getPosition().getRadians() - deployTarget.getRadians()) < Degrees.of(15).in(Radians);
   }
 
   public void log() {
-    DogLog.log("Intake/Deploy/Encoder/Connected", encoder.isConnected());
-    DogLog.log("Intake/Deploy/Encoder/Raw Position", encoder.get(), Rotations);
-    DogLog.log("Intake/Deploy/Encoder/Position", getPosition().getDegrees(), Degrees);
-
+    DogLog.log("Intake/Deploy/Position", getPosition().getDegrees(), Degrees);
     DogLog.log("Intake/Deploy/State", deployState.name());
-
-    DogLog.log("Intake/Deploy/Target", deployTarget, Degrees);
-
-    DogLog.log("Intake/At Setpoint", atSetpoint());
+    DogLog.log("Intake/Deploy/Target", deployTarget.getDegrees(), Degrees);
   }
 
   public void updateGains() {
@@ -163,7 +163,7 @@ public class DeploySubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     if (encoder.isConnected()) {
-      double output = intakePIDController.calculate(getPosition().getRadians(), deployTarget);
+      double output = intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
 
       double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
 
@@ -174,5 +174,9 @@ public class DeploySubsystem extends SubsystemBase {
 
     updateGains();
     log();
+  }
+
+  public void clearCache() {
+    position = null;
   }
 }

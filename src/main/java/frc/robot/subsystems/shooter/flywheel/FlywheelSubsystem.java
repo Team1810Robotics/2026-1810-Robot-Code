@@ -135,31 +135,24 @@ public class FlywheelSubsystem extends SubsystemBase {
     DogLog.log(
         "Flywheel/Velocity", rightMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
     DogLog.log("Flywheel/Target", targetVelocity, RotationsPerSecond);
-    DogLog.log("Flywheel/Connected", rightMotor.isConnected());
-    DogLog.log(
-        "Flywheel/Acceleration",
-        rightMotor.getAcceleration().getValueAsDouble(),
-        RotationsPerSecondPerSecond);
     DogLog.log("Flywheel/Voltage", rightMotor.getMotorVoltage().getValueAsDouble(), Volts);
-    DogLog.log("Flywheel/At Target Velocity", atTargetVelocity());
-    DogLog.log("Flywheel/isTuning", isTuning);
   }
 
   @Override
   public void periodic() {
     log();
 
-    tuningCommand =
-        setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()))
-            .until(() -> velocityTarget.get() == 0);
+    // tuningCommand =
+    //     setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()))
+    //         .until(() -> velocityTarget.get() == 0);
 
-    if (velocityTarget.get() != 0) {
-      isTuning = true;
-      CommandScheduler.getInstance().schedule(tuningCommand);
-    }
+    // if (velocityTarget.get() != 0) {
+    //   isTuning = true;
+    //   CommandScheduler.getInstance().schedule(tuningCommand);
+    // }
 
-    if (velocityTarget.get() == 0) {
-      isTuning = false;
-    }
+    // if (velocityTarget.get() == 0) {
+    //   isTuning = false;
+    // }
   }
 }

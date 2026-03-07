@@ -31,6 +31,9 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     ShotCalculator.getInstance().clearParams();
+    RobotContainer.getDeploySubsystem().clearCache();
+    RobotContainer.getTurretSubsystem().clearCache();
+    RobotContainer.getHoodSubsystem().clearCache();
 
     CommandScheduler.getInstance().run();
 

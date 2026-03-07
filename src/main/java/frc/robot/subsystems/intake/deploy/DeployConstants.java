@@ -3,6 +3,7 @@ package frc.robot.subsystems.intake.deploy;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 
@@ -22,18 +23,18 @@ public class DeployConstants {
   public static double GEAR_RATIO = 3;
 
   public enum deployState {
-    DEPLOY(Degrees.of(14.5)),
-    RETRACT(Degrees.of(115.0)),
-    AGITATE(Degrees.of(30));
+    DEPLOY(Rotation2d.fromDegrees(14.5)),
+    RETRACT(Rotation2d.fromDegrees(115.0)),
+    AGITATE(Rotation2d.fromDegrees(30));
 
-    private Angle position;
+    private Rotation2d position;
 
-    private deployState(Angle position) {
+    private deployState(Rotation2d position) {
       this.position = position;
     }
 
-    public double getPosition() {
-      return position.in(Radians);
+    public Rotation2d getPosition() {
+      return position;
     }
   }
 }
