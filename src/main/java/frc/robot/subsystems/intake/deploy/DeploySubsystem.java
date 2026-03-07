@@ -12,7 +12,6 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -108,11 +107,7 @@ public class DeploySubsystem extends SubsystemBase {
     rightMotor.stopMotor();
   }
 
-  public Rotation2d getPosition() {
-    if (position != null) {
-      return position;
-    }
-
+  private void updateEncoderUnwrap() {
     double raw = encoder.get();
     double delta = raw - lastEncoderRaw;
 
@@ -124,6 +119,12 @@ public class DeploySubsystem extends SubsystemBase {
 
     unwrappedEncoder += delta;
     lastEncoderRaw = raw;
+  }
+
+  public Rotation2d getPosition() {
+    if (position != null) {
+      return position;
+    }
 
     double armRotations =
         (unwrappedEncoder / DeployConstants.GEAR_RATIO) - DeployConstants.ENCODER_OFFSET;
@@ -133,12 +134,12 @@ public class DeploySubsystem extends SubsystemBase {
     }
 
     position = Rotation2d.fromRotations(armRotations);
-
     return position;
   }
 
   public boolean atSetpoint() {
-    return Math.abs(getPosition().getRadians() - deployTarget.getRadians()) < Degrees.of(15).in(Radians);
+    return Math.abs(getPosition().getRadians() - deployTarget.getRadians())
+        < Degrees.of(15).in(Radians);
   }
 
   public void log() {
@@ -162,13 +163,14 @@ public class DeploySubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
+
     if (encoder.isConnected()) {
-      double output = intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
-
+      double output =
+          intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
       double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
-
       double totalOutput = output + feedforwardOut;
-      DogLog.log("Intake/Deploy/Output Voltage", totalOutput); // add this
+      DogLog.log("Intake/Deploy/Output Voltage", totalOutput);
       leftMotor.setVoltage(totalOutput);
     }
 

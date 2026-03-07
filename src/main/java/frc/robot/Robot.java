@@ -35,6 +35,9 @@ public class Robot extends TimedRobot {
     RobotContainer.getTurretSubsystem().clearCache();
     RobotContainer.getHoodSubsystem().clearCache();
 
+    RobotContainer.getLeftVision().clearCache();
+    RobotContainer.getRightVision().clearCache();
+
     CommandScheduler.getInstance().run();
 
     Mechanism3d.getInstance().log();

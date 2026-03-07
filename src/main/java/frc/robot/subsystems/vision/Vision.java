@@ -24,6 +24,8 @@ public class Vision extends SubsystemBase {
 
   private final AprilTagFieldLayout layout;
 
+  private int[] ids;
+
   /**
    * Constructor for VisionSubsystem.
    *
@@ -61,11 +63,16 @@ public class Vision extends SubsystemBase {
    * @return An int array of detected AprilTag IDs, empty if none detected.
    */
   public int[] getTargetIDs() {
+    if (this.ids != null) {
+      return this.ids;
+    }
+
     RawFiducial[] fiducials = LimelightHelpers.getRawFiducials(limelightName);
     int[] ids = new int[fiducials.length];
     for (int i = 0; i < fiducials.length; i++) {
       ids[i] = fiducials[i].id;
     }
+    this.ids = ids;
     return ids;
   }
 
@@ -140,5 +147,9 @@ public class Vision extends SubsystemBase {
     }
 
     DogLog.log(logPrefix + "/BotPose", getBotpose().pose);
+  }
+
+  public void clearCache() {
+    ids = null;
   }
 }

@@ -3,7 +3,6 @@ package frc.robot.subsystems.shooter.turret;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -39,7 +38,8 @@ public class TurretSubsystem extends SubsystemBase {
   private int resetMotorPos = 0;
 
   private Rotation2d target;
-  private Rotation2d position;
+  private Rotation2d motorPosition;
+  private Rotation2d encoderPosition;
 
   public TurretSubsystem() {
 
@@ -89,6 +89,10 @@ public class TurretSubsystem extends SubsystemBase {
 
   public Rotation2d getEncoderPosition() {
 
+    if (encoderPosition != null) {
+      return encoderPosition;
+    }
+
     double raw = turretEncoder.get();
     double delta = raw - lastEncoderRaw;
 
@@ -104,7 +108,9 @@ public class TurretSubsystem extends SubsystemBase {
     double turretRot = -(unwrappedEncoder - TurretConstants.ENCODER_OFFSET);
     double turretRad = Rotations.of(turretRot).in(Radians);
 
-    return Rotation2d.fromRadians(turretRad);
+    encoderPosition = Rotation2d.fromRadians(turretRad);
+
+    return encoderPosition;
   }
 
   public void seedMotorFromAbsolute() {
@@ -112,12 +118,12 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public Rotation2d getTurretAngle() {
-    if (position != null) {
-      return position;
+    if (motorPosition != null) {
+      return motorPosition;
     }
 
-    position = Rotation2d.fromRotations(turretMotor.getPosition().getValueAsDouble());
-    return position;
+    motorPosition = Rotation2d.fromRotations(turretMotor.getPosition().getValueAsDouble());
+    return motorPosition;
   }
 
   public Rotation2d getTurretAngleRobotRelative() {
@@ -240,6 +246,7 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public void clearCache() {
-    position = null;
+    motorPosition = null;
+    encoderPosition = null;
   }
 }

@@ -1,11 +1,7 @@
 package frc.robot.subsystems.intake.deploy;
 
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Radians;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 
 public class DeployConstants {
   public static final int LEFT_DELPOY_MOTOR_ID = 9;
