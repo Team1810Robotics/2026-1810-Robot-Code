@@ -141,6 +141,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     field2d = new Field2d();
     SmartDashboard.putData("Field", field2d);
+
+    configureAutoBuilder();
+
   }
 
   /**
@@ -168,7 +171,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     field2d = new Field2d();
     SmartDashboard.putData("Field", field2d);
+
+    configureAutoBuilder();
+
   }
+
+  
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -206,6 +214,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     field2d = new Field2d();
     SmartDashboard.putData("Field", field2d);
+
+    configureAutoBuilder();
   }
 
   /**
@@ -375,7 +385,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                       .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                       .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
           new PPHolonomicDriveController(
-              new PIDConstants(0.25, 0, 0), new PIDConstants(.25, 0, 0.01)),
+              new PIDConstants(0.25, 0, 0), new PIDConstants(.25, 0, 0.01)), //TODO: Retune me
           config,
           () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
           this // Subsystem for requirements

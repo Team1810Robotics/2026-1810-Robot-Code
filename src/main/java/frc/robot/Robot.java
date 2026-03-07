@@ -19,6 +19,8 @@ public class Robot extends TimedRobot {
 
   private final RobotContainer m_robotContainer;
 
+  public static boolean autoSelected = false;
+
   public Robot() {
     SignalLogger.stop();
 
@@ -51,7 +53,11 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    if (m_robotContainer.getAutonomousCommand() != null || !m_robotContainer.getAutonomousCommand().getName().equals("No Auto")) {
+      autoSelected = true;
+    }
+  }
 
   @Override
   public void disabledExit() {}

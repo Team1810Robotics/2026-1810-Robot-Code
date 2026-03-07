@@ -7,11 +7,14 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -74,9 +77,14 @@ public class RobotContainer {
   private static final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem();
   private static final KickerSubsystem kickerSubsystem = new KickerSubsystem();
 
+  private final SendableChooser<Command> autoChooser;
+
   public RobotContainer() {
     configureBindings();
     configureDogLog();
+
+    autoChooser = AutoBuilder.buildAutoChooser("No Auto");
+    SmartDashboard.putData(autoChooser);
   }
 
   private void configureBindings() {
@@ -147,7 +155,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return Commands.print("AHHHHHH");
+    return autoChooser.getSelected();
   }
 
   public static CommandSwerveDrivetrain getDrivetrain() {
