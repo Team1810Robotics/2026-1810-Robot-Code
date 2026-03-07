@@ -79,20 +79,15 @@ public class TurretSubsystem extends SubsystemBase {
     turretMotor.getConfigurator().apply(config);
 
     turretEncoder = new DutyCycleEncoder(TurretConstants.TURRET_ENCODER_ID);
+    lastEncoderRaw = turretEncoder.get(); // initialize before seedMotorFromAbsolute()
 
     target = Rotation2d.kZero;
-
     seedMotorFromAbsolute();
 
     setDefaultCommand(setFieldRelativeAngleCommand());
   }
 
-  public Rotation2d getEncoderPosition() {
-
-    if (encoderPosition != null) {
-      return encoderPosition;
-    }
-
+  private void updateEncoderUnwrap() {
     double raw = turretEncoder.get();
     double delta = raw - lastEncoderRaw;
 
@@ -104,12 +99,17 @@ public class TurretSubsystem extends SubsystemBase {
 
     unwrappedEncoder += delta;
     lastEncoderRaw = raw;
+  }
+
+  public Rotation2d getEncoderPosition() {
+    if (encoderPosition != null) {
+      return encoderPosition;
+    }
 
     double turretRot = -(unwrappedEncoder - TurretConstants.ENCODER_OFFSET);
     double turretRad = Rotations.of(turretRot).in(Radians);
 
     encoderPosition = Rotation2d.fromRadians(turretRad);
-
     return encoderPosition;
   }
 
@@ -221,6 +221,8 @@ public class TurretSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
+
     if (resetMotorPos > 50) {
       turretMotor.setPosition(Rotations.of(getEncoderPosition().getRotations()));
       resetMotorPos = 0;
