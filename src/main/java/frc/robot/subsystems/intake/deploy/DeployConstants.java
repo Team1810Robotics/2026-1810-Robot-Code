@@ -1,6 +1,7 @@
 package frc.robot.subsystems.intake.deploy;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 
 public class DeployConstants {
@@ -17,6 +18,9 @@ public class DeployConstants {
   public static double ENCODER_OFFSET = Units.degreesToRotations(43);
 
   public static double GEAR_RATIO = 3;
+
+  public static final Translation3d robotToIntake = new Translation3d(0.203, -0.34, 0.23);
+
 
   public enum deployState {
     DEPLOY(Rotation2d.fromDegrees(14.5)),

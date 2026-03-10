@@ -231,6 +231,8 @@ public class TurretSubsystem extends SubsystemBase {
     resetMotorPos++;
   }
 
+  public Pose3d simPose = new Pose3d();
+
   @Override
   public void simulationPeriodic() {
 
@@ -244,7 +246,7 @@ public class TurretSubsystem extends SubsystemBase {
             TurretConstants.ROBOT_TO_TURRET.getTranslation(),
             new Rotation3d(0, 0, robotRelativeAngle.getRadians()));
 
-    DogLog.log("Turret/SimPose", turretPose);
+    simPose = turretPose;
   }
 
   public void clearCache() {
