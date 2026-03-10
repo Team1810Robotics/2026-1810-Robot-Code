@@ -24,12 +24,15 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.drive.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.util.FieldConstants;
+import frc.robot.util.field.FieldConstants;
+import frc.robot.util.field.Region;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -112,6 +115,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               null,
               this));
 
+  private final Field2d field2d;
+
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
@@ -133,6 +138,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
+
+    field2d = new Field2d();
+    SmartDashboard.putData("Field", field2d);
+
+    configureAutoBuilder();
+
   }
 
   /**
@@ -157,7 +168,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
+
+    field2d = new Field2d();
+    SmartDashboard.putData("Field", field2d);
+
+    configureAutoBuilder();
+
   }
+
+  
 
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
@@ -192,6 +211,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     // configureAutoBuilder();
     setVisionMeasurementStdDevs(VisionConstants.visionMeasurementStdDevs);
+
+    field2d = new Field2d();
+    SmartDashboard.putData("Field", field2d);
+
+    configureAutoBuilder();
   }
 
   /**
@@ -250,7 +274,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     SwerveDriveState state = getState();
 
     DogLog.log("Drive/DriveState/Pose", state.Pose);
-    DogLog.log("Drive/DriveState/Speeds", state.Speeds);
+    DogLog.log("Drive/DriveState/Robot Relative Speeds", state.Speeds);
+    DogLog.log(
+        "Drive/DriveState/Field Relative Speeds",
+        ChassisSpeeds.fromRobotRelativeSpeeds(state.Speeds, state.Pose.getRotation()));
     DogLog.log("Drive/DriveState/ModuleStates", state.ModuleStates);
     DogLog.log("Drive/DriveState/ModuleTargets", state.ModuleTargets);
     DogLog.log("Drive/DriveState/ModulePositions", state.ModulePositions);
@@ -258,6 +285,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     DogLog.log("Drive/AngleToHub/Angle", getAngleToHub().getDegrees(), Degrees);
     DogLog.log("Drive/DistanceToHub/Distance", getDistanceToHub().in(Meters), Meters);
+
+    DogLog.log("Drive/Pigeon/Yaw", getPigeon2().getYaw().getValueAsDouble());
+    DogLog.log("Drive/Pigeon/Pitch", getPigeon2().getPitch().getValueAsDouble());
+    DogLog.log("Drive/Pigeon/Roll", getPigeon2().getRoll().getValueAsDouble());
+
+    DogLog.log("Drive/Region", Region.getRegion(getPose()).orElse(Region.BLUE_ALLIANCE_ZONE));
+
+    field2d.setRobotPose(state.Pose);
   }
 
   private void startSimThread() {
@@ -350,7 +385,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                       .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                       .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
           new PPHolonomicDriveController(
-              new PIDConstants(0.25, 0, 0), new PIDConstants(.25, 0, 0.01)),
+              new PIDConstants(0.25, 0, 0), new PIDConstants(.25, 0, 0.01)), //TODO: Retune me
           config,
           () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
           this // Subsystem for requirements
@@ -364,7 +399,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     return getState().Pose;
   }
 
-  public ChassisSpeeds getSpeeds() {
+  public ChassisSpeeds getRobotRelativeSpeeds() {
     return getState().Speeds;
+  }
+
+  public ChassisSpeeds getFieldRelativeSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotRelativeSpeeds(), getPose().getRotation());
   }
 }

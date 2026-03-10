@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter.flywheel;
 
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -17,7 +16,6 @@ import dev.doglog.DogLog;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -135,27 +133,24 @@ public class FlywheelSubsystem extends SubsystemBase {
     DogLog.log(
         "Flywheel/Velocity", rightMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
     DogLog.log("Flywheel/Target", targetVelocity, RotationsPerSecond);
-    DogLog.log("Flywheel/Connected", rightMotor.isConnected());
-    DogLog.log(
-        "Flywheel/Acceleration",
-        rightMotor.getAcceleration().getValueAsDouble(),
-        RotationsPerSecondPerSecond);
     DogLog.log("Flywheel/Voltage", rightMotor.getMotorVoltage().getValueAsDouble(), Volts);
-    DogLog.log("Flywheel/At Target Velocity", atTargetVelocity());
   }
 
   @Override
   public void periodic() {
     log();
 
-    if (velocityTarget.get() != 0) {
-      isTuning = true;
-      CommandScheduler.getInstance().schedule(tuningCommand);
-    }
+    // tuningCommand =
+    //     setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()))
+    //         .until(() -> velocityTarget.get() == 0);
 
-    if (isTuning && velocityTarget.get() == 0) {
-      isTuning = false;
-      CommandScheduler.getInstance().cancel(tuningCommand);
-    }
+    // if (velocityTarget.get() != 0) {
+    //   isTuning = true;
+    //   CommandScheduler.getInstance().schedule(tuningCommand);
+    // }
+
+    // if (velocityTarget.get() == 0) {
+    //   isTuning = false;
+    // }
   }
 }

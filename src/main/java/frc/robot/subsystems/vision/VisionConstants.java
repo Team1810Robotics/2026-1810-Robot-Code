@@ -6,8 +6,8 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 
 public class VisionConstants {
-  public static final String FRONT_LIMELIGHT_NAME = "front_ll";
-  public static final String REAR_LIMELIGHT_NAME = "rear_ll";
+  public static final String LEFT_LIMELIGHT_NAME = "limelight-left";
+  public static final String RIGHT_LIMELIGHT_NAME = "limelight-right";
 
   public static final Matrix<N3, N1> visionMeasurementStdDevs =
       VecBuilder.fill(

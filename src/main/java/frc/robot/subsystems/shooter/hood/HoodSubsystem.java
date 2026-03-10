@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -13,22 +14,34 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 import dev.doglog.DogLog;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 public class HoodSubsystem extends SubsystemBase {
   private final TalonFX hoodMotor;
   private final CANcoder hoodEncoder;
 
-  private final DoubleSubscriber positionTarget = DogLog.tunable("Hood/PositionTarget", 0.0);
+  private final DoubleSubscriber tuningTarget = DogLog.tunable("Hood/TuningTarget", 0.0);
 
   private boolean isTuning = false;
 
-  private Command tuningCommand = setPositionCommand(Rotation2d.fromDegrees(positionTarget.get()));
+  public final DoubleSubscriber kP = DogLog.tunable("Hood/Gains/kP", HoodConstants.kP);
+  public final DoubleSubscriber kD = DogLog.tunable("Hood/Gains/kD", 0.0);
+
+  public final DoubleSubscriber kS = DogLog.tunable("Hood/Gains/kS", HoodConstants.kS);
+
+  private double lastkP, lastkD, lastkS;
+
+  private Command tuningCommand;
+
+  private Rotation2d position;
 
   public HoodSubsystem() {
     hoodMotor = new TalonFX(HoodConstants.HOOD_MOTOR_ID);
@@ -59,7 +72,7 @@ public class HoodSubsystem extends SubsystemBase {
     lastEncoderRaw = 0;
     unwrappedEncoder = 0;
 
-    hoodMotor.setPosition(Rotations.of(getEncoderPosition().getRotations()));
+    hoodMotor.setPosition(Rotations.of(0));
   }
 
   public void setPosition(Rotation2d position) {
@@ -71,7 +84,12 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   public Rotation2d getMotorPosition() {
-    return Rotation2d.fromRotations(hoodMotor.getPosition().getValueAsDouble());
+    if (position != null) {
+      return position;
+    }
+
+    position = Rotation2d.fromRotations(hoodMotor.getPosition().getValueAsDouble());
+    return position;
   }
 
   private double lastEncoderRaw = 0.0;
@@ -100,11 +118,12 @@ public class HoodSubsystem extends SubsystemBase {
     hoodMotor.setPosition(getEncoderPosition().getRotations());
   }
 
+  public Command applyVoltageCommand(double volts) {
+    return Commands.run(() -> hoodMotor.setVoltage(volts), this).finallyDo(() -> stop());
+  }
+
   public void log() {
-    DogLog.log("Hood/MotorPosition", getMotorPosition().getDegrees(), Degrees);
-    DogLog.log("Hood/EncoderPosition", getEncoderPosition().getDegrees(), Degrees);
-    DogLog.log(
-        "Hood/Raw Encoder Position", hoodEncoder.getPosition().getValueAsDouble(), Rotations);
+    DogLog.log("Hood/Position", getMotorPosition().getDegrees(), Degrees);
     DogLog.log("Hood/Volts", hoodMotor.getMotorVoltage().getValueAsDouble(), Volts);
   }
 
@@ -112,22 +131,56 @@ public class HoodSubsystem extends SubsystemBase {
     hoodMotor.stopMotor();
   }
 
+  private double startTime = 0;
+
+  // thank you scream
+  public Command zero() {
+    return new SequentialCommandGroup(
+        new InstantCommand(() -> startTime = Timer.getFPGATimestamp()),
+        applyVoltageCommand(-1.0)
+            .withDeadline(
+                new WaitUntilCommand(() -> ((Timer.getFPGATimestamp() - startTime) > 1.0))),
+        new InstantCommand(() -> hoodMotor.setPosition(Rotations.of(0))));
+  }
+
+  public void updateGains() {
+    if (kP.get() == lastkP && kD.get() == lastkD && kS.get() == lastkS) {
+      return;
+    }
+
+    Slot0Configs slot0Configs = new Slot0Configs();
+    slot0Configs.kP = kP.get();
+    slot0Configs.kD = kD.get();
+    slot0Configs.kS = kS.get();
+
+    lastkP = kP.get();
+    lastkD = kD.get();
+    lastkS = kS.get();
+
+    hoodMotor.getConfigurator().apply(slot0Configs);
+  }
+
   @Override
   public void periodic() {
     log();
-    seedMotorFromAbsolute();
+    updateGains();
 
-    setPosition(Rotation2d.fromDegrees(positionTarget.get()));
+    // tuningCommand =
+    //     setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))
+    //         .until(() -> tuningTarget.get() == 0);
 
-    if (positionTarget.get() != 0) {
-      isTuning = true;
-      CommandScheduler.getInstance().schedule(tuningCommand);
-    }
+    // if (tuningTarget.get() != 0) {
+    //   isTuning = true;
+    //   CommandScheduler.getInstance().schedule(tuningCommand);
+    // }
 
-    if (isTuning && positionTarget.get() == 0) {
-      isTuning = false;
-      CommandScheduler.getInstance().cancel(tuningCommand);
-    }
+    // if (tuningTarget.get() == 0) {
+    //   isTuning = false;
+    // }
+  }
+
+  public void clearCache() {
+    position = null;
   }
 
   private Rotation2d simPos = Rotation2d.kZero;
