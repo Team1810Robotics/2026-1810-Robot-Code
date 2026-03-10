@@ -94,7 +94,7 @@ public class RobotContainer {
                 drive
                     .withVelocityX(-driverXbox.getLeftY() * MaxSpeed)
                     .withVelocityY(-driverXbox.getLeftX() * MaxSpeed)
-                    .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate)));
+                    .withRotationalRate(Robot.isSimulation() ? -driverXbox.getRawAxis(2) : -driverXbox.getRightX() * MaxAngularRate)));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -141,8 +141,6 @@ public class RobotContainer {
                             Inches.of(27 / 2).in(Meters),
                             Inches.of(27 / 2).in(Meters),
                             Rotation2d.kZero))));
-
-    driverXbox.rightBumper().whileTrue(new Shoot());
   }
 
   /** Configure DogLog options and PowerDistribution */

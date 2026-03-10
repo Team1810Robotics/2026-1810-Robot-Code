@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 
 public class HoodSubsystem extends SubsystemBase {
@@ -179,5 +181,22 @@ public class HoodSubsystem extends SubsystemBase {
 
   public void clearCache() {
     position = null;
+  }
+
+  private Rotation2d simPos = Rotation2d.kZero;
+
+  public void setSimPosition(Rotation2d pos) {
+    this.simPos = pos;
+  }
+
+  public Rotation2d getSimPos() {
+    return this.simPos;
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+
+    setSimPosition(params.hoodAngle());
   }
 }
