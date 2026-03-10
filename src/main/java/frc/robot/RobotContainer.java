@@ -8,19 +8,17 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.RobotState.RobotStates;
-import frc.robot.commands.Shoot;
+import frc.robot.auto.AutoSelector;
+import frc.robot.commands.ShootNoAgitate;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
@@ -76,14 +74,11 @@ public class RobotContainer {
   private static final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem();
   private static final KickerSubsystem kickerSubsystem = new KickerSubsystem();
 
-  private final SendableChooser<Command> autoChooser;
+  private final AutoSelector autoSelector = new AutoSelector();
 
   public RobotContainer() {
     configureBindings();
     configureDogLog();
-
-    autoChooser = AutoBuilder.buildAutoChooser("No Auto");
-    SmartDashboard.putData(autoChooser);
   }
 
   private void configureBindings() {
@@ -94,7 +89,7 @@ public class RobotContainer {
                 drive
                     .withVelocityX(-driverXbox.getLeftY() * MaxSpeed)
                     .withVelocityY(-driverXbox.getLeftX() * MaxSpeed)
-                    .withRotationalRate(Robot.isSimulation() ? -driverXbox.getRawAxis(2) : -driverXbox.getRightX() * MaxAngularRate)));
+                    .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate)));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -118,7 +113,8 @@ public class RobotContainer {
         .rightBumper()
         .whileTrue(
             Commands.sequence(
-                RobotState.getInstance().setStateCommand(RobotStates.SHOOTING), new Shoot()));
+                RobotState.getInstance().setStateCommand(RobotStates.SHOOTING),
+                new ShootNoAgitate()));
 
     driverXbox
         .x()
@@ -145,14 +141,25 @@ public class RobotContainer {
 
   /** Configure DogLog options and PowerDistribution */
   public void configureDogLog() {
-    // DogLog.setPdh(new PowerDistribution(63, ModuleType.kRev));
-
     DogLog.setOptions(
-        new DogLogOptions().withCaptureDs(true).withNtPublish(true).withLogExtras(true));
+        new DogLogOptions()
+            .withCaptureDs(true)
+            .withNtPublish(true)
+            .withLogExtras(false)
+            .withCaptureNt(false)
+            .withCaptureConsole(false));
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    if (autoSelector.getSelectedAuto() != null) {
+      return autoSelector.getSelectedAuto();
+    }
+
+    return Commands.none();
+  }
+
+  public AutoSelector getAutoSelector() {
+    return autoSelector;
   }
 
   public static CommandSwerveDrivetrain getDrivetrain() {

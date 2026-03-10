@@ -17,7 +17,7 @@ import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 
-public class Shoot extends Command {
+public class ShootNoAgitate extends Command {
   private final FlywheelSubsystem flywheelSubsystem;
   private final HoodSubsystem hoodSubsystem;
   private final SpindexerSubsystem spindexerSubsystem;
@@ -27,7 +27,7 @@ public class Shoot extends Command {
 
   private boolean isReady = false;
 
-  public Shoot() {
+  public ShootNoAgitate() {
     this.flywheelSubsystem = RobotContainer.getFlywheelSubsystem();
     this.hoodSubsystem = RobotContainer.getHoodSubsystem();
     this.spindexerSubsystem = RobotContainer.getSpindexerSubsystem();
