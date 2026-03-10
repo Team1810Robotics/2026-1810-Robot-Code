@@ -27,14 +27,6 @@ public class RobotState {
     return () -> state == this.robotState;
   }
 
-  public void setIntakeState(IntakeStates state) {
-    this.intakeState = state;
-  }
-
-  public Command setIntakeStateCommand(IntakeStates state) {
-    return Commands.runOnce(() -> setIntakeState(state));
-  }
-
   public Command advanceIntakeState() {
     RollerSubsystem rollerSubsystem = RobotContainer.getRollerSubsystem();
     DeploySubsystem deploySubsystem = RobotContainer.getDeploySubsystem();
@@ -59,6 +51,17 @@ public class RobotState {
           deploySubsystem.deploy(next.getDeployState());
 
           intakeState = next;
+        });
+  }
+
+  public Command setIntakeState(IntakeStates state) {
+    RollerSubsystem rollerSubsystem = RobotContainer.getRollerSubsystem();
+    DeploySubsystem deploySubsystem = RobotContainer.getDeploySubsystem();
+
+    return Commands.runOnce(
+        () -> {
+          rollerSubsystem.roller(state.getRollerState());
+          deploySubsystem.deploy(state.getDeployState());
         });
   }
 

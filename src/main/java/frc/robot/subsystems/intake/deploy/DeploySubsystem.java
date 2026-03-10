@@ -142,6 +142,10 @@ public class DeploySubsystem extends SubsystemBase {
         < Degrees.of(15).in(Radians);
   }
 
+  public Rotation2d getTargetPosition() {
+    return deployTarget;
+  }
+
   public void log() {
     DogLog.log("Intake/Deploy/Position", getPosition().getDegrees(), Degrees);
     DogLog.log("Intake/Deploy/State", deployState.name());

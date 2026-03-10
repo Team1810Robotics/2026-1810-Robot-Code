@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.Robot;
 import frc.robot.subsystems.drive.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.field.FieldConstants;
@@ -377,11 +378,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           (speeds, feedforwards) ->
               setControl(
                   m_pathApplyRobotSpeeds
-                      .withSpeeds(speeds.times(-1))
+                      .withSpeeds(speeds)
                       .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
                       .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
-          new PPHolonomicDriveController(
-              new PIDConstants(0.25, 0, 0), new PIDConstants(.25, 0, 0.01)), // TODO: Retune me
+          Robot.isSimulation()
+              ? new PPHolonomicDriveController(
+                  DriveConstants.simTranslationPID, DriveConstants.simHeadingPID)
+              : new PPHolonomicDriveController(
+                  new PIDConstants(0.25, 0, 0), new PIDConstants(.25, 0, 0.01)), // TODO: Retune me
           config,
           () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
           this // Subsystem for requirements
