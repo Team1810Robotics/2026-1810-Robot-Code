@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 
 public class HoodSubsystem extends SubsystemBase {
   private final TalonFX hoodMotor;
@@ -126,5 +128,22 @@ public class HoodSubsystem extends SubsystemBase {
       isTuning = false;
       CommandScheduler.getInstance().cancel(tuningCommand);
     }
+  }
+
+  private Rotation2d simPos = Rotation2d.kZero;
+
+  public void setSimPosition(Rotation2d pos) {
+    this.simPos = pos;
+  }
+
+  public Rotation2d getSimPos() {
+    return this.simPos;
+  }
+
+  @Override
+  public void simulationPeriodic() {
+      ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+
+      setSimPosition(params.hoodAngle());
   }
 }
