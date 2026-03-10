@@ -54,7 +54,8 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
-    if (m_robotContainer.getAutonomousCommand() != null || !m_robotContainer.getAutonomousCommand().getName().equals("No Auto")) {
+    if (m_robotContainer.getAutonomousCommand() != null
+        || !m_robotContainer.getAutonomousCommand().getName().equals("No Auto")) {
       autoSelected = true;
     }
   }

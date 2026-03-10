@@ -17,7 +17,7 @@ public class TurretConstants {
   public static final Angle MIN_ANGLE = Degrees.of(-180);
   public static final Angle MAX_ANGLE = Degrees.of(180.0);
 
-  public static final double ENCODER_OFFSET = .08;
+  public static final double ENCODER_OFFSET = .3;
 
   public static final double kP = 15;
   public static final double kS = 0.2;

@@ -79,9 +79,8 @@ public class TurretSubsystem extends SubsystemBase {
     turretMotor.getConfigurator().apply(config);
 
     turretEncoder = new DutyCycleEncoder(TurretConstants.TURRET_ENCODER_ID);
-    lastEncoderRaw = turretEncoder.get(); // initialize before seedMotorFromAbsolute()
-
-    target = Rotation2d.kZero;
+    lastEncoderRaw = turretEncoder.get();
+    unwrappedEncoder = lastEncoderRaw;
     seedMotorFromAbsolute();
 
     setDefaultCommand(setFieldRelativeAngleCommand());
@@ -215,6 +214,7 @@ public class TurretSubsystem extends SubsystemBase {
     DogLog.log("Turret/Motor Position (turret frame)", getTurretAngle().getDegrees(), Degrees);
 
     DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
+    DogLog.log("Turret/Raw Encoder Position", turretEncoder.get(), Rotations);
 
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
   }

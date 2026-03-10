@@ -4,7 +4,7 @@ public class SpindexerConstants {
   public static final int SPIN_MOTOR = 13;
 
   public enum SpindexerState {
-    IN(.3),
+    IN(.8),
     OUT(-.4),
     STOP(0);
 
