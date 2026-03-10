@@ -25,7 +25,6 @@ public class IntakeConstants {
 
   public static final Translation3d robotToIntake = new Translation3d(0.203, -0.34, 0.23);
 
-
   public enum rollerState {
     INTAKE(1),
     OUT(-1),

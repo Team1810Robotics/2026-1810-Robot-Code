@@ -33,15 +33,17 @@ public class Mechanism3d {
     Rotation2d hoodAngle = hoodSubsystem.getMotorPosition();
     Rotation2d intakeAngle = intakeSubsystem.getPosition();
 
-    Pose3d turretPose = new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(turretAngle));
-    Pose3d intakePose = new Pose3d(IntakeConstants.robotToIntake, new Rotation3d(0, -intakeAngle.getRadians(), 0));
-    Pose3d hoodPose = turretPose.transformBy(new Transform3d(HoodConstants.turretToHood, new Rotation3d(0,hoodAngle.getRadians(),0)));
+    Pose3d turretPose =
+        new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(turretAngle));
+    Pose3d intakePose =
+        new Pose3d(IntakeConstants.robotToIntake, new Rotation3d(0, intakeAngle.getRadians(), 0));
+    Pose3d hoodPose =
+        turretPose.transformBy(
+            new Transform3d(
+                HoodConstants.turretToHood, new Rotation3d(0, hoodAngle.getRadians(), 0)));
 
-    DogLog.log(
-        "Mechanisms/Turret",
-        turretPose);
-    DogLog.log("Mehanisms/Intake", 
-        intakePose);
+    DogLog.log("Mechanisms/Turret", turretPose);
+    DogLog.log("Mechanisms/Intake", intakePose);
     DogLog.log("Mechanisms/Hood", hoodPose);
   }
 }

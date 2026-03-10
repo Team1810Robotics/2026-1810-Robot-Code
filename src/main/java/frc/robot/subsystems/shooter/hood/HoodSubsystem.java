@@ -142,8 +142,8 @@ public class HoodSubsystem extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-      ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+    ShotParameters params = ShotCalculator.getInstance().calculateParameters();
 
-      setSimPosition(params.hoodAngle());
+    setSimPosition(params.hoodAngle());
   }
 }

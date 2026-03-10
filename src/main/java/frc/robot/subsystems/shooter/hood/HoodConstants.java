@@ -13,6 +13,5 @@ public class HoodConstants {
 
   public static final double kS = 0.225;
 
-    public static final Translation3d turretToHood = new Translation3d(.114,.078,.074);
-
+  public static final Translation3d turretToHood = new Translation3d(.114, .078, .074);
 }
