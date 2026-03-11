@@ -10,23 +10,23 @@ public class TurretConstants {
   public static final int TURRET_MOTOR_ID = 17;
   public static final int TURRET_ENCODER_ID = 1;
 
-  public static final double ROBOT_RELATIVE_OFFSET_DEG = 140;
+  public static final double ROBOT_RELATIVE_OFFSET_DEG = 146;
 
-  public static final double GEAR_RATIO = 4.0;
+  public static final double GEAR_RATIO = 32.0;
 
-  public static final Angle MIN_ANGLE = Degrees.of(-180);
-  public static final Angle MAX_ANGLE = Degrees.of(180.0);
+  public static final Angle MIN_ANGLE = Degrees.of(-160);
+  public static final Angle MAX_ANGLE = Degrees.of(155);
 
-  public static final double ENCODER_OFFSET = .3;
+  public static final double ENCODER_OFFSET = .5;
 
-  public static final double kP = 15;
-  public static final double kS = 0.2;
-  public static final double kD = 0.01;
-  public static final double kV = 0.075;
+  public static final double kP = 0.0; // 15
+  public static final double kS = 0.225; // .2
+  public static final double kD = 0.002; // .01
+  public static final double kV = 3.0; // .075
 
   // Motion Magic profile parameters — tune these after FF is dialed in
-  public static final double MOTION_MAGIC_CRUISE_VELOCITY = 4.0; // rot/s
-  public static final double MOTION_MAGIC_ACCELERATION = 4.0; // rot/s²
+  public static final double MOTION_MAGIC_CRUISE_VELOCITY = 1.5; // rot/s
+  public static final double MOTION_MAGIC_ACCELERATION = 4; // rot/s²
   public static final double MOTION_MAGIC_JERK = 0.0; // 0 = trapezoidal profile
 
   public static final Transform3d ROBOT_TO_TURRET =
