@@ -21,10 +21,10 @@ public class RightDoublePickup extends BaseAuto {
         AutoBuilder.followPath(Paths.rightPickupToShoot),
         new ShootWithAgitate().withTimeout(Seconds.of(5)),
         Commands.parallel(
-            AutoBuilder.followPath(Paths.rightShootToPickup),
+            AutoBuilder.followPath(Paths.rightShootToLowPickup),
             Commands.waitTime(Seconds.of(1))
                 .andThen(RobotState.getInstance().setIntakeState(IntakeStates.INTAKE))),
-        AutoBuilder.followPath(Paths.rightPickupToShoot),
+        AutoBuilder.followPath(Paths.rightLowPickupToShoot),
         new ShootWithAgitate().withTimeout(Seconds.of(5)));
   }
 }

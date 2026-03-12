@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.auto.commands.left.LeftDoublePickup;
 import frc.robot.auto.commands.left.LeftSinglePickup;
+import frc.robot.auto.commands.mid.Depot;
 import frc.robot.auto.commands.right.RightDoublePickup;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class AutoSelector {
 
   public AutoSelector() {
 
-    positionChooser.setDefaultOption("Center", StartPosition.CENTER);
+    positionChooser.setDefaultOption("Center", StartPosition.MIDDLE);
     positionChooser.addOption("Left", StartPosition.LEFT);
     positionChooser.addOption("Right", StartPosition.RIGHT);
 
@@ -29,6 +30,8 @@ public class AutoSelector {
 
     this.addAuto(StartPosition.RIGHT, "Single Pickup", new RightDoublePickup());
     this.addAuto(StartPosition.RIGHT, "Double Pickup", new RightDoublePickup());
+
+    this.addAuto(StartPosition.MIDDLE, "Depot", new Depot());
 
     SmartDashboard.putData("Start Position", positionChooser);
     SmartDashboard.putData("Auto", autoChooser);
@@ -68,7 +71,7 @@ public class AutoSelector {
 
   private enum StartPosition {
     LEFT,
-    CENTER,
+    MIDDLE,
     RIGHT
   }
 }

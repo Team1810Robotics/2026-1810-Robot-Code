@@ -14,17 +14,18 @@ public class LeftDoublePickup extends BaseAuto {
   public LeftDoublePickup() {
     super(
         Paths.leftShootToPickup.getStartingHolonomicPose().orElseThrow(),
+
         Commands.parallel(
             AutoBuilder.followPath(Paths.leftShootToPickup),
             Commands.waitTime(Seconds.of(1))
                 .andThen(RobotState.getInstance().setIntakeState(IntakeStates.INTAKE))),
-        AutoBuilder.followPath(Paths.leftShootToPickup),
+        AutoBuilder.followPath(Paths.leftPickupToShoot),
         new ShootWithAgitate().withTimeout(Seconds.of(5)),
         Commands.parallel(
-            AutoBuilder.followPath(Paths.leftShootToPickup),
+            AutoBuilder.followPath(Paths.leftShootToLowPickup),
             Commands.waitTime(Seconds.of(1))
                 .andThen(RobotState.getInstance().setIntakeState(IntakeStates.INTAKE))),
-        AutoBuilder.followPath(Paths.leftShootToPickup),
+        AutoBuilder.followPath(Paths.leftLowPickupToShoot),
         new ShootWithAgitate().withTimeout(Seconds.of(5)));
   }
 }
