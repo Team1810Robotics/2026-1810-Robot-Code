@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.RobotState.RobotStates;
 import frc.robot.auto.AutoSelector;
 import frc.robot.commands.ShootNoAgitate;
+import frc.robot.commands.ShootWithAgitate;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
@@ -115,6 +116,13 @@ public class RobotContainer {
             Commands.sequence(
                 RobotState.getInstance().setStateCommand(RobotStates.SHOOTING),
                 new ShootNoAgitate()));
+
+    driverXbox
+        .leftBumper()
+        .whileTrue(
+            Commands.sequence(
+                RobotState.getInstance().setStateCommand(RobotStates.SHOOTING),
+                new ShootWithAgitate()));
 
     driverXbox
         .x()

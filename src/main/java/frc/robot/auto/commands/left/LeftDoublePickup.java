@@ -14,7 +14,6 @@ public class LeftDoublePickup extends BaseAuto {
   public LeftDoublePickup() {
     super(
         Paths.leftShootToPickup.getStartingHolonomicPose().orElseThrow(),
-
         Commands.parallel(
             AutoBuilder.followPath(Paths.leftShootToPickup),
             Commands.waitTime(Seconds.of(1))

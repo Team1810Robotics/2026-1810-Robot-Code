@@ -9,7 +9,7 @@ import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
-import frc.robot.subsystems.intake.roller.RollerConstants.rollerState;
+import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
@@ -61,7 +61,7 @@ public class ShootNoAgitate extends Command {
     if (isReady) {
       spindexerSubsystem.spindex(SpindexerState.IN);
       kickerSubsystem.kick(KickerState.IN);
-      rollerSubsystem.roller(rollerState.INTAKE);
+      rollerSubsystem.roller(RollerState.INTAKE);
     }
 
     DogLog.log("Shooter/HasSpunUp", isReady);

@@ -71,7 +71,7 @@ public class FlywheelSubsystem extends SubsystemBase {
 
     leftMotor.setControl(new Follower(rightMotor.getDeviceID(), MotorAlignmentValue.Aligned));
 
-    // setDefaultCommand(idleMotorCommand());
+    setDefaultCommand(idleMotorCommand());
   }
 
   public Command dutyCycleCommand(double dutyCycle) {

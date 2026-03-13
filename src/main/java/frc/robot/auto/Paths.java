@@ -1,7 +1,5 @@
 package frc.robot.auto;
 
-import java.lang.ref.PhantomReference;
-
 import com.pathplanner.lib.path.PathPlannerPath;
 
 public class Paths {
