@@ -11,7 +11,7 @@ import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
-import frc.robot.subsystems.intake.roller.RollerConstants.rollerState;
+import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
@@ -46,12 +46,7 @@ public class ShootWithAgitate extends Command {
     agitateCommand = deploySubsystem.agitateCommand();
 
     addRequirements(
-        flywheelSubsystem,
-        hoodSubsystem,
-        spindexerSubsystem,
-        kickerSubsystem,
-        rollerSubsystem,
-        deploySubsystem);
+        flywheelSubsystem, hoodSubsystem, spindexerSubsystem, kickerSubsystem, rollerSubsystem);
   }
 
   @Override
@@ -71,10 +66,12 @@ public class ShootWithAgitate extends Command {
       isReady = true;
     }
 
-    if (isReady && turretSubsystem.atTargetAngle()) {
+    if (!turretSubsystem.atTargetAngle()) return;
+
+    if (isReady) {
       spindexerSubsystem.spindex(SpindexerState.IN);
       kickerSubsystem.kick(KickerState.IN);
-      rollerSubsystem.roller(rollerState.INTAKE);
+      rollerSubsystem.roller(RollerState.INTAKE);
     }
 
     DogLog.log("Shooter/HasSpunUp", isReady);
@@ -85,12 +82,19 @@ public class ShootWithAgitate extends Command {
   }
 
   @Override
+  public boolean isFinished() {
+    if (RobotState.getInstance().killShooter) return true;
+
+    return false;
+  }
+
+  @Override
   public void end(boolean interrupted) {
     hoodSubsystem.stop();
     flywheelSubsystem.stop();
     spindexerSubsystem.stop();
     kickerSubsystem.stop();
-    rollerSubsystem.stopRoller();
+    rollerSubsystem.stop();
 
     isReady = false;
 

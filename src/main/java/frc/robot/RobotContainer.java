@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.RobotState.RobotStates;
 import frc.robot.auto.AutoSelector;
 import frc.robot.commands.ShootNoAgitate;
@@ -51,6 +50,7 @@ public class RobotContainer {
 
   private static final CommandXboxController driverXbox =
       new CommandXboxController(0); // controllers
+  private final CommandXboxController operatorXbox = new CommandXboxController(1);
 
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -87,37 +87,44 @@ public class RobotContainer {
         drivetrain.applyRequest(
             () ->
                 drive
-                    .withVelocityX(-driverXbox.getLeftY() * MaxSpeed)
-                    .withVelocityY(-driverXbox.getLeftX() * MaxSpeed)
-                    .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate)));
+                    .withVelocityX(-driverXbox.getLeftY() * MaxSpeed * .3)
+                    .withVelocityY(-driverXbox.getLeftX() * MaxSpeed * .3)
+                    .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate * .3)));
+
+    driverXbox
+        .leftTrigger()
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    drive
+                        .withVelocityX(-driverXbox.getLeftY() * MaxSpeed)
+                        .withVelocityY(-driverXbox.getLeftX() * MaxSpeed)
+                        .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate)));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
-    driverXbox.back().and(driverXbox.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-    driverXbox.back().and(driverXbox.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-    driverXbox
-        .start()
-        .and(driverXbox.y())
-        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-    driverXbox
-        .start()
-        .and(driverXbox.x())
-        .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+    // driverXbox.back().and(driverXbox.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+    // driverXbox.back().and(driverXbox.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+    // driverXbox
+    //     .start()
+    //     .and(driverXbox.y())
+    //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+    // driverXbox
+    //     .start()
+    //     .and(driverXbox.x())
+    //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     driverXbox
-        .a()
+        .rightTrigger()
         .and(RobotState.getInstance().checkRobotState(RobotStates.NEUTRAL))
         .onTrue(RobotState.getInstance().advanceIntakeState());
 
-    driverXbox
-        .rightBumper()
-        .whileTrue(
-            Commands.sequence(
-                RobotState.getInstance().setStateCommand(RobotStates.SHOOTING),
-                new ShootNoAgitate()));
+    driverXbox.rightBumper().whileTrue(new ShootNoAgitate());
+
+    // driverXbox.leftBumper().whileTrue(new ShootWithAgitate());
 
     driverXbox
-        .x()
+        .a()
         .whileTrue(
             Commands.parallel(
                 kickerSubsystem.kickCommand(KickerState.OUT),
@@ -126,7 +133,7 @@ public class RobotContainer {
     driverXbox.povDown().onTrue(hoodSubsystem.zero());
 
     // reset the field-centric heading on left bumper press
-    driverXbox.y().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    driverXbox.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
     driverXbox
         .leftStick()
         .onTrue(
@@ -137,6 +144,30 @@ public class RobotContainer {
                             Inches.of(27 / 2).in(Meters),
                             Inches.of(27 / 2).in(Meters),
                             Rotation2d.kZero))));
+
+    operatorXbox
+        .a()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  if (RobotState.getInstance().killIntake) {
+                    RobotState.getInstance().killIntake = false;
+                  } else {
+                    RobotState.getInstance().killIntake = true;
+                  }
+                }));
+
+    operatorXbox
+        .y()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  if (RobotState.getInstance().killShooter) {
+                    RobotState.getInstance().killShooter = false;
+                  } else {
+                    RobotState.getInstance().killShooter = true;
+                  }
+                }));
   }
 
   /** Configure DogLog options and PowerDistribution */

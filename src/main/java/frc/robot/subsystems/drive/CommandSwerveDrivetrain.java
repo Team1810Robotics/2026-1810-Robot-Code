@@ -8,7 +8,6 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import dev.doglog.DogLog;
@@ -19,6 +18,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -121,6 +121,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   /* The SysId routine to test */
   private SysIdRoutine m_sysIdRoutineToApply = m_sysIdRoutineTranslation;
 
+  private final DoubleSubscriber xkP = DogLog.tunable("Drive/PP/xkP", 0.0);
+  private final DoubleSubscriber xkI = DogLog.tunable("Drive/PP/xkI", 0.0);
+  private final DoubleSubscriber xkD = DogLog.tunable("Drive/PP/xkD", 0.0);
+  private final DoubleSubscriber hkP = DogLog.tunable("Drive/PP/hkP", 0.0);
+  private final DoubleSubscriber hkI = DogLog.tunable("Drive/PP/hkI", 0.0);
+  private final DoubleSubscriber hkD = DogLog.tunable("Drive/PP/hkD", 0.0);
+
+  private double lastXkP;
+  private double lastXkI;
+  private double lastXkD;
+
+  private double lastHkP;
+  private double lastHkI;
+  private double lastHkD;
+
   /**
    * Constructs a CTRE SwerveDrivetrain using the specified constants.
    *
@@ -144,6 +159,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     SmartDashboard.putData("Field", field2d);
 
     configureAutoBuilder();
+
+    lastXkP = xkP.get();
+    lastXkI = xkI.get();
+    lastXkD = xkD.get();
+
+    lastHkP = hkP.get();
+    lastHkI = hkI.get();
+    lastHkD = hkD.get();
   }
 
   /**
@@ -252,7 +275,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /*
      * Periodically try to apply the operator perspective.
      * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
-     * This allows us to correct the perspective in case the robot code restarts mid-match.
+     * This allows us to correct the perspecti
+     * ve in case the robot code restarts mid-match.
      * Otherwise, only check and apply the operator perspective if the DS is disabled.
      * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
      */
@@ -290,6 +314,24 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     DogLog.log("Drive/Region", Region.getRegion(getPose()).orElse(Region.BLUE_ALLIANCE_ZONE));
 
     field2d.setRobotPose(state.Pose);
+
+    if (xkP.get() != lastXkP
+        || xkI.get() != lastXkI
+        || xkD.get() != lastXkD
+        || hkP.get() != lastHkP
+        || hkI.get() != lastHkI
+        || hkD.get() != lastHkD) {
+
+      configureAutoBuilder();
+
+      lastXkP = xkP.get();
+      lastXkI = xkI.get();
+      lastXkD = xkD.get();
+
+      lastHkP = hkP.get();
+      lastHkI = hkI.get();
+      lastHkD = hkD.get();
+    }
   }
 
   private void startSimThread() {
@@ -385,7 +427,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
               ? new PPHolonomicDriveController(
                   DriveConstants.simTranslationPID, DriveConstants.simHeadingPID)
               : new PPHolonomicDriveController(
-                  new PIDConstants(0.25, 0, 0), new PIDConstants(.25, 0, 0.01)), // TODO: Retune me
+                  DriveConstants.realTranslationConstants, DriveConstants.realHeadingConstants),
           config,
           () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
           this // Subsystem for requirements

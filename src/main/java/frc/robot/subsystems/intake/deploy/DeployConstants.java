@@ -21,14 +21,14 @@ public class DeployConstants {
 
   public static final Translation3d robotToIntake = new Translation3d(0.203, -0.34, 0.23);
 
-  public enum deployState {
+  public enum DeployState {
     DEPLOY(Rotation2d.fromDegrees(14.5)),
     RETRACT(Rotation2d.fromDegrees(115.0)),
     AGITATE(Rotation2d.fromDegrees(30));
 
     private Rotation2d position;
 
-    private deployState(Rotation2d position) {
+    private DeployState(Rotation2d position) {
       this.position = position;
     }
 

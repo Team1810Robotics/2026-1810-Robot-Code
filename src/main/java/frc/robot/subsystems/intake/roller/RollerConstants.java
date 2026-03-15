@@ -7,14 +7,14 @@ public class RollerConstants {
   public static final double kS = 0.1;
   public static final double kV = .0025;
 
-  public enum rollerState {
+  public enum RollerState {
     INTAKE(-3500),
-    OUT(3500),
+    OUT(2500),
     STOP(0);
 
     private double velocity;
 
-    private rollerState(double velocity) {
+    private RollerState(double velocity) {
       this.velocity = velocity;
     }
 

@@ -3,57 +3,61 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5597840909090905,
-        "y": 0.46884090909090903
+        "x": 3.5700909090909088,
+        "y": 0.6646704545454554
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.538943181818182,
-        "y": 0.7572727272727273
+        "x": 4.8275227272727275,
+        "y": 0.6955909090909096
       },
       "isLocked": false,
-      "linkedName": "RightTrenchStart"
+      "linkedName": "RightShootFromTrench"
     },
     {
       "anchor": {
-        "x": 7.569136363636364,
-        "y": 0.9429545454545463
+        "x": 6.373545454545454,
+        "y": 0.9223409090909092
       },
       "prevControl": {
-        "x": 7.1860520307914975,
-        "y": 0.15425150724452674
+        "x": 6.332318181818182,
+        "y": 0.46884090909090903
       },
       "nextControl": {
-        "x": 7.919568181818182,
-        "y": 1.6644318181818187
+        "x": 6.4401585183742505,
+        "y": 1.655084611207688
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.734045454545454,
-        "y": 3.3341363636363632
+        "x": 5.786056818181818,
+        "y": 3.3856704545454543
       },
       "prevControl": {
-        "x": 7.651590909090908,
-        "y": 1.6644318181818187
+        "x": 6.043727272727272,
+        "y": 2.6332727272727277
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightPickupNeutral"
+      "linkedName": "RightPickupLowNeutral"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.2,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 0.8,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 1.35,
+      "rotationDegrees": 91.61263463448547
     }
   ],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 1.3,
+      "minWaypointRelativePos": 1.254010695187167,
       "maxWaypointRelativePos": 2.0,
       "constraints": {
         "maxVelocity": 1.5,
@@ -83,7 +87,7 @@
   "folder": "Right",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -0.8555132580968176
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

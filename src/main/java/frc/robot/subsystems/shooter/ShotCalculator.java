@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
@@ -30,6 +31,7 @@ public class ShotCalculator {
 
   private static double maxDistance;
   private static double minDistance;
+  private static double phaseDelay;
 
   private static final InterpolatingTreeMap<Double, Rotation2d> scoringHoodMap =
       new InterpolatingTreeMap<>(InverseInterpolator.forDouble(), Rotation2d::interpolate);
@@ -50,24 +52,23 @@ public class ShotCalculator {
   static {
     maxDistance = 5.5;
     minDistance = 1;
+    phaseDelay = 0.03;
 
-    scoringHoodMap.put(1.4, Rotation2d.fromDegrees(0));
-    scoringHoodMap.put(1.7, Rotation2d.fromDegrees(1));
-    scoringHoodMap.put(2.2, Rotation2d.fromDegrees(2));
-    scoringHoodMap.put(2.8, Rotation2d.fromDegrees(4));
-    scoringHoodMap.put(3.0, Rotation2d.fromDegrees(4.5));
-    scoringHoodMap.put(3.5, Rotation2d.fromDegrees(5));
-    scoringHoodMap.put(4.0, Rotation2d.fromDegrees(6.0));
-    scoringHoodMap.put(4.8, Rotation2d.fromDegrees(8.0));
+    scoringHoodMap.put(1.48, Rotation2d.fromDegrees(0));
+    scoringHoodMap.put(1.94, Rotation2d.fromDegrees(1));
+    scoringHoodMap.put(2.54, Rotation2d.fromDegrees(2));
+    scoringHoodMap.put(3.0, Rotation2d.fromDegrees(3.5));
+    scoringHoodMap.put(3.78, Rotation2d.fromDegrees(5));
+    scoringHoodMap.put(4.2, Rotation2d.fromDegrees(7));
+    scoringHoodMap.put(5.1, Rotation2d.fromDegrees(8.5));
 
-    scoringFlywheelMap.put(1.4, 31.5);
-    scoringFlywheelMap.put(1.7, 33.0);
-    scoringFlywheelMap.put(2.2, 35.0);
-    scoringFlywheelMap.put(2.8, 37.0);
+    scoringFlywheelMap.put(1.48, 29.0);
+    scoringFlywheelMap.put(1.94, 31.5);
+    scoringFlywheelMap.put(2.52, 34.5);
     scoringFlywheelMap.put(3.0, 37.0);
-    scoringFlywheelMap.put(3.5, 38.0);
-    scoringFlywheelMap.put(4.0, 40.0);
-    scoringFlywheelMap.put(4.8, 45.0);
+    scoringFlywheelMap.put(3.78, 40.0);
+    scoringFlywheelMap.put(4.2, 41.5);
+    scoringFlywheelMap.put(5.1, 44.67);
 
     scoringTimeOfFlightMap.put(1.45, 1.083);
     scoringTimeOfFlightMap.put(2.62, 1.167);
@@ -90,6 +91,15 @@ public class ShotCalculator {
     }
 
     Pose2d robotPose = RobotContainer.getDrivetrain().getPose();
+    ChassisSpeeds robotRelativeVelocity = RobotContainer.getDrivetrain().getRobotRelativeSpeeds();
+
+    robotPose =
+        robotPose.exp(
+            new Twist2d(
+                robotRelativeVelocity.vxMetersPerSecond * phaseDelay,
+                robotRelativeVelocity.vyMetersPerSecond * phaseDelay,
+                robotRelativeVelocity.omegaRadiansPerSecond * phaseDelay));
+
     Optional<Region> robotRegion = Region.getRegion(robotPose);
 
     ChassisSpeeds robotVelocity = RobotContainer.getDrivetrain().getFieldRelativeSpeeds();
@@ -156,9 +166,14 @@ public class ShotCalculator {
 
       double distanceToVirtualTarget = turretPose.getTranslation().getDistance(virtualTarget);
 
-      isValid = distanceToRealTarget < maxDistance && distanceToRealTarget > minDistance;
-
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
+
+      if (turretAngle.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+          || turretAngle.getDegrees() < TurretConstants.MIN_ANGLE.in(Degrees)) {
+        isValid = false;
+      } else {
+        isValid = true;
+      }
 
       hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
       flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
@@ -167,9 +182,17 @@ public class ShotCalculator {
 
       double distanceToVirtualTarget = turretPose.getTranslation().getDistance(virtualTarget);
 
-      isValid = distanceToRealTarget < maxDistance && distanceToRealTarget > minDistance;
-
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
+
+      Rotation2d turretAngleTurretFrame =
+          RobotContainer.getTurretSubsystem().robotRelativeToTurret(turretAngle);
+
+      if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+          || turretAngleTurretFrame.getDegrees() < TurretConstants.MIN_ANGLE.in(Degrees)) {
+        isValid = false;
+      } else {
+        isValid = true;
+      }
 
       hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
       flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
@@ -184,6 +207,7 @@ public class ShotCalculator {
     DogLog.log("ShotCalculator/Parameters/Hood Angle", hoodAngle.getDegrees(), Degrees);
     DogLog.log(
         "ShotCalculator/Parameters/Flywheel Velocity", flywheelVelocity.in(RotationsPerSecond));
+    DogLog.log("ShotCalculator/Mode", mode.toString());
 
     latestParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
 

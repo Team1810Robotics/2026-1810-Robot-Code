@@ -3,60 +3,60 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.5597840909090905,
-        "y": 0.46884090909090903
+        "x": 3.528863636363636,
+        "y": 4.179295454545454
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.538943181818182,
-        "y": 0.7572727272727273
+        "x": 2.7352386363636363,
+        "y": 4.766784090909091
       },
       "isLocked": false,
-      "linkedName": "RightTrenchStart"
+      "linkedName": "MidStart"
     },
     {
       "anchor": {
-        "x": 7.569136363636364,
-        "y": 0.9429545454545463
+        "x": 0.6429545454545453,
+        "y": 5.024454545454546
       },
       "prevControl": {
-        "x": 7.1860520307914975,
-        "y": 0.15425150724452674
+        "x": 1.5911818181818178,
+        "y": 4.684329545454546
       },
       "nextControl": {
-        "x": 7.919568181818182,
-        "y": 1.6644318181818187
+        "x": 0.29885597058381935,
+        "y": 5.147881208179915
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "DepotPickupReady"
     },
     {
       "anchor": {
-        "x": 7.734045454545454,
-        "y": 3.3341363636363632
+        "x": 0.48835227272727255,
+        "y": 6.972443181818182
       },
       "prevControl": {
-        "x": 7.651590909090908,
-        "y": 1.6644318181818187
+        "x": 0.5604999999999998,
+        "y": 5.921147727272728
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "RightPickupNeutral"
+      "linkedName": "AfterDepotPickup"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.2,
-      "rotationDegrees": 90.0
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 88.95449202331073
     }
   ],
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 1.3,
-      "maxWaypointRelativePos": 2.0,
+      "minWaypointRelativePos": 1.0,
+      "maxWaypointRelativePos": 2,
       "constraints": {
-        "maxVelocity": 1.5,
+        "maxVelocity": 1.0,
         "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
@@ -80,10 +80,10 @@
     "rotation": 90.0
   },
   "reversed": false,
-  "folder": "Right",
+  "folder": "Center",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -0.8555132580968176
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

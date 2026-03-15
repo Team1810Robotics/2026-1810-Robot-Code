@@ -15,6 +15,9 @@ public class RobotState {
   public RobotStates robotState = RobotStates.NEUTRAL;
   public IntakeStates intakeState = IntakeStates.STOP;
 
+  public boolean killShooter = false;
+  public boolean killIntake = false;
+
   public void setState(RobotStates state) {
     this.robotState = state;
   }
@@ -75,6 +78,8 @@ public class RobotState {
   public void log() {
     DogLog.log("RobotState/Robot State", robotState.toString());
     DogLog.log("RobotState/Intake State", intakeState.toString());
+    DogLog.log("RobotState/Kill Intake", killIntake);
+    DogLog.log("RobotState/Kill Shooter", killShooter);
   }
 
   public static RobotState instance;

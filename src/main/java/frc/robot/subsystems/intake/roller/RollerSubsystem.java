@@ -14,13 +14,15 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.intake.roller.RollerConstants.rollerState;
+import frc.robot.RobotState;
+import frc.robot.RobotState.RobotStates;
+import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 
 public class RollerSubsystem extends SubsystemBase {
   private final SparkMax rollerMotor;
   private SparkClosedLoopController rollerController;
 
-  private rollerState rollerState;
+  private RollerState rollerState;
 
   private DoubleSubscriber kP = DogLog.tunable("Intake/Roller/kP", 0.0);
   private DoubleSubscriber kS = DogLog.tunable("Intake/Roller/kS", 0.1);
@@ -50,24 +52,18 @@ public class RollerSubsystem extends SubsystemBase {
 
     rollerController = rollerMotor.getClosedLoopController();
 
-    rollerState = RollerConstants.rollerState.STOP;
+    rollerState = RollerConstants.RollerState.STOP;
   }
 
-  public void roller(rollerState state) {
+  public void roller(RollerState state) {
     this.rollerState = state;
-    if (state == RollerConstants.rollerState.STOP) {
-      rollerMotor.stopMotor();
-      return;
-    }
-
-    rollerController.setSetpoint(state.getVelocity(), ControlType.kVelocity);
   }
 
-  public Command rollerCommand(rollerState state) {
-    return Commands.run(() -> roller(state), this).finallyDo(() -> stopRoller());
+  public Command rollerCommand(RollerState state) {
+    return Commands.run(() -> roller(state), this).finallyDo(() -> stop());
   }
 
-  public void stopRoller() {
+  public void stop() {
     rollerMotor.stopMotor();
   }
 
@@ -97,5 +93,16 @@ public class RollerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
+
+    if (RobotState.getInstance().checkRobotState(RobotStates.SHOOTING).getAsBoolean()) return;
+
+    rollerState = RobotState.getInstance().intakeState.getRollerState();
+
+    if (rollerState == RollerConstants.RollerState.STOP) {
+      rollerMotor.stopMotor();
+      return;
+    }
+
+    rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);
   }
 }

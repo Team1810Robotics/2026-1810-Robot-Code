@@ -17,7 +17,8 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.intake.deploy.DeployConstants.deployState;
+import frc.robot.RobotState;
+import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 
 public class DeploySubsystem extends SubsystemBase {
   private final SparkMax leftMotor;
@@ -27,7 +28,7 @@ public class DeploySubsystem extends SubsystemBase {
   private final PIDController intakePIDController;
   private final ArmFeedforward feedforward;
 
-  private deployState deployState;
+  private DeployState deployState;
 
   private Rotation2d deployTarget;
   private Rotation2d position;
@@ -70,35 +71,35 @@ public class DeploySubsystem extends SubsystemBase {
     feedforward = new ArmFeedforward(DeployConstants.kS, DeployConstants.kG, 0);
 
     if (encoder.get() < .4) {
-      deployState = DeployConstants.deployState.RETRACT;
+      deployState = DeployConstants.DeployState.RETRACT;
       deployTarget = deployState.getPosition();
 
       unwrappedEncoder = 1;
     } else {
-      deployState = DeployConstants.deployState.DEPLOY;
+      deployState = DeployConstants.DeployState.DEPLOY;
       deployTarget = deployState.getPosition();
     }
   }
 
-  public void deploy(deployState state) {
+  public void deploy(DeployState state) {
     this.deployState = state;
     this.deployTarget = state.getPosition();
   }
 
-  public Command deployCommand(deployState state) {
+  public Command deployCommand(DeployState state) {
     return Commands.run(() -> deploy(state), this);
   }
 
   public Command agitateCommand() {
     return Commands.sequence(
-            Commands.runOnce(() -> deploy(DeployConstants.deployState.AGITATE), this),
+            Commands.runOnce(() -> deploy(DeployConstants.DeployState.AGITATE), this),
             Commands.waitUntil(this::atSetpoint),
-            Commands.runOnce(() -> deploy(DeployConstants.deployState.DEPLOY), this),
+            Commands.runOnce(() -> deploy(DeployConstants.DeployState.DEPLOY), this),
             Commands.waitUntil(this::atSetpoint))
         .finallyDo(interrupted -> stopDeploy());
   }
 
-  public Command delpoyCommandNoRequirements(deployState state) {
+  public Command delpoyCommandNoRequirements(DeployState state) {
     return Commands.runOnce(() -> deploy(state));
   }
 
@@ -150,6 +151,7 @@ public class DeploySubsystem extends SubsystemBase {
     DogLog.log("Intake/Deploy/Position", getPosition().getDegrees(), Degrees);
     DogLog.log("Intake/Deploy/State", deployState.name());
     DogLog.log("Intake/Deploy/Target", deployTarget.getDegrees(), Degrees);
+    DogLog.log("Intake/Deploy/Raw Encoder", encoder.get());
   }
 
   public void updateGains() {
@@ -168,6 +170,12 @@ public class DeploySubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
+
+    deployState = RobotState.getInstance().intakeState.getDeployState();
+
+    if (RobotState.getInstance().killIntake) {
+      deployTarget = DeployConstants.DeployState.RETRACT.getPosition();
+    }
 
     if (encoder.isConnected()) {
       double output =

@@ -1,29 +1,29 @@
 package frc.robot.subsystems.intake;
 
 import frc.robot.subsystems.intake.deploy.DeployConstants;
-import frc.robot.subsystems.intake.deploy.DeployConstants.deployState;
+import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.roller.RollerConstants;
-import frc.robot.subsystems.intake.roller.RollerConstants.rollerState;
+import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 
 public enum IntakeStates {
-  INTAKE(RollerConstants.rollerState.INTAKE, DeployConstants.deployState.DEPLOY),
-  OUT(RollerConstants.rollerState.OUT, DeployConstants.deployState.DEPLOY),
-  STOP(RollerConstants.rollerState.STOP, DeployConstants.deployState.RETRACT),
-  AGITATE(RollerConstants.rollerState.STOP, DeployConstants.deployState.AGITATE);
+  INTAKE(RollerConstants.RollerState.INTAKE, DeployConstants.DeployState.DEPLOY),
+  OUT(RollerConstants.RollerState.OUT, DeployConstants.DeployState.DEPLOY),
+  STOP(RollerConstants.RollerState.STOP, DeployConstants.DeployState.RETRACT),
+  AGITATE(RollerConstants.RollerState.STOP, DeployConstants.DeployState.AGITATE);
 
-  private rollerState rollerState;
-  private deployState deployState;
+  private RollerState rollerState;
+  private DeployState deployState;
 
-  private IntakeStates(rollerState rollerState, deployState deployState) {
+  private IntakeStates(RollerState rollerState, DeployState deployState) {
     this.rollerState = rollerState;
     this.deployState = deployState;
   }
 
-  public deployState getDeployState() {
+  public DeployState getDeployState() {
     return this.deployState;
   }
 
-  public rollerState getRollerState() {
+  public RollerState getRollerState() {
     return this.rollerState;
   }
 }

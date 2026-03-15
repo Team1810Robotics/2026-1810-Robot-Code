@@ -9,7 +9,6 @@ import frc.robot.util.geometry.AllianceFlipUtil;
 
 public abstract class BaseAuto extends SequentialCommandGroup {
   protected BaseAuto(Pose2d startPose, Command... commands) {
-
     addCommands(
         Commands.runOnce(
             () -> RobotContainer.getDrivetrain().resetPose(AllianceFlipUtil.apply(startPose))));

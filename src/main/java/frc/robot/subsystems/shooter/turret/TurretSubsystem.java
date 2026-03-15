@@ -3,8 +3,10 @@ package frc.robot.subsystems.shooter.turret;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -17,12 +19,15 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.util.TunablePIDF;
+import frc.robot.util.TunablePIDF.TunablePIDFGains;
 
 public class TurretSubsystem extends SubsystemBase {
 
@@ -40,6 +45,14 @@ public class TurretSubsystem extends SubsystemBase {
   private Rotation2d target;
   private Rotation2d motorPosition;
   private Rotation2d encoderPosition;
+
+  private final TunablePIDF tunablePIDF;
+
+  private final DoubleSubscriber positionTarget = DogLog.tunable("Turret/Position", 0.0);
+
+  // private final DoubleSubscriber veloTarget = DogLog.tunable("Turret/Velocity", 0.0);
+  // private final BooleanSubscriber isVelocity = DogLog.tunable("Turret/Should Tune Velocity",
+  // false);
 
   public TurretSubsystem() {
 
@@ -63,7 +76,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     config.Slot0.kP = TurretConstants.kP;
     config.Slot0.kD = TurretConstants.kD;
@@ -75,6 +88,8 @@ public class TurretSubsystem extends SubsystemBase {
     config.MotionMagic.MotionMagicCruiseVelocity = TurretConstants.MOTION_MAGIC_CRUISE_VELOCITY;
     config.MotionMagic.MotionMagicAcceleration = TurretConstants.MOTION_MAGIC_ACCELERATION;
     config.MotionMagic.MotionMagicJerk = TurretConstants.MOTION_MAGIC_JERK;
+
+    tunablePIDF = new TunablePIDF("Turret");
 
     turretMotor.getConfigurator().apply(config);
 
@@ -133,7 +148,7 @@ public class TurretSubsystem extends SubsystemBase {
     return turretAngle.minus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG));
   }
 
-  private Rotation2d robotRelativeToTurret(Rotation2d rrAngle) {
+  public Rotation2d robotRelativeToTurret(Rotation2d rrAngle) {
     Rotation2d ang =
         rrAngle.plus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG));
 
@@ -161,7 +176,11 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public boolean atTargetAngle() {
-    return Math.abs(target.getDegrees() - getTurretAngle().getDegrees()) < 30;
+    try {
+      return Math.abs(target.getDegrees() - getTurretAngle().getDegrees()) < 5;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   public void setRobotRelativeAngle(Rotation2d rrAngle) {
@@ -176,10 +195,6 @@ public class TurretSubsystem extends SubsystemBase {
     return Commands.startEnd(() -> setRobotRelativeAngle(rrAngle), () -> stop(), this);
   }
 
-  // FIX: ShotCalculator now returns a field-relative angle. Subtract robot rotation here
-  // to convert to robot-relative, then convert to turret frame via robotRelativeToTurret().
-  // Previously, ShotCalculator was already subtracting robot rotation, so this method was
-  // double-subtracting and then negating — mirroring the target across the robot centerline.
   public void setFieldRelativeAngle() {
     Rotation2d fieldRelativeAngle =
         ShotCalculator.getInstance().calculateParameters().turretAngle();
@@ -212,15 +227,40 @@ public class TurretSubsystem extends SubsystemBase {
 
   public void log() {
     DogLog.log("Turret/Motor Position (turret frame)", getTurretAngle().getDegrees(), Degrees);
+    DogLog.log(
+        "Turret/Motor Position (robot frame)", getTurretAngleRobotRelative().getDegrees(), Degrees);
 
     DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
     DogLog.log("Turret/Raw Encoder Position", turretEncoder.get(), Rotations);
 
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
+
+    DogLog.log("Turret/Velocity", turretMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
+
+    DogLog.log("Turret/At Setpoint", atTargetAngle());
+  }
+
+  public void updateGains() {
+    TunablePIDFGains gains = tunablePIDF.getGains();
+
+    if (!gains.hasChanged()) return;
+
+    Slot0Configs cfg = new Slot0Configs();
+
+    cfg.kP = gains.kP();
+    cfg.kD = gains.kD();
+    cfg.kS = gains.kS();
+    cfg.kV = gains.kV();
+
+    cfg.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
+
+    turretMotor.getConfigurator().apply(cfg);
   }
 
   @Override
   public void periodic() {
+    updateGains();
+
     updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
 
     if (resetMotorPos > 50) {
@@ -229,6 +269,9 @@ public class TurretSubsystem extends SubsystemBase {
     }
     log();
     resetMotorPos++;
+
+    // turretMotor.setControl(
+    //     motionMagicRequest.withPosition(Degrees.of(positionTarget.get()).in(Rotations)));
   }
 
   public Pose3d simPose = new Pose3d();
