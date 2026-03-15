@@ -184,10 +184,11 @@ public class ShotCalculator {
 
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
 
-      if (turretAngle.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
-          || turretAngle.getDegrees() < TurretConstants.MIN_ANGLE.in(Degrees)
-          || distanceToRealTarget > maxDistance
-          || distanceToRealTarget < minDistance) {
+      Rotation2d turretAngleTurretFrame =
+          RobotContainer.getTurretSubsystem().robotRelativeToTurret(turretAngle);
+
+      if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+          || turretAngleTurretFrame.getDegrees() < TurretConstants.MIN_ANGLE.in(Degrees)) {
         isValid = false;
       } else {
         isValid = true;
@@ -206,6 +207,7 @@ public class ShotCalculator {
     DogLog.log("ShotCalculator/Parameters/Hood Angle", hoodAngle.getDegrees(), Degrees);
     DogLog.log(
         "ShotCalculator/Parameters/Flywheel Velocity", flywheelVelocity.in(RotationsPerSecond));
+    DogLog.log("ShotCalculator/Mode", mode.toString());
 
     latestParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
 

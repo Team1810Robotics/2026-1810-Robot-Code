@@ -7,6 +7,7 @@ import frc.robot.auto.commands.left.LeftDoublePickup;
 import frc.robot.auto.commands.left.LeftSinglePickup;
 import frc.robot.auto.commands.mid.Depot;
 import frc.robot.auto.commands.right.RightDoublePickup;
+import frc.robot.auto.commands.right.RightSinglePickup;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ public class AutoSelector {
     this.addAuto(StartPosition.LEFT, "Single Pickup", new LeftSinglePickup());
     this.addAuto(StartPosition.LEFT, "Double Pickup", new LeftDoublePickup());
 
-    this.addAuto(StartPosition.RIGHT, "Single Pickup", new RightDoublePickup());
+    this.addAuto(StartPosition.RIGHT, "Single Pickup", new RightSinglePickup());
     this.addAuto(StartPosition.RIGHT, "Double Pickup", new RightDoublePickup());
 
     this.addAuto(StartPosition.MIDDLE, "Depot", new Depot());

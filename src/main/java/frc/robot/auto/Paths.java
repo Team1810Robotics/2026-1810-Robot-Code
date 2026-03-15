@@ -16,6 +16,9 @@ public class Paths {
   public static PathPlannerPath midShootToDepotPickup;
   public static PathPlannerPath depotPickupToShoot;
 
+  public static PathPlannerPath tuning1;
+  public static PathPlannerPath tuning2;
+
   static {
     try {
       rightPickupToShoot = PathPlannerPath.fromPathFile("RightPickupToShoot");
@@ -30,6 +33,9 @@ public class Paths {
 
       midShootToDepotPickup = PathPlannerPath.fromPathFile("MidShootToPickupDepot");
       depotPickupToShoot = PathPlannerPath.fromPathFile("DepotToShoot");
+
+      tuning1 = PathPlannerPath.fromPathFile("TuningPath1");
+      tuning2 = PathPlannerPath.fromPathFile("TuningPath2");
     } catch (Exception e) {
       e.printStackTrace();
     }

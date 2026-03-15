@@ -14,8 +14,8 @@ public class TurretConstants {
 
   public static final double GEAR_RATIO = 32.0;
 
-  public static final Angle MIN_ANGLE = Degrees.of(-160);
-  public static final Angle MAX_ANGLE = Degrees.of(155);
+  public static final Angle MIN_ANGLE = Degrees.of(-150);
+  public static final Angle MAX_ANGLE = Degrees.of(150);
 
   public static final double ENCODER_OFFSET = .5;
 

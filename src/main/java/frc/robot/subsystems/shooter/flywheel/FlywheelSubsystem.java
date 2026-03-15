@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotState;
 
 public class FlywheelSubsystem extends SubsystemBase {
   private final TalonFX rightMotor;
@@ -84,7 +85,16 @@ public class FlywheelSubsystem extends SubsystemBase {
   }
 
   public Command idleMotorCommand() {
-    return Commands.startEnd(() -> idleMotor(), () -> stop(), this);
+    return Commands.startEnd(
+        () -> {
+          if (RobotState.getInstance().killShooter) {
+            stop();
+          } else {
+            idleMotor();
+          }
+        },
+        () -> stop(),
+        this);
   }
 
   public void setVelocity(AngularVelocity velocity) {

@@ -9,7 +9,7 @@ public class RollerConstants {
 
   public enum RollerState {
     INTAKE(-3500),
-    OUT(3500),
+    OUT(2500),
     STOP(0);
 
     private double velocity;

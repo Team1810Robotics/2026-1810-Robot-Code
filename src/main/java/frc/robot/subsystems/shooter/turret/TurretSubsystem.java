@@ -148,7 +148,7 @@ public class TurretSubsystem extends SubsystemBase {
     return turretAngle.minus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG));
   }
 
-  private Rotation2d robotRelativeToTurret(Rotation2d rrAngle) {
+  public Rotation2d robotRelativeToTurret(Rotation2d rrAngle) {
     Rotation2d ang =
         rrAngle.plus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG));
 
@@ -176,7 +176,11 @@ public class TurretSubsystem extends SubsystemBase {
   }
 
   public boolean atTargetAngle() {
-    return Math.abs(target.getDegrees() - getTurretAngle().getDegrees()) < 30;
+    try {
+      return Math.abs(target.getDegrees() - getTurretAngle().getDegrees()) < 5;
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   public void setRobotRelativeAngle(Rotation2d rrAngle) {
@@ -232,6 +236,8 @@ public class TurretSubsystem extends SubsystemBase {
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
 
     DogLog.log("Turret/Velocity", turretMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
+
+    DogLog.log("Turret/At Setpoint", atTargetAngle());
   }
 
   public void updateGains() {

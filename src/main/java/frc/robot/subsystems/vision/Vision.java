@@ -6,7 +6,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
@@ -102,14 +101,6 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (DriverStation.isDisabled()) {
-      return;
-    } else if (DriverStation.isAutonomous()) {
-      LimelightHelpers.SetIMUMode(
-          limelightName, 1); // Set IMU mode to 4 while bot is enabled, check docs for more details
-    } else {
-      LimelightHelpers.SetIMUMode(limelightName, 4);
-    }
 
     // Update bot orientation for MT2 pose estimation + LL imu fusing
     LimelightHelpers.SetRobotOrientation(

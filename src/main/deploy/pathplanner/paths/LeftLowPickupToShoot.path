@@ -16,19 +16,24 @@
     },
     {
       "anchor": {
-        "x": 3.590704545454545,
-        "y": 7.601159090909091
+        "x": 3.5597840909090905,
+        "y": 7.43625
       },
       "prevControl": {
-        "x": 6.260170454545454,
-        "y": 7.4465568181818185
+        "x": 6.806431818181818,
+        "y": 7.642386363636364
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "LeftShootFromTrench"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 180.0
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -42,10 +47,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Left",
   "idealStartingState": {
     "velocity": 0,
     "rotation": -89.07595464722729

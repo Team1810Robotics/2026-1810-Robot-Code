@@ -66,7 +66,9 @@ public class ShootWithAgitate extends Command {
       isReady = true;
     }
 
-    if (isReady && turretSubsystem.atTargetAngle()) {
+    if (!turretSubsystem.atTargetAngle()) return;
+
+    if (isReady) {
       spindexerSubsystem.spindex(SpindexerState.IN);
       kickerSubsystem.kick(KickerState.IN);
       rollerSubsystem.roller(RollerState.INTAKE);
@@ -80,12 +82,19 @@ public class ShootWithAgitate extends Command {
   }
 
   @Override
+  public boolean isFinished() {
+    if (RobotState.getInstance().killShooter) return true;
+
+    return false;
+  }
+
+  @Override
   public void end(boolean interrupted) {
     hoodSubsystem.stop();
     flywheelSubsystem.stop();
     spindexerSubsystem.stop();
     kickerSubsystem.stop();
-    rollerSubsystem.stopRoller();
+    rollerSubsystem.stop();
 
     isReady = false;
 

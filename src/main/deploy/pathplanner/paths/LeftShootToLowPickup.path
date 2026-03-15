@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.590704545454545,
-        "y": 7.601159090909091
+        "x": 3.5597840909090905,
+        "y": 7.43625
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.4152499999999995,
-        "y": 7.374409090909092
+        "x": 4.353409090909091,
+        "y": 7.456863636363637
       },
       "isLocked": false,
       "linkedName": "LeftShootFromTrench"
@@ -20,12 +20,12 @@
         "y": 6.972443181818182
       },
       "prevControl": {
-        "x": 6.342625,
-        "y": 7.4877840909090905
+        "x": 6.1364886363636355,
+        "y": 7.498090909090909
       },
       "nextControl": {
-        "x": 5.766084785953808,
-        "y": 6.234435799504327
+        "x": 6.057865659929475,
+        "y": 6.161500309710159
       },
       "isLocked": false,
       "linkedName": null
@@ -46,7 +46,11 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.0,
+      "waypointRelativePos": 0.8,
+      "rotationDegrees": 180.0
+    },
+    {
+      "waypointRelativePos": 1.35,
       "rotationDegrees": -90.0
     }
   ],
@@ -66,10 +70,10 @@
     "rotation": -89.07595464722729
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Left",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 180.0
   },
   "useDefaultConstraints": true
 }

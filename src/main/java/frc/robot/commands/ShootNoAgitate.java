@@ -1,6 +1,5 @@
 package frc.robot.commands;
 
-import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
 import frc.robot.RobotState;
@@ -25,7 +24,7 @@ public class ShootNoAgitate extends Command {
   private final RollerSubsystem rollerSubsystem;
   private final TurretSubsystem turretSubsystem;
 
-  private boolean isReady = false;
+  private boolean hasSpunUp = false;
 
   public ShootNoAgitate() {
     this.flywheelSubsystem = RobotContainer.getFlywheelSubsystem();
@@ -35,7 +34,7 @@ public class ShootNoAgitate extends Command {
     this.rollerSubsystem = RobotContainer.getRollerSubsystem();
     this.turretSubsystem = RobotContainer.getTurretSubsystem();
 
-    isReady = false;
+    hasSpunUp = false;
 
     addRequirements(
         flywheelSubsystem, hoodSubsystem, spindexerSubsystem, kickerSubsystem, rollerSubsystem);
@@ -43,7 +42,8 @@ public class ShootNoAgitate extends Command {
 
   @Override
   public void initialize() {
-    isReady = false;
+    RobotState.getInstance().setState(RobotStates.SHOOTING);
+    hasSpunUp = false;
   }
 
   @Override
@@ -54,22 +54,26 @@ public class ShootNoAgitate extends Command {
     hoodSubsystem.setPosition(params.hoodAngle());
     flywheelSubsystem.setVelocity(params.flywheelVelocity());
 
-    if (!isReady && flywheelSubsystem.atTargetVelocity() && turretSubsystem.atTargetAngle()) {
-      isReady = true;
+    if (!hasSpunUp && flywheelSubsystem.atTargetVelocity()) {
+      hasSpunUp = true;
     }
 
-    if (isReady) {
+    if (hasSpunUp && turretSubsystem.atTargetAngle()) {
       spindexerSubsystem.spindex(SpindexerState.IN);
       kickerSubsystem.kick(KickerState.IN);
       rollerSubsystem.roller(RollerState.INTAKE);
+    } else {
+      spindexerSubsystem.spindex(SpindexerState.STOP);
+      kickerSubsystem.kick(KickerState.STOP);
+      rollerSubsystem.roller(RollerState.STOP);
     }
+  }
 
-    DogLog.log("Shooter/HasSpunUp", isReady);
+  @Override
+  public boolean isFinished() {
+    if (RobotState.getInstance().killShooter) return true;
 
-    // if (hasSpunUp && !agitateCommand.isScheduled() && Timer.getFPGATimestamp() - startTime > 7.5)
-    // {
-    //   CommandScheduler.getInstance().schedule(agitateCommand);
-    // }
+    return false;
   }
 
   @Override
@@ -78,9 +82,9 @@ public class ShootNoAgitate extends Command {
     flywheelSubsystem.stop();
     spindexerSubsystem.stop();
     kickerSubsystem.stop();
-    rollerSubsystem.stopRoller();
+    rollerSubsystem.stop();
 
-    isReady = false;
+    hasSpunUp = false;
 
     RobotState.getInstance().setState(RobotStates.NEUTRAL);
   }
