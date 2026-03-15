@@ -4,8 +4,8 @@ import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.RobotContainer;
-import frc.robot.RobotState;
-import frc.robot.RobotState.RobotStates;
+import frc.robot.state.RobotState;
+import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
@@ -71,7 +71,7 @@ public class ShootWithAgitate extends Command {
     if (isReady) {
       spindexerSubsystem.spindex(SpindexerState.IN);
       kickerSubsystem.kick(KickerState.IN);
-      rollerSubsystem.roller(RollerState.INTAKE);
+      rollerSubsystem.setState(RollerState.INTAKE);
     }
 
     DogLog.log("Shooter/HasSpunUp", isReady);

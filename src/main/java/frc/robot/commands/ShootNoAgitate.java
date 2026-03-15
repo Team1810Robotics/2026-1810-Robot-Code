@@ -2,8 +2,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
-import frc.robot.RobotState;
-import frc.robot.RobotState.RobotStates;
+import frc.robot.state.RobotState;
+import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
@@ -61,11 +61,11 @@ public class ShootNoAgitate extends Command {
     if (hasSpunUp && turretSubsystem.atTargetAngle()) {
       spindexerSubsystem.spindex(SpindexerState.IN);
       kickerSubsystem.kick(KickerState.IN);
-      rollerSubsystem.roller(RollerState.INTAKE);
+      rollerSubsystem.setState(RollerState.INTAKE);
     } else {
       spindexerSubsystem.spindex(SpindexerState.STOP);
       kickerSubsystem.kick(KickerState.STOP);
-      rollerSubsystem.roller(RollerState.STOP);
+      rollerSubsystem.setState(RollerState.STOP);
     }
   }
 

@@ -14,8 +14,8 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotState;
-import frc.robot.RobotState.RobotStates;
+import frc.robot.state.RobotState;
+import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 
 public class RollerSubsystem extends SubsystemBase {
@@ -55,12 +55,12 @@ public class RollerSubsystem extends SubsystemBase {
     rollerState = RollerConstants.RollerState.STOP;
   }
 
-  public void roller(RollerState state) {
+  public void setState(RollerState state) {
     this.rollerState = state;
   }
 
   public Command rollerCommand(RollerState state) {
-    return Commands.run(() -> roller(state), this).finallyDo(() -> stop());
+    return Commands.run(() -> setState(state), this).finallyDo(() -> stop());
   }
 
   public void stop() {

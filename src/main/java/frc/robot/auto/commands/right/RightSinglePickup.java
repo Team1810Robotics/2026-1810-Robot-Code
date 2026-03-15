@@ -4,10 +4,10 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.RobotState;
 import frc.robot.auto.BaseAuto;
 import frc.robot.auto.Paths;
 import frc.robot.commands.ShootWithAgitate;
+import frc.robot.state.RobotState;
 import frc.robot.subsystems.intake.IntakeStates;
 
 public class RightSinglePickup extends BaseAuto {

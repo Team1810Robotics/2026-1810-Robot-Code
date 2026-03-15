@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotState;
+import frc.robot.state.RobotState;
 import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 
 public class DeploySubsystem extends SubsystemBase {
@@ -81,26 +81,26 @@ public class DeploySubsystem extends SubsystemBase {
     }
   }
 
-  public void deploy(DeployState state) {
+  public void setState(DeployState state) {
     this.deployState = state;
     this.deployTarget = state.getPosition();
   }
 
   public Command deployCommand(DeployState state) {
-    return Commands.run(() -> deploy(state), this);
+    return Commands.run(() -> setState(state), this);
   }
 
   public Command agitateCommand() {
     return Commands.sequence(
-            Commands.runOnce(() -> deploy(DeployConstants.DeployState.AGITATE), this),
+            Commands.runOnce(() -> setState(DeployConstants.DeployState.AGITATE), this),
             Commands.waitUntil(this::atSetpoint),
-            Commands.runOnce(() -> deploy(DeployConstants.DeployState.DEPLOY), this),
+            Commands.runOnce(() -> setState(DeployConstants.DeployState.DEPLOY), this),
             Commands.waitUntil(this::atSetpoint))
         .finallyDo(interrupted -> stopDeploy());
   }
 
   public Command delpoyCommandNoRequirements(DeployState state) {
-    return Commands.runOnce(() -> deploy(state));
+    return Commands.runOnce(() -> setState(state));
   }
 
   public void stopDeploy() {
