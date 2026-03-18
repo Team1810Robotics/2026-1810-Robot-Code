@@ -14,4 +14,10 @@ public class HoodConstants {
   public static final double kS = 0.23;
 
   public static final Translation3d turretToHood = new Translation3d(.114, .078, .074);
+
+  public enum HoodState {
+    NEUTRAL,
+    SCORING,
+    PASSING
+  }
 }

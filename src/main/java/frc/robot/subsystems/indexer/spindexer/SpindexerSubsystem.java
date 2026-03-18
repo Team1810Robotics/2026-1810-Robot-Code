@@ -49,7 +49,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     // tunablePIDF = new TunablePIDF("Spindexer");
   }
 
-  public void spindex(SpindexerState state) {
+  public void setState(SpindexerState state) {
     this.state = state;
 
     if (state == SpindexerState.STOP) {
@@ -61,7 +61,7 @@ public class SpindexerSubsystem extends SubsystemBase {
   }
 
   public Command spinCommand(SpindexerState state) {
-    return Commands.startEnd(() -> spindex(state), () -> stop(), this);
+    return Commands.startEnd(() -> setState(state), () -> stop(), this);
   }
 
   public void stop() {
@@ -93,11 +93,11 @@ public class SpindexerSubsystem extends SubsystemBase {
 
     if (tuningMode.get()) {
       isTuning = true;
-      spindex(SpindexerState.IN);
+      setState(SpindexerState.IN);
     }
 
     if (!tuningMode.get() && isTuning) {
-      spindex(SpindexerState.STOP);
+      setState(SpindexerState.STOP);
       isTuning = false;
     }
   }

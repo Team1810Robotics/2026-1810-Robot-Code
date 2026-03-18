@@ -197,7 +197,7 @@ public class TurretSubsystem extends SubsystemBase {
 
   public void setFieldRelativeAngle() {
     Rotation2d fieldRelativeAngle =
-        ShotCalculator.getInstance().calculateParameters().turretAngle();
+        ShotCalculator.getInstance().calculateScoringParameters().turretAngle();
     Rotation2d robotRelativeAngle =
         fieldRelativeAngle.minus(RobotContainer.getDrivetrain().getPose().getRotation());
 
@@ -280,7 +280,7 @@ public class TurretSubsystem extends SubsystemBase {
   public void simulationPeriodic() {
 
     Rotation2d fieldRelativeAngle =
-        ShotCalculator.getInstance().calculateParameters().turretAngle();
+        ShotCalculator.getInstance().calculateScoringParameters().turretAngle();
     Rotation2d robotRelativeAngle =
         fieldRelativeAngle.minus(RobotContainer.getDrivetrain().getPose().getRotation());
 

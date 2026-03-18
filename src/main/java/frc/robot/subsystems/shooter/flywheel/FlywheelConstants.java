@@ -9,4 +9,10 @@ public class FlywheelConstants {
   public static final double kD = 0;
   public static final double kS = 0.7;
   public static final double kV = 0.115;
+
+  public enum FlywheelState {
+    IDLE,
+    SCORING,
+    PASSING
+  }
 }

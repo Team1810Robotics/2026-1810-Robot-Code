@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.state.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.util.HubStateUtil;
 
@@ -49,7 +48,6 @@ public class Robot extends TimedRobot {
 
     Mechanism3d.getInstance().log();
     HubStateUtil.log();
-    RobotState.getInstance().log();
 
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putBoolean("Auto Selected", autoSelected);

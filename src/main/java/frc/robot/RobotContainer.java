@@ -17,8 +17,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.auto.AutoSelector;
 import frc.robot.commands.ShootNoAgitate;
-import frc.robot.state.RobotState;
-import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
@@ -115,11 +113,6 @@ public class RobotContainer {
     //     .and(driverXbox.x())
     //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    driverXbox
-        .rightTrigger()
-        .and(RobotState.getInstance().checkRobotState(RobotStates.NEUTRAL))
-        .onTrue(RobotState.getInstance().advanceIntakeState());
-
     driverXbox.rightBumper().whileTrue(new ShootNoAgitate());
 
     // driverXbox.leftBumper().whileTrue(new ShootWithAgitate());
@@ -145,30 +138,6 @@ public class RobotContainer {
                             Inches.of(27 / 2).in(Meters),
                             Inches.of(27 / 2).in(Meters),
                             Rotation2d.kZero))));
-
-    operatorXbox
-        .a()
-        .onTrue(
-            Commands.runOnce(
-                () -> {
-                  if (RobotState.getInstance().killIntake) {
-                    RobotState.getInstance().killIntake = false;
-                  } else {
-                    RobotState.getInstance().killIntake = true;
-                  }
-                }));
-
-    operatorXbox
-        .y()
-        .onTrue(
-            Commands.runOnce(
-                () -> {
-                  if (RobotState.getInstance().killShooter) {
-                    RobotState.getInstance().killShooter = false;
-                  } else {
-                    RobotState.getInstance().killShooter = true;
-                  }
-                }));
   }
 
   /** Configure DogLog options and PowerDistribution */

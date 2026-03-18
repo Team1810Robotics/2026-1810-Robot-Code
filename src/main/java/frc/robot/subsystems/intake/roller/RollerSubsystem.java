@@ -14,8 +14,6 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.state.RobotState;
-import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 
 public class RollerSubsystem extends SubsystemBase {
@@ -57,6 +55,13 @@ public class RollerSubsystem extends SubsystemBase {
 
   public void setState(RollerState state) {
     this.rollerState = state;
+
+    if (rollerState == RollerConstants.RollerState.STOP) {
+      rollerMotor.stopMotor();
+      return;
+    }
+
+    rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);
   }
 
   public Command rollerCommand(RollerState state) {
@@ -93,16 +98,5 @@ public class RollerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
-
-    if (RobotState.getInstance().checkRobotState(RobotStates.SHOOTING).getAsBoolean()) return;
-
-    rollerState = RobotState.getInstance().intakeState.getRollerState();
-
-    if (rollerState == RollerConstants.RollerState.STOP) {
-      rollerMotor.stopMotor();
-      return;
-    }
-
-    rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);
   }
 }

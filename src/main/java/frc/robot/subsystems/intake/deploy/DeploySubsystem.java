@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.state.RobotState;
 import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 
 public class DeploySubsystem extends SubsystemBase {
@@ -84,6 +83,10 @@ public class DeploySubsystem extends SubsystemBase {
   public void setState(DeployState state) {
     this.deployState = state;
     this.deployTarget = state.getPosition();
+  }
+
+  public DeployState getState() {
+    return deployState;
   }
 
   public Command deployCommand(DeployState state) {
@@ -171,18 +174,14 @@ public class DeploySubsystem extends SubsystemBase {
   public void periodic() {
     updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
 
-    deployState = RobotState.getInstance().intakeState.getDeployState();
-
-    if (RobotState.getInstance().killIntake) {
-      deployTarget = DeployConstants.DeployState.RETRACT.getPosition();
-    }
-
     if (encoder.isConnected()) {
-      double output =
+      double pidOut =
           intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
       double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
-      double totalOutput = output + feedforwardOut;
+      double totalOutput = pidOut + feedforwardOut;
+
       DogLog.log("Intake/Deploy/Output Voltage", totalOutput);
+
       leftMotor.setVoltage(totalOutput);
     }
 

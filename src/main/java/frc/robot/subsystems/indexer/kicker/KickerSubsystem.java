@@ -33,7 +33,7 @@ public class KickerSubsystem extends SubsystemBase {
     kickerMotor.getConfigurator().apply(cfg);
   }
 
-  public void kick(KickerState state) {
+  public void setState(KickerState state) {
     this.state = state;
 
     if (state == KickerState.STOP) {
@@ -45,7 +45,7 @@ public class KickerSubsystem extends SubsystemBase {
   }
 
   public Command kickCommand(KickerState state) {
-    return Commands.startEnd(() -> kick(state), () -> stop(), this);
+    return Commands.startEnd(() -> setState(state), () -> stop(), this);
   }
 
   public void stop() {
@@ -76,11 +76,11 @@ public class KickerSubsystem extends SubsystemBase {
 
     if (tuningMode.get()) {
       isTuning = true;
-      kick(KickerState.IN);
+      setState(KickerState.IN);
     }
 
     if (!tuningMode.get() && isTuning) {
-      kick(KickerState.STOP);
+      setState(KickerState.STOP);
       isTuning = false;
     }
   }

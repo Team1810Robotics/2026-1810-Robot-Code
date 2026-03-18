@@ -42,13 +42,12 @@ public class ShootNoAgitate extends Command {
 
   @Override
   public void initialize() {
-    RobotState.getInstance().setState(RobotStates.SHOOTING);
     hasSpunUp = false;
   }
 
   @Override
   public void execute() {
-    ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+    ShotParameters params = ShotCalculator.getInstance().calculateScoringParameters();
     if (!params.isValid()) return;
 
     hoodSubsystem.setPosition(params.hoodAngle());
@@ -59,20 +58,18 @@ public class ShootNoAgitate extends Command {
     }
 
     if (hasSpunUp && turretSubsystem.atTargetAngle()) {
-      spindexerSubsystem.spindex(SpindexerState.IN);
-      kickerSubsystem.kick(KickerState.IN);
+      spindexerSubsystem.setState(SpindexerState.IN);
+      kickerSubsystem.setState(KickerState.IN);
       rollerSubsystem.setState(RollerState.INTAKE);
     } else {
-      spindexerSubsystem.spindex(SpindexerState.STOP);
-      kickerSubsystem.kick(KickerState.STOP);
+      spindexerSubsystem.setState(SpindexerState.STOP);
+      kickerSubsystem.setState(KickerState.STOP);
       rollerSubsystem.setState(RollerState.STOP);
     }
   }
 
   @Override
   public boolean isFinished() {
-    if (RobotState.getInstance().killShooter) return true;
-
     return false;
   }
 

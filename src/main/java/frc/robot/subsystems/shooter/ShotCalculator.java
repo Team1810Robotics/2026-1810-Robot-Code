@@ -85,7 +85,8 @@ public class ShotCalculator {
     passingFlywheelMap.put(6.7, 55.0);
   }
 
-  public ShotParameters calculateParameters() {
+  public ShotParameters calculateScoringParameters() {
+
     if (latestParams != null) {
       return latestParams;
     }
@@ -208,6 +209,77 @@ public class ShotCalculator {
     DogLog.log(
         "ShotCalculator/Parameters/Flywheel Velocity", flywheelVelocity.in(RotationsPerSecond));
     DogLog.log("ShotCalculator/Mode", mode.toString());
+
+    latestParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
+
+    return latestParams;
+  }
+
+  public ShotParameters calculatePassingParameters() {
+
+    if (latestParams != null) {
+      return latestParams;
+    }
+
+    Pose2d robotPose = RobotContainer.getDrivetrain().getPose();
+
+    Optional<Region> robotRegion = Region.getRegion(robotPose);
+
+    if (robotRegion.isEmpty()) {
+      return new ShotParameters(false, Rotation2d.kZero, Rotation2d.kZero, RadiansPerSecond.of(0));
+    }
+
+    Translation2d target;
+
+    if (robotRegion.get() == Region.UPPER_NEUTRAL_ZONE) {
+      target = ShotConstants.upperPass;
+    } else if (robotRegion.get() == Region.LOWER_NEUTRAL_ZONE) {
+      target = ShotConstants.lowerPass;
+    } else {
+      return new ShotParameters(false, Rotation2d.kZero, Rotation2d.kZero, RadiansPerSecond.of(0));
+    }
+
+    target = AllianceFlipUtil.apply(target);
+
+    Transform2d robotToTurret =
+        new Transform2d(
+            TurretConstants.ROBOT_TO_TURRET.getX(),
+            TurretConstants.ROBOT_TO_TURRET.getY(),
+            Rotation2d.kZero);
+
+    Pose2d turretPose = robotPose.transformBy(robotToTurret);
+
+    double distanceToTarget = turretPose.getTranslation().getDistance(target);
+
+    boolean isValid;
+    Rotation2d hoodAngle, turretAngle;
+    AngularVelocity flywheelVelocity;
+
+    double distanceToVirtualTarget = turretPose.getTranslation().getDistance(target);
+
+    turretAngle = target.minus(turretPose.getTranslation()).getAngle();
+
+    Rotation2d turretAngleTurretFrame =
+        RobotContainer.getTurretSubsystem().robotRelativeToTurret(turretAngle);
+
+    if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+        || turretAngleTurretFrame.getDegrees() < TurretConstants.MIN_ANGLE.in(Degrees)) {
+      isValid = false;
+    } else {
+      isValid = true;
+    }
+
+    hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
+    flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
+
+    DogLog.log("ShotCalculator/Distance To Target", distanceToTarget, Meters);
+    DogLog.log("ShotCalculator/Real Target", new Pose2d(target, Rotation2d.kZero));
+
+    DogLog.log("ShotCalculator/Parameters/Is Valid", isValid);
+    DogLog.log("ShotCalculator/Parameters/Turret Angle", turretAngle.getDegrees(), Degrees);
+    DogLog.log("ShotCalculator/Parameters/Hood Angle", hoodAngle.getDegrees(), Degrees);
+    DogLog.log(
+        "ShotCalculator/Parameters/Flywheel Velocity", flywheelVelocity.in(RotationsPerSecond));
 
     latestParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
 

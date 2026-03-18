@@ -19,7 +19,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.state.RobotState;
+import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
+import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.FlywheelState;
 
 public class FlywheelSubsystem extends SubsystemBase {
   private final TalonFX rightMotor;
@@ -40,6 +42,8 @@ public class FlywheelSubsystem extends SubsystemBase {
   private double targetVelocity = 0;
 
   private Command tuningCommand = setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()));
+
+  private FlywheelState flywheelState = FlywheelState.IDLE;
 
   public FlywheelSubsystem() {
     rightMotor = new TalonFX(FlywheelConstants.RIGHT_FLYWHEEL_ID);
@@ -71,8 +75,6 @@ public class FlywheelSubsystem extends SubsystemBase {
     leftMotor.getConfigurator().apply(cfg);
 
     leftMotor.setControl(new Follower(rightMotor.getDeviceID(), MotorAlignmentValue.Aligned));
-
-    setDefaultCommand(idleMotorCommand());
   }
 
   public Command dutyCycleCommand(double dutyCycle) {
@@ -87,14 +89,14 @@ public class FlywheelSubsystem extends SubsystemBase {
   public Command idleMotorCommand() {
     return Commands.startEnd(
         () -> {
-          if (RobotState.getInstance().killShooter) {
-            stop();
-          } else {
-            idleMotor();
-          }
+          idleMotor();
         },
         () -> stop(),
         this);
+  }
+
+  public void setState(FlywheelState state) {
+    this.flywheelState = state;
   }
 
   public void setVelocity(AngularVelocity velocity) {
@@ -151,6 +153,32 @@ public class FlywheelSubsystem extends SubsystemBase {
   public void periodic() {
     log();
     updateGains();
+
+    switch (flywheelState) {
+      case PASSING:
+        ShotParameters passingParams = ShotCalculator.getInstance().calculatePassingParameters();
+
+        if (!passingParams.isValid()) {
+          idle();
+        } else {
+          setVelocity(passingParams.flywheelVelocity());
+        }
+        break;
+      case SCORING:
+        ShotParameters scoringParams = ShotCalculator.getInstance().calculateScoringParameters();
+
+        if (!scoringParams.isValid()) {
+          idle();
+        } else {
+          setVelocity(scoringParams.flywheelVelocity());
+        }
+        break;
+      case IDLE:
+        idle();
+        break;
+      default:
+        break;
+    }
 
     tuningCommand =
         setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()))

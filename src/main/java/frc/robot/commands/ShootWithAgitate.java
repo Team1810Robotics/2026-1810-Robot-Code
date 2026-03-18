@@ -56,7 +56,7 @@ public class ShootWithAgitate extends Command {
 
   @Override
   public void execute() {
-    ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+    ShotParameters params = ShotCalculator.getInstance().calculateScoringParameters();
     if (!params.isValid()) return;
 
     hoodSubsystem.setPosition(params.hoodAngle());
@@ -69,8 +69,8 @@ public class ShootWithAgitate extends Command {
     if (!turretSubsystem.atTargetAngle()) return;
 
     if (isReady) {
-      spindexerSubsystem.spindex(SpindexerState.IN);
-      kickerSubsystem.kick(KickerState.IN);
+      spindexerSubsystem.setState(SpindexerState.IN);
+      kickerSubsystem.setState(KickerState.IN);
       rollerSubsystem.setState(RollerState.INTAKE);
     }
 
@@ -83,8 +83,6 @@ public class ShootWithAgitate extends Command {
 
   @Override
   public boolean isFinished() {
-    if (RobotState.getInstance().killShooter) return true;
-
     return false;
   }
 
