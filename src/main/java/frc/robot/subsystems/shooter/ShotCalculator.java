@@ -88,8 +88,8 @@ public class ShotCalculator {
 
   public ShotParameters calculateScoringParameters() {
 
-    if (latestPassingParams != null) {
-      return latestPassingParams;
+    if (latestScoringParams != null) {
+      return latestScoringParams;
     }
 
     Pose2d robotPose = RobotContainer.getDrivetrain().getPose();
@@ -165,15 +165,15 @@ public class ShotCalculator {
     DogLog.log(
         "ShotCalculator/Parameters/Flywheel Velocity", flywheelVelocity.in(RotationsPerSecond));
 
-    latestPassingParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
+    latestScoringParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
 
-    return latestPassingParams;
+    return latestScoringParams;
   }
 
   public ShotParameters calculatePassingParameters() {
 
-    if (latestScoringParams != null) {
-      return latestScoringParams;
+    if (latestPassingParams != null) {
+      return latestPassingParams;
     }
 
     Pose2d robotPose = RobotContainer.getDrivetrain().getPose();
@@ -238,9 +238,9 @@ public class ShotCalculator {
     DogLog.log(
         "ShotCalculator/Parameters/Flywheel Velocity", flywheelVelocity.in(RotationsPerSecond));
 
-    latestScoringParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
+    latestPassingParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
 
-    return latestScoringParams;
+    return latestPassingParams;
   }
 
   public Translation2d getTarget() {

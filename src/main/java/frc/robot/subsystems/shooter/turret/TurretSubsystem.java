@@ -97,8 +97,6 @@ public class TurretSubsystem extends SubsystemBase {
     lastEncoderRaw = turretEncoder.get();
     unwrappedEncoder = lastEncoderRaw;
     seedMotorFromAbsolute();
-
-    setDefaultCommand(setFieldRelativeAngleCommand());
   }
 
   private void updateEncoderUnwrap() {

@@ -127,9 +127,10 @@ public class RobotContainer {
 
                     case INTAKING:
                       robotState.setState(RobotStates.NEUTRAL);
-
+                      break;
                     case SCORING_NO_AGITATION:
                       robotState.intakeRetracted = !robotState.intakeRetracted;
+                      break;
                     default:
                       break;
                   }
