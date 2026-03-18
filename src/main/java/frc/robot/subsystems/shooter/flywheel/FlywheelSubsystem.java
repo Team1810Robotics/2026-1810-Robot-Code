@@ -159,7 +159,7 @@ public class FlywheelSubsystem extends SubsystemBase {
         ShotParameters passingParams = ShotCalculator.getInstance().calculatePassingParameters();
 
         if (!passingParams.isValid()) {
-          idle();
+          idleMotor();
         } else {
           setVelocity(passingParams.flywheelVelocity());
         }
@@ -168,7 +168,7 @@ public class FlywheelSubsystem extends SubsystemBase {
         ShotParameters scoringParams = ShotCalculator.getInstance().calculateScoringParameters();
 
         if (!scoringParams.isValid()) {
-          idle();
+          idleMotor();
         } else {
           setVelocity(scoringParams.flywheelVelocity());
         }

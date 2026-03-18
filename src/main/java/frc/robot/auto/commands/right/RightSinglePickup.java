@@ -8,7 +8,7 @@ import frc.robot.auto.BaseAuto;
 import frc.robot.auto.Paths;
 import frc.robot.commands.ShootWithAgitate;
 import frc.robot.state.RobotState;
-import frc.robot.subsystems.intake.IntakeStates;
+import frc.robot.state.RobotState.RobotStates;
 
 public class RightSinglePickup extends BaseAuto {
 
@@ -18,7 +18,7 @@ public class RightSinglePickup extends BaseAuto {
         Commands.parallel(
             AutoBuilder.followPath(Paths.rightShootToPickup),
             Commands.waitTime(Seconds.of(1))
-                .andThen(RobotState.getInstance().setIntakeState(IntakeStates.INTAKE))),
+                .andThen(RobotState.getInstance().setStateCommand(RobotStates.INTAKING))),
         AutoBuilder.followPath(Paths.rightPickupToShoot),
         new ShootWithAgitate().withTimeout(Seconds.of(5)));
   }

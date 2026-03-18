@@ -197,7 +197,7 @@ public class HoodSubsystem extends SubsystemBase {
         break;
       default:
         break;
-      }
+    }
 
     tuningCommand =
         setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))

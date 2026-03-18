@@ -34,8 +34,8 @@ public class RobotState {
   private final TurretSubsystem turretSubsystem;
 
   private boolean flywheelSpunUp = false;
-  private boolean indexerReversed = false;
-  private boolean intakeRetracted = false;
+  public boolean indexerReversed = false;
+  public boolean intakeRetracted = false;
 
   private RobotState() {
     spindexerSubsystem = RobotContainer.getSpindexerSubsystem();

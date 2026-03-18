@@ -6,14 +6,14 @@ import frc.robot.auto.BaseAuto;
 import frc.robot.auto.Paths;
 import frc.robot.commands.ShootNoAgitate;
 import frc.robot.state.RobotState;
-import frc.robot.subsystems.intake.IntakeStates;
+import frc.robot.state.RobotState.RobotStates;
 
 public class Depot extends BaseAuto {
 
   public Depot() {
     super(
         Paths.midShootToDepotPickup.getStartingHolonomicPose().orElseThrow(),
-        RobotState.getInstance().setIntakeState(IntakeStates.INTAKE),
+        RobotState.getInstance().setStateCommand(RobotStates.INTAKING),
         Commands.parallel(
             new ShootNoAgitate(),
             Commands.sequence(

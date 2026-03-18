@@ -16,13 +16,13 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.auto.AutoSelector;
-import frc.robot.commands.ShootNoAgitate;
+import frc.robot.state.RobotState;
+import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
-import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
-import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
+import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
@@ -30,6 +30,7 @@ import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.field.Region;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -113,16 +114,67 @@ public class RobotContainer {
     //     .and(driverXbox.x())
     //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    driverXbox.rightBumper().whileTrue(new ShootNoAgitate());
+    driverXbox
+        .rightTrigger()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  RobotState robotState = RobotState.getInstance();
+                  switch (RobotState.getInstance().getState()) {
+                    case NEUTRAL:
+                      robotState.setState(RobotStates.INTAKING);
+                      break;
 
-    // driverXbox.leftBumper().whileTrue(new ShootWithAgitate());
+                    case INTAKING:
+                      robotState.setState(RobotStates.NEUTRAL);
+
+                    case SCORING_NO_AGITATION:
+                      robotState.intakeRetracted = !robotState.intakeRetracted;
+                    default:
+                      break;
+                  }
+                }));
+
+    driverXbox
+        .rightBumper()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  Region botRegion = Region.getRegion(drivetrain.getPose()).orElseThrow();
+
+                  if (botRegion == Region.BLUE_ALLIANCE_ZONE
+                      || botRegion == Region.RED_ALLIANCE_ZONE) {
+                    RobotState.getInstance().setState(RobotStates.SCORING_NO_AGITATION);
+                  } else {
+                    RobotState.getInstance().setState(RobotStates.PASSING);
+                  }
+                }));
+
+    driverXbox
+        .rightBumper()
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  DeployState deployState = deploySubsystem.getState();
+
+                  if (deployState == DeployState.RETRACT) {
+                    RobotState.getInstance().setState(RobotStates.NEUTRAL);
+                  } else if (deployState == DeployState.DEPLOY) {
+                    RobotState.getInstance().setState(RobotStates.INTAKING);
+                  }
+                }));
+
+    driverXbox
+        .leftBumper()
+        .onTrue(RobotState.getInstance().setStateCommand(RobotStates.SCORING_NO_AGITATION));
+    driverXbox.leftBumper().onFalse(RobotState.getInstance().setStateCommand(RobotStates.NEUTRAL));
 
     driverXbox
         .a()
         .whileTrue(
-            Commands.parallel(
-                kickerSubsystem.kickCommand(KickerState.OUT),
-                spindexerSubsystem.spinCommand(SpindexerState.OUT)));
+            Commands.startEnd(
+                () -> RobotState.getInstance().indexerReversed = true,
+                () -> RobotState.getInstance().indexerReversed = false));
 
     driverXbox.povDown().onTrue(hoodSubsystem.zero());
 
