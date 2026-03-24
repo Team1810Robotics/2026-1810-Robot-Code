@@ -140,7 +140,7 @@ public class DeploySubsystem extends SubsystemBase {
 
   public boolean atSetpoint() {
     return Math.abs(getPosition().getRadians() - deployTarget.getRadians())
-        < Degrees.of(15).in(Radians);
+        < Degrees.of(5).in(Radians);
   }
 
   public Rotation2d getTargetPosition() {
@@ -149,7 +149,7 @@ public class DeploySubsystem extends SubsystemBase {
 
   public void log() {
     DogLog.log("Intake/Deploy/Position", getPosition().getDegrees(), Degrees);
-    DogLog.log("Intake/Deploy/State", deployState.name());
+    DogLog.log("Intake/Deploy/Deploy State", deployState.name());
     DogLog.log("Intake/Deploy/Target", deployTarget.getDegrees(), Degrees);
     DogLog.log("Intake/Deploy/Raw Encoder", encoder.get());
   }
@@ -171,10 +171,13 @@ public class DeploySubsystem extends SubsystemBase {
   public void periodic() {
     updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
 
+    log();
+
     deployState = RobotState.getInstance().intakeState.getDeployState();
 
     if (RobotState.getInstance().killIntake) {
-      deployTarget = DeployConstants.DeployState.RETRACT.getPosition();
+      stopDeploy();
+      return;
     }
 
     if (encoder.isConnected()) {
@@ -186,8 +189,7 @@ public class DeploySubsystem extends SubsystemBase {
       leftMotor.setVoltage(totalOutput);
     }
 
-    updateGains();
-    log();
+    // updateGains();
   }
 
   public void clearCache() {

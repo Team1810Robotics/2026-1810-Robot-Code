@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
+import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.util.TunablePIDF;
 import frc.robot.util.TunablePIDF.TunablePIDFGains;
@@ -195,6 +197,10 @@ public class TurretSubsystem extends SubsystemBase {
     return Commands.startEnd(() -> setRobotRelativeAngle(rrAngle), () -> stop(), this);
   }
 
+  public void set(double dutyCycle) {
+    turretMotor.setControl(new DutyCycleOut(dutyCycle));
+  }
+
   public void setFieldRelativeAngle() {
     Rotation2d fieldRelativeAngle =
         ShotCalculator.getInstance().calculateParameters().turretAngle();
@@ -259,7 +265,12 @@ public class TurretSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    updateGains();
+    // updateGains();
+
+    if (RobotState.getInstance().killShooter) {
+      stop();
+      return;
+    }
 
     updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
 

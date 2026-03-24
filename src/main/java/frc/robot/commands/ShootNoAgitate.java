@@ -82,7 +82,7 @@ public class ShootNoAgitate extends Command {
     flywheelSubsystem.stop();
     spindexerSubsystem.stop();
     kickerSubsystem.stop();
-    rollerSubsystem.stop();
+    rollerSubsystem.roller(RobotState.getInstance().intakeState.getRollerState());
 
     hasSpunUp = false;
 

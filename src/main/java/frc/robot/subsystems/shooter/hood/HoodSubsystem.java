@@ -16,12 +16,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 
@@ -164,20 +164,25 @@ public class HoodSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
-    updateGains();
+    // updateGains();
 
-    tuningCommand =
-        setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))
-            .until(() -> tuningTarget.get() == 0);
-
-    if (tuningTarget.get() != 0) {
-      isTuning = true;
-      CommandScheduler.getInstance().schedule(tuningCommand);
+    if (RobotState.getInstance().killShooter) {
+      stop();
+      return;
     }
 
-    if (tuningTarget.get() == 0) {
-      isTuning = false;
-    }
+    // tuningCommand =
+    //     setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))
+    //         .until(() -> tuningTarget.get() == 0);
+
+    // if (tuningTarget.get() != 0) {
+    //   isTuning = true;
+    //   CommandScheduler.getInstance().schedule(tuningCommand);
+    // }
+
+    // if (tuningTarget.get() == 0) {
+    //   isTuning = false;
+    // }
   }
 
   public void clearCache() {

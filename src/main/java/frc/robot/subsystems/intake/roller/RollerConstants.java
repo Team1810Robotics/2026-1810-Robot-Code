@@ -8,7 +8,8 @@ public class RollerConstants {
   public static final double kV = .0025;
 
   public enum RollerState {
-    INTAKE(-3500),
+    INTAKE(-5000),
+    AUTO_INTAKE(-5000),
     OUT(2500),
     STOP(0);
 

@@ -8,6 +8,7 @@ import frc.robot.RobotContainer;
 import frc.robot.RobotState;
 import frc.robot.auto.BaseAuto;
 import frc.robot.auto.Paths;
+import frc.robot.commands.ShootNoAgitate;
 import frc.robot.commands.ShootWithAgitate;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
@@ -34,6 +35,6 @@ public class RightDoublePickup extends BaseAuto {
                 .withTimeout(Seconds.of(1))
                 .andThen(RobotState.getInstance().setIntakeState(IntakeStates.INTAKE))),
         AutoBuilder.followPath(Paths.rightLowPickupToShoot),
-        new ShootWithAgitate().withTimeout(Seconds.of(5)));
+        new ShootNoAgitate().withTimeout(Seconds.of(5)));
   }
 }
