@@ -53,19 +53,12 @@ public class RollerSubsystem extends SubsystemBase {
     rollerState = RollerConstants.RollerState.STOP;
   }
 
-  public void roller(RollerState state) {
+  public void setState(RollerState state) {
     this.rollerState = state;
-
-    if (rollerState == RollerConstants.RollerState.STOP) {
-      rollerMotor.stopMotor();
-      return;
-    }
-
-    rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);
   }
 
   public Command rollerCommand(RollerState state) {
-    return Commands.run(() -> roller(state), this).finallyDo(() -> stop());
+    return Commands.run(() -> setState(state), this).finallyDo(() -> stop());
   }
 
   public void stop() {
@@ -99,18 +92,13 @@ public class RollerSubsystem extends SubsystemBase {
   public void periodic() {
     log();
 
-    // if (RobotState.getInstance().checkRobotState(RobotStates.SHOOTING).getAsBoolean()) {
-    //   stop();
-    //   return;
-    // }
-
-    // rollerState = RobotState.getInstance().intakeState.getRollerState();
-
-    //   if (rollerState == RollerConstants.RollerState.STOP) {
-    //     rollerMotor.stopMotor();
-    //     return;
-    //   }
-
-    //   rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);
+    switch (rollerState) {
+      case STOP:
+        rollerMotor.stopMotor();
+        break;
+      default:
+        rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);
+        break;
+    }
   }
 }

@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.state.RobotState;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 
 public class KickerSubsystem extends SubsystemBase {
@@ -33,19 +34,12 @@ public class KickerSubsystem extends SubsystemBase {
     kickerMotor.getConfigurator().apply(cfg);
   }
 
-  public void kick(KickerState state) {
+  public void setState(KickerState state) {
     this.state = state;
-
-    if (state == KickerState.STOP) {
-      stop();
-      return;
-    }
-
-    kickerMotor.set(state.getPower());
   }
 
   public Command kickCommand(KickerState state) {
-    return Commands.startEnd(() -> kick(state), () -> stop(), this);
+    return Commands.startEnd(() -> setState(state), () -> stop(), this);
   }
 
   public void stop() {
@@ -74,13 +68,29 @@ public class KickerSubsystem extends SubsystemBase {
   public void periodic() {
     log();
 
+    switch (state) {
+      case SHOOTING:
+        if (RobotState.getInstance().isShooterReady) {
+          setState(KickerState.IN);
+        } else {
+          setState(KickerState.STOP);
+        }
+        break;
+      case STOP:
+        kickerMotor.stopMotor();
+
+      default:
+        kickerMotor.set(state.getPower());
+        break;
+    }
+
     if (tuningMode.get()) {
       isTuning = true;
-      kick(KickerState.IN);
+      setState(KickerState.IN);
     }
 
     if (!tuningMode.get() && isTuning) {
-      kick(KickerState.STOP);
+      setState(KickerState.STOP);
       isTuning = false;
     }
   }

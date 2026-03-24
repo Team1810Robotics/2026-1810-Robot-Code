@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.state.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.util.HubStateUtil;
 
@@ -44,11 +44,11 @@ public class Robot extends TimedRobot {
     RobotContainer.getLeftVision().clearCache();
     RobotContainer.getRightVision().clearCache();
 
+    RobotState.getInstance().periodic();
     CommandScheduler.getInstance().run();
 
     Mechanism3d.getInstance().log();
     HubStateUtil.log();
-    RobotState.getInstance().log();
 
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putBoolean("Auto Selected", autoSelected);
@@ -61,13 +61,6 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     m_robotContainer.getAutoSelector().updateChooser();
-
-    if (m_robotContainer.getAutonomousCommand() != Commands.none()
-        || !m_robotContainer.getAutonomousCommand().getName().equals("No Auto")) {
-      autoSelected = true;
-    } else {
-      autoSelected = false;
-    }
   }
 
   @Override

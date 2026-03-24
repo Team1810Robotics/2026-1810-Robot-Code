@@ -13,6 +13,7 @@ import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.state.RobotState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 
 public class SpindexerSubsystem extends SubsystemBase {
@@ -49,7 +50,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     // tunablePIDF = new TunablePIDF("Spindexer");
   }
 
-  public void spindex(SpindexerState state) {
+  public void setState(SpindexerState state) {
     this.state = state;
 
     if (state == SpindexerState.STOP) {
@@ -61,7 +62,7 @@ public class SpindexerSubsystem extends SubsystemBase {
   }
 
   public Command spinCommand(SpindexerState state) {
-    return Commands.startEnd(() -> spindex(state), () -> stop(), this);
+    return Commands.startEnd(() -> setState(state), () -> stop(), this);
   }
 
   public void stop() {
@@ -91,13 +92,29 @@ public class SpindexerSubsystem extends SubsystemBase {
     log();
     // updateGains();
 
+    switch (state) {
+      case SHOOTING:
+        if (RobotState.getInstance().isShooterReady) {
+          setState(SpindexerState.IN);
+        } else {
+          stop();
+        }
+        break;
+
+      case STOP:
+        spinMotor.stopMotor();
+      default:
+        spinMotor.set(state.getPower());
+        break;
+    }
+
     if (tuningMode.get()) {
       isTuning = true;
-      spindex(SpindexerState.IN);
+      setState(SpindexerState.IN);
     }
 
     if (!tuningMode.get() && isTuning) {
-      spindex(SpindexerState.STOP);
+      setState(SpindexerState.STOP);
       isTuning = false;
     }
   }

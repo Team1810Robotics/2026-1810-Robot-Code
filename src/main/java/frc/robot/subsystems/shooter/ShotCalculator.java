@@ -16,7 +16,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.RobotContainer;
-import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotConstants.ShootingModes;
 import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.util.field.FieldConstants;
@@ -109,7 +108,7 @@ public class ShotCalculator {
     ChassisSpeeds robotVelocity = RobotContainer.getDrivetrain().getFieldRelativeSpeeds();
     double robotAngle = robotPose.getRotation().getRadians();
 
-    if (robotRegion.isEmpty() || RobotState.getInstance().killShooter) {
+    if (robotRegion.isEmpty()) {
       return new ShotParameters(false, Rotation2d.kZero, Rotation2d.kZero, RadiansPerSecond.of(0));
     }
 

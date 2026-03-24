@@ -15,14 +15,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.RobotState.RobotStates;
 import frc.robot.auto.AutoSelector;
-import frc.robot.commands.ShootNoAgitate;
+import frc.robot.state.RobotState;
+import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
-import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
-import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
@@ -31,6 +29,7 @@ import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
+import frc.robot.util.field.Region;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -95,7 +94,7 @@ public class RobotContainer {
                     .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate * .5)));
 
     driverXbox
-        .leftTrigger()
+        .leftBumper()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -119,19 +118,42 @@ public class RobotContainer {
 
     driverXbox
         .rightBumper()
-        .and(RobotState.getInstance().checkRobotState(RobotStates.NEUTRAL))
-        .onTrue(RobotState.getInstance().advanceIntakeState());
-
-    driverXbox.rightTrigger().whileTrue(new ShootNoAgitate());
-
-    // driverXbox.leftBumper().whileTrue(new ShootWithAgitate());
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  RobotState robotState = RobotState.getInstance();
+                  switch (RobotState.getInstance().getState()) {
+                    case NEUTRAL:
+                      robotState.setState(RobotStates.INTAKING);
+                      break;
+                    case INTAKING:
+                      robotState.setState(RobotStates.NEUTRAL);
+                      break;
+                    default:
+                      break;
+                  }
+                }));
 
     driverXbox
-        .a()
-        .whileTrue(
-            Commands.parallel(
-                kickerSubsystem.kickCommand(KickerState.OUT),
-                spindexerSubsystem.spinCommand(SpindexerState.OUT)));
+        .rightTrigger()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  Region botRegion = Region.getRegion(drivetrain.getPose()).orElseThrow();
+
+                  if (botRegion == Region.BLUE_ALLIANCE_ZONE
+                      || botRegion == Region.RED_ALLIANCE_ZONE) {
+                    RobotState.getInstance().setState(RobotStates.SCORING_NO_AGITATION);
+                  } else {
+                    RobotState.getInstance().setState(RobotStates.PASSING);
+                  }
+                }));
+
+    driverXbox
+        .leftTrigger()
+        .onTrue(RobotState.getInstance().setStateCommand(RobotStates.SCORING_WITH_AGITATION));
+
+    driverXbox.a().onTrue(RobotState.getInstance().setStateCommand(RobotStates.REVERSE_INDEXER));
 
     driverXbox.povDown().onTrue(hoodSubsystem.zero());
 
@@ -147,30 +169,6 @@ public class RobotContainer {
                             Inches.of(27 / 2).in(Meters),
                             Inches.of(27 / 2).in(Meters),
                             Rotation2d.kZero))));
-
-    operatorXbox
-        .a()
-        .onTrue(
-            Commands.runOnce(
-                () -> {
-                  if (RobotState.getInstance().killIntake) {
-                    RobotState.getInstance().killIntake = false;
-                  } else {
-                    RobotState.getInstance().killIntake = true;
-                  }
-                }));
-
-    operatorXbox
-        .y()
-        .onTrue(
-            Commands.runOnce(
-                () -> {
-                  if (RobotState.getInstance().killShooter) {
-                    RobotState.getInstance().killShooter = false;
-                  } else {
-                    RobotState.getInstance().killShooter = true;
-                  }
-                }));
 
     operatorXbox
         .rightStick()

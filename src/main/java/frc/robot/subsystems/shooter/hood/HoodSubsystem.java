@@ -21,9 +21,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
+import frc.robot.subsystems.shooter.hood.HoodConstants.HoodState;
 
 public class HoodSubsystem extends SubsystemBase {
   private final TalonFX hoodMotor;
@@ -43,6 +43,8 @@ public class HoodSubsystem extends SubsystemBase {
   private Command tuningCommand;
 
   private Rotation2d position;
+
+  private HoodState hoodState = HoodState.NEUTRAL;
 
   public HoodSubsystem() {
     hoodMotor = new TalonFX(HoodConstants.HOOD_MOTOR_ID);
@@ -123,6 +125,10 @@ public class HoodSubsystem extends SubsystemBase {
     return Commands.run(() -> hoodMotor.setVoltage(volts), this).finallyDo(() -> stop());
   }
 
+  public void setState(HoodState state) {
+    this.hoodState = state;
+  }
+
   public void log() {
     DogLog.log("Hood/Position", getMotorPosition().getDegrees(), Degrees);
     DogLog.log("Hood/Volts", hoodMotor.getMotorVoltage().getValueAsDouble(), Volts);
@@ -133,15 +139,24 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   private double startTime = 0;
+  private boolean zeroing = false;
 
   // thank you scream
   public Command zero() {
     return new SequentialCommandGroup(
-        new InstantCommand(() -> startTime = Timer.getFPGATimestamp()),
+        new InstantCommand(
+            () -> {
+              startTime = Timer.getFPGATimestamp();
+              zeroing = true;
+            }),
         applyVoltageCommand(-1.0)
             .withDeadline(
                 new WaitUntilCommand(() -> ((Timer.getFPGATimestamp() - startTime) > 1.0))),
-        new InstantCommand(() -> hoodMotor.setPosition(Rotations.of(0))));
+        new InstantCommand(
+            () -> {
+              hoodMotor.setPosition(Rotations.of(0));
+              zeroing = false;
+            }));
   }
 
   public void updateGains() {
@@ -166,23 +181,37 @@ public class HoodSubsystem extends SubsystemBase {
     log();
     // updateGains();
 
-    if (RobotState.getInstance().killShooter) {
-      stop();
-      return;
+    if (zeroing) return;
+
+    switch (hoodState) {
+      case PASSING:
+        ShotParameters passingParams = ShotCalculator.getInstance().calculateParameters();
+
+        if (!passingParams.isValid()) {
+          idle();
+        } else {
+          setPosition(passingParams.hoodAngle());
+        }
+        break;
+      case SCORING:
+        ShotParameters scoringParams = ShotCalculator.getInstance().calculateParameters();
+
+        if (!scoringParams.isValid()) {
+          idle();
+        } else {
+          setPosition(scoringParams.hoodAngle());
+        }
+        break;
+      case NEUTRAL:
+        setPosition(Rotation2d.kZero);
+        break;
+      default:
+        break;
     }
 
     // tuningCommand =
     //     setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))
     //         .until(() -> tuningTarget.get() == 0);
-
-    // if (tuningTarget.get() != 0) {
-    //   isTuning = true;
-    //   CommandScheduler.getInstance().schedule(tuningCommand);
-    // }
-
-    // if (tuningTarget.get() == 0) {
-    //   isTuning = false;
-    // }
   }
 
   public void clearCache() {

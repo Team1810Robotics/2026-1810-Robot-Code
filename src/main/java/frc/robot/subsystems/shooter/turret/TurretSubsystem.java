@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotContainer;
-import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.util.TunablePIDF;
 import frc.robot.util.TunablePIDF.TunablePIDFGains;
@@ -266,11 +265,6 @@ public class TurretSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // updateGains();
-
-    if (RobotState.getInstance().killShooter) {
-      stop();
-      return;
-    }
 
     updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
 

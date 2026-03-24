@@ -17,7 +17,6 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotState;
 import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 
 public class DeploySubsystem extends SubsystemBase {
@@ -35,6 +34,8 @@ public class DeploySubsystem extends SubsystemBase {
 
   private double lastEncoderRaw = 0.0;
   private double unwrappedEncoder = 0.0;
+
+  private AgitationState agitationState = AgitationState.DOWN;
 
   public final DoubleSubscriber kP = DogLog.tunable("Intake/kP", 4.0);
   public final DoubleSubscriber kD = DogLog.tunable("Intake/kD", 0.25);
@@ -81,26 +82,58 @@ public class DeploySubsystem extends SubsystemBase {
     }
   }
 
-  public void deploy(DeployState state) {
+  public void setState(DeployState state) {
     this.deployState = state;
     this.deployTarget = state.getPosition();
   }
 
+  public DeployState getState() {
+    return deployState;
+  }
+
   public Command deployCommand(DeployState state) {
-    return Commands.run(() -> deploy(state), this);
+    return Commands.run(() -> setState(state), this);
+  }
+
+  private enum AgitationState {
+    UP,
+    DOWN
+  }
+
+  public void agitate() {
+    switch (agitationState) {
+      case DOWN:
+        setPosition(DeployConstants.DeployState.AGITATE.getPosition());
+
+        if (atSetpoint()) {
+          agitationState = AgitationState.UP;
+        }
+        break;
+
+      case UP:
+        setPosition(DeployConstants.DeployState.DEPLOY.getPosition());
+
+        if (atSetpoint()) {
+          agitationState = AgitationState.DOWN;
+        }
+        break;
+
+      default:
+        break;
+    }
   }
 
   public Command agitateCommand() {
     return Commands.sequence(
-            Commands.runOnce(() -> deploy(DeployConstants.DeployState.AGITATE), this),
+            Commands.runOnce(() -> setState(DeployConstants.DeployState.AGITATE), this),
             Commands.waitUntil(this::atSetpoint),
-            Commands.runOnce(() -> deploy(DeployConstants.DeployState.DEPLOY), this),
+            Commands.runOnce(() -> setState(DeployConstants.DeployState.DEPLOY), this),
             Commands.waitUntil(this::atSetpoint))
         .finallyDo(interrupted -> stopDeploy());
   }
 
   public Command delpoyCommandNoRequirements(DeployState state) {
-    return Commands.runOnce(() -> deploy(state));
+    return Commands.runOnce(() -> setState(state));
   }
 
   public void stopDeploy() {
@@ -147,6 +180,19 @@ public class DeploySubsystem extends SubsystemBase {
     return deployTarget;
   }
 
+  public void setPosition(Rotation2d deployTarget) {
+    if (encoder.isConnected()) {
+      double pidOut =
+          intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
+      double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
+      double totalOutput = pidOut + feedforwardOut;
+
+      DogLog.log("Intake/Deploy/Output Voltage", totalOutput);
+
+      leftMotor.setVoltage(totalOutput);
+    }
+  }
+
   public void log() {
     DogLog.log("Intake/Deploy/Position", getPosition().getDegrees(), Degrees);
     DogLog.log("Intake/Deploy/Deploy State", deployState.name());
@@ -169,24 +215,17 @@ public class DeploySubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
+    updateEncoderUnwrap();
 
     log();
 
-    deployState = RobotState.getInstance().intakeState.getDeployState();
-
-    if (RobotState.getInstance().killIntake) {
-      stopDeploy();
-      return;
-    }
-
-    if (encoder.isConnected()) {
-      double output =
-          intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
-      double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
-      double totalOutput = output + feedforwardOut;
-      DogLog.log("Intake/Deploy/Output Voltage", totalOutput);
-      leftMotor.setVoltage(totalOutput);
+    switch (deployState) {
+      case AGITATE:
+        agitate();
+        break;
+      default:
+        setPosition(deployState.getPosition());
+        break;
     }
 
     // updateGains();
