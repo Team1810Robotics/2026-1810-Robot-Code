@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.state.RobotState;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 
 public class KickerSubsystem extends SubsystemBase {
@@ -35,13 +36,6 @@ public class KickerSubsystem extends SubsystemBase {
 
   public void setState(KickerState state) {
     this.state = state;
-
-    if (state == KickerState.STOP) {
-      stop();
-      return;
-    }
-
-    kickerMotor.set(state.getPower());
   }
 
   public Command kickCommand(KickerState state) {
@@ -73,6 +67,22 @@ public class KickerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
+
+    switch (state) {
+      case SHOOTING:
+        if (RobotState.getInstance().isShooterReady) {
+          setState(KickerState.IN);
+        } else {
+          setState(KickerState.STOP);
+        }
+        break;
+      case STOP:
+        kickerMotor.stopMotor();
+
+      default:
+        kickerMotor.set(state.getPower());
+        break;
+    }
 
     if (tuningMode.get()) {
       isTuning = true;

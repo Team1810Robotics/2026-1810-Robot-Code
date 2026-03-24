@@ -35,6 +35,8 @@ public class DeploySubsystem extends SubsystemBase {
   private double lastEncoderRaw = 0.0;
   private double unwrappedEncoder = 0.0;
 
+  private AgitationState agitationState = AgitationState.DOWN;
+
   public final DoubleSubscriber kP = DogLog.tunable("Intake/kP", 4.0);
   public final DoubleSubscriber kD = DogLog.tunable("Intake/kD", 0.25);
   public final DoubleSubscriber kS = DogLog.tunable("Intake/kS", 0.75);
@@ -91,6 +93,34 @@ public class DeploySubsystem extends SubsystemBase {
 
   public Command deployCommand(DeployState state) {
     return Commands.run(() -> setState(state), this);
+  }
+
+  private enum AgitationState {
+    UP,
+    DOWN
+  }
+
+  public void agitate() {
+    switch (agitationState) {
+      case DOWN:
+        setPosition(DeployConstants.DeployState.AGITATE.getPosition());
+
+        if (atSetpoint()) {
+          agitationState = AgitationState.UP;
+        }
+        break;
+
+      case UP:
+        setPosition(DeployConstants.DeployState.DEPLOY.getPosition());
+
+        if (atSetpoint()) {
+          agitationState = AgitationState.DOWN;
+        }
+        break;
+
+      default:
+        break;
+    }
   }
 
   public Command agitateCommand() {
@@ -150,6 +180,19 @@ public class DeploySubsystem extends SubsystemBase {
     return deployTarget;
   }
 
+  public void setPosition(Rotation2d deployTarget) {
+    if (encoder.isConnected()) {
+      double pidOut =
+          intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
+      double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
+      double totalOutput = pidOut + feedforwardOut;
+
+      DogLog.log("Intake/Deploy/Output Voltage", totalOutput);
+
+      leftMotor.setVoltage(totalOutput);
+    }
+  }
+
   public void log() {
     DogLog.log("Intake/Deploy/Position", getPosition().getDegrees(), Degrees);
     DogLog.log("Intake/Deploy/State", deployState.name());
@@ -172,17 +215,15 @@ public class DeploySubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    updateEncoderUnwrap(); // always runs, keeps lastEncoderRaw current
+    updateEncoderUnwrap();
 
-    if (encoder.isConnected()) {
-      double pidOut =
-          intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
-      double feedforwardOut = feedforward.calculateWithVelocities(getPosition().getRadians(), 0, 0);
-      double totalOutput = pidOut + feedforwardOut;
-
-      DogLog.log("Intake/Deploy/Output Voltage", totalOutput);
-
-      leftMotor.setVoltage(totalOutput);
+    switch (deployState) {
+      case AGITATE:
+        agitate();
+        break;
+      default:
+        setPosition(deployState.getPosition());
+        break;
     }
 
     updateGains();

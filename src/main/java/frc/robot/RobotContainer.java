@@ -22,7 +22,6 @@ import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
-import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
@@ -92,7 +91,7 @@ public class RobotContainer {
                     .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate * .3)));
 
     driverXbox
-        .leftTrigger()
+        .leftBumper()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -115,7 +114,7 @@ public class RobotContainer {
     //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     driverXbox
-        .rightTrigger()
+        .rightBumper()
         .onTrue(
             Commands.runOnce(
                 () -> {
@@ -124,12 +123,8 @@ public class RobotContainer {
                     case NEUTRAL:
                       robotState.setState(RobotStates.INTAKING);
                       break;
-
                     case INTAKING:
                       robotState.setState(RobotStates.NEUTRAL);
-                      break;
-                    case SCORING_NO_AGITATION:
-                      robotState.intakeRetracted = !robotState.intakeRetracted;
                       break;
                     default:
                       break;
@@ -137,7 +132,7 @@ public class RobotContainer {
                 }));
 
     driverXbox
-        .rightBumper()
+        .rightTrigger()
         .onTrue(
             Commands.runOnce(
                 () -> {
@@ -152,30 +147,10 @@ public class RobotContainer {
                 }));
 
     driverXbox
-        .rightBumper()
-        .onFalse(
-            Commands.runOnce(
-                () -> {
-                  DeployState deployState = deploySubsystem.getState();
+        .leftTrigger()
+        .onTrue(RobotState.getInstance().setStateCommand(RobotStates.SCORING_WITH_AGITATION));
 
-                  if (deployState == DeployState.RETRACT) {
-                    RobotState.getInstance().setState(RobotStates.NEUTRAL);
-                  } else if (deployState == DeployState.DEPLOY) {
-                    RobotState.getInstance().setState(RobotStates.INTAKING);
-                  }
-                }));
-
-    driverXbox
-        .leftBumper()
-        .onTrue(RobotState.getInstance().setStateCommand(RobotStates.SCORING_NO_AGITATION));
-    driverXbox.leftBumper().onFalse(RobotState.getInstance().setStateCommand(RobotStates.NEUTRAL));
-
-    driverXbox
-        .a()
-        .whileTrue(
-            Commands.startEnd(
-                () -> RobotState.getInstance().indexerReversed = true,
-                () -> RobotState.getInstance().indexerReversed = false));
+    driverXbox.a().onTrue(RobotState.getInstance().setStateCommand(RobotStates.REVERSE_INDEXER));
 
     driverXbox.povDown().onTrue(hoodSubsystem.zero());
 

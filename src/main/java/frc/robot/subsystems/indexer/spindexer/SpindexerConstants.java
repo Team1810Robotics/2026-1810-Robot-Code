@@ -6,7 +6,8 @@ public class SpindexerConstants {
   public enum SpindexerState {
     IN(.6),
     OUT(-.4),
-    STOP(0);
+    STOP(0),
+    SHOOTING(.6);
 
     private final double power;
 

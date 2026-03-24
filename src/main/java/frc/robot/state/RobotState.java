@@ -34,8 +34,7 @@ public class RobotState {
   private final TurretSubsystem turretSubsystem;
 
   private boolean flywheelSpunUp = false;
-  public boolean indexerReversed = false;
-  public boolean intakeRetracted = false;
+  public boolean isShooterReady = false;
 
   private RobotState() {
     spindexerSubsystem = RobotContainer.getSpindexerSubsystem();
@@ -51,13 +50,6 @@ public class RobotState {
   public void periodic() {
     turretSubsystem.setFieldRelativeAngle();
 
-    if (indexerReversed) {
-      kickerSubsystem.setState(KickerState.OUT);
-      spindexerSubsystem.setState(SpindexerState.OUT);
-
-      return;
-    }
-
     if (isScoringState()) {
       ShotParameters params = ShotCalculator.getInstance().calculateScoringParameters();
 
@@ -65,24 +57,7 @@ public class RobotState {
         flywheelSpunUp = true;
       }
 
-      boolean ready = flywheelSpunUp && turretSubsystem.atTargetAngle() && params.isValid();
-
-      if (ready) {
-        spindexerSubsystem.setState(SpindexerState.IN);
-        kickerSubsystem.setState(KickerState.IN);
-
-        if (robotState == RobotStates.SCORING_WITH_AGITATION) {
-          deploySubsystem.setState(DeployState.AGITATE);
-        }
-      } else {
-        spindexerSubsystem.setState(SpindexerState.STOP);
-        kickerSubsystem.setState(KickerState.STOP);
-      }
-    }
-
-    if (intakeRetracted && robotState == RobotStates.SCORING_NO_AGITATION) {
-      deploySubsystem.setState(DeployState.RETRACT);
-      rollerSubsystem.setState(RollerState.STOP);
+      isShooterReady = flywheelSpunUp && turretSubsystem.atTargetAngle() && params.isValid();
     }
   }
 
@@ -117,16 +92,20 @@ public class RobotState {
       case PASSING:
         passing();
         break;
+      case REVERSE_INDEXER:
+        reverseIndexer();
+        break;
       default:
         break;
     }
   }
 
   private void onStateExit() {
+    if (isShootingState()) {
+      flywheelSpunUp = false;
+      isShooterReady = false;
+    }
     switch (robotState) {
-      case SCORING_NO_AGITATION, SCORING_WITH_AGITATION, PASSING:
-        flywheelSpunUp = false;
-        break;
       default:
         break;
     }
@@ -172,6 +151,11 @@ public class RobotState {
     hoodSubsystem.setState(HoodState.PASSING);
   }
 
+  private void reverseIndexer() {
+    spindexerSubsystem.setState(SpindexerState.OUT);
+    kickerSubsystem.setState(KickerState.OUT);
+  }
+
   public boolean isShootingState() {
     return isPassingState() || isScoringState();
   }
@@ -200,6 +184,7 @@ public class RobotState {
     INTAKING,
     SCORING_NO_AGITATION,
     SCORING_WITH_AGITATION,
-    PASSING
+    PASSING,
+    REVERSE_INDEXER
   }
 }

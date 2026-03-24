@@ -140,15 +140,24 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   private double startTime = 0;
+  private boolean zeroing = false;
 
   // thank you scream
   public Command zero() {
     return new SequentialCommandGroup(
-        new InstantCommand(() -> startTime = Timer.getFPGATimestamp()),
+        new InstantCommand(
+            () -> {
+              startTime = Timer.getFPGATimestamp();
+              zeroing = true;
+            }),
         applyVoltageCommand(-1.0)
             .withDeadline(
                 new WaitUntilCommand(() -> ((Timer.getFPGATimestamp() - startTime) > 1.0))),
-        new InstantCommand(() -> hoodMotor.setPosition(Rotations.of(0))));
+        new InstantCommand(
+            () -> {
+              hoodMotor.setPosition(Rotations.of(0));
+              zeroing = false;
+            }));
   }
 
   public void updateGains() {

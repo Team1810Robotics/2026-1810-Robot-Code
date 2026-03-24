@@ -13,6 +13,7 @@ import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.state.RobotState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 
 public class SpindexerSubsystem extends SubsystemBase {
@@ -90,6 +91,22 @@ public class SpindexerSubsystem extends SubsystemBase {
   public void periodic() {
     log();
     // updateGains();
+
+    switch (state) {
+      case SHOOTING:
+        if (RobotState.getInstance().isShooterReady) {
+          setState(SpindexerState.IN);
+        } else {
+          stop();
+        }
+        break;
+
+      case STOP:
+        spinMotor.stopMotor();
+      default:
+        spinMotor.set(state.getPower());
+        break;
+    }
 
     if (tuningMode.get()) {
       isTuning = true;

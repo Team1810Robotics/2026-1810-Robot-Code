@@ -98,5 +98,14 @@ public class RollerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
+
+    switch (rollerState) {
+      case STOP:
+        rollerMotor.stopMotor();
+        break;
+      default:
+        rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);
+        break;
+    }
   }
 }

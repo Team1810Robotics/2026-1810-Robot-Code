@@ -174,7 +174,8 @@ public class FlywheelSubsystem extends SubsystemBase {
         }
         break;
       case IDLE:
-        idleMotor();;
+        idleMotor();
+        ;
         break;
       default:
         break;

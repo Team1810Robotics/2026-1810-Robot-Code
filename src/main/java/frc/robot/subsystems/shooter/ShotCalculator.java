@@ -14,7 +14,6 @@ import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.RobotContainer;
-import frc.robot.subsystems.shooter.ShotConstants.ShootingModes;
 import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.util.field.Region;
 import frc.robot.util.geometry.AllianceFlipUtil;
@@ -129,31 +128,30 @@ public class ShotCalculator {
     Rotation2d hoodAngle, turretAngle;
     AngularVelocity flywheelVelocity;
 
-      double turretVelocityX =
-          robotVelocity.vxMetersPerSecond
-              + robotVelocity.omegaRadiansPerSecond
-                  * (robotToTurret.getY() * Math.cos(robotAngle)
-                      - robotToTurret.getX() * Math.sin(robotAngle));
-      double turretVelocityY =
-          robotVelocity.vyMetersPerSecond
-              + robotVelocity.omegaRadiansPerSecond
-                  * (robotToTurret.getX() * Math.cos(robotAngle)
-                      - robotToTurret.getY() * Math.sin(robotAngle));
+    double turretVelocityX =
+        robotVelocity.vxMetersPerSecond
+            + robotVelocity.omegaRadiansPerSecond
+                * (robotToTurret.getY() * Math.cos(robotAngle)
+                    - robotToTurret.getX() * Math.sin(robotAngle));
+    double turretVelocityY =
+        robotVelocity.vyMetersPerSecond
+            + robotVelocity.omegaRadiansPerSecond
+                * (robotToTurret.getX() * Math.cos(robotAngle)
+                    - robotToTurret.getY() * Math.sin(robotAngle));
 
-      double tof = scoringTimeOfFlightMap.get(distanceToRealTarget);
+    double tof = scoringTimeOfFlightMap.get(distanceToRealTarget);
 
-      Translation2d velocityCompensation =
-          new Translation2d(-(turretVelocityX * tof), -(turretVelocityY * tof));
+    Translation2d velocityCompensation =
+        new Translation2d(-(turretVelocityX * tof), -(turretVelocityY * tof));
 
-      virtualTarget = realTarget.plus(velocityCompensation);
+    virtualTarget = realTarget.plus(velocityCompensation);
 
-      double distanceToVirtualTarget = turretPose.getTranslation().getDistance(virtualTarget);
+    double distanceToVirtualTarget = turretPose.getTranslation().getDistance(virtualTarget);
 
-      turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
+    turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
 
-      hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
-      flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
-    
+    hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
+    flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
 
     DogLog.log("ShotCalculator/Distance To Target", distanceToRealTarget, Meters);
     DogLog.log("ShotCalculator/Real Target", new Pose2d(realTarget, Rotation2d.kZero));
@@ -229,8 +227,7 @@ public class ShotCalculator {
 
     DogLog.log("ShotCalculator/Distance To Target", distanceToTarget, Meters);
     DogLog.log("ShotCalculator/Real Target", new Pose2d(target, Rotation2d.kZero));
-        DogLog.log("ShotCalculator/Virtual Target", new Pose2d());
-
+    DogLog.log("ShotCalculator/Virtual Target", new Pose2d());
 
     DogLog.log("ShotCalculator/Parameters/Is Valid", isValid);
     DogLog.log("ShotCalculator/Parameters/Turret Angle", turretAngle.getDegrees(), Degrees);

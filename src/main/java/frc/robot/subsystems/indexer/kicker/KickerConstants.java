@@ -6,7 +6,8 @@ public class KickerConstants {
   public enum KickerState {
     IN(1),
     OUT(-1),
-    STOP(0);
+    STOP(0),
+    SHOOTING(1);
 
     private final double power;
 

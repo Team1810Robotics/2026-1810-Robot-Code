@@ -12,7 +12,6 @@ import frc.robot.state.RobotState;
 import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
-import frc.robot.subsystems.intake.IntakeStates;
 
 public class LeftDoublePickup extends BaseAuto {
   public LeftDoublePickup() {
