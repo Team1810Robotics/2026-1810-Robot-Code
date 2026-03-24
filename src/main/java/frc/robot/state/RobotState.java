@@ -48,8 +48,6 @@ public class RobotState {
   }
 
   public void periodic() {
-    turretSubsystem.setFieldRelativeAngle();
-
     if (isScoringState()) {
       ShotParameters params = ShotCalculator.getInstance().calculateScoringParameters();
 
@@ -136,6 +134,9 @@ public class RobotState {
   private void scoringNoAgitation() {
     flywheelSubsystem.setState(FlywheelState.SCORING);
     hoodSubsystem.setState(HoodState.SCORING);
+
+    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
   private void scoringWithAgitation() {
@@ -144,11 +145,17 @@ public class RobotState {
 
     flywheelSubsystem.setState(FlywheelState.SCORING);
     hoodSubsystem.setState(HoodState.SCORING);
+
+    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
   private void passing() {
     flywheelSubsystem.setState(FlywheelState.PASSING);
     hoodSubsystem.setState(HoodState.PASSING);
+
+    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
   private void reverseIndexer() {
