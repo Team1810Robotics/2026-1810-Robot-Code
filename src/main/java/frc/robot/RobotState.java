@@ -1,10 +1,12 @@
 package frc.robot;
 
 import dev.doglog.DogLog;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.intake.IntakeStates;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
+import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import java.util.function.BooleanSupplier;
 
@@ -63,7 +65,8 @@ public class RobotState {
 
     return Commands.runOnce(
         () -> {
-          rollerSubsystem.roller(state.getRollerState());
+          rollerSubsystem.roller(
+              DriverStation.isAutonomous() ? RollerState.AUTO_INTAKE : state.getRollerState());
           deploySubsystem.deploy(state.getDeployState());
         });
   }

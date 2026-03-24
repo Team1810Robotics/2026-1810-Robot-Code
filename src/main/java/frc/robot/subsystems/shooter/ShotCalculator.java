@@ -13,9 +13,13 @@ import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.InverseInterpolator;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.RobotContainer;
+import frc.robot.RobotState;
 import frc.robot.subsystems.shooter.ShotConstants.ShootingModes;
 import frc.robot.subsystems.shooter.turret.TurretConstants;
+import frc.robot.util.field.FieldConstants;
 import frc.robot.util.field.Region;
 import frc.robot.util.geometry.AllianceFlipUtil;
 import java.util.Optional;
@@ -62,13 +66,13 @@ public class ShotCalculator {
     scoringHoodMap.put(4.2, Rotation2d.fromDegrees(7));
     scoringHoodMap.put(5.1, Rotation2d.fromDegrees(8.5));
 
-    scoringFlywheelMap.put(1.48, 29.0);
-    scoringFlywheelMap.put(1.94, 31.5);
-    scoringFlywheelMap.put(2.52, 34.5);
+    scoringFlywheelMap.put(1.48, 28.0);
+    scoringFlywheelMap.put(1.94, 30.5);
+    scoringFlywheelMap.put(2.52, 33.5);
     scoringFlywheelMap.put(3.0, 37.0);
-    scoringFlywheelMap.put(3.78, 40.0);
-    scoringFlywheelMap.put(4.2, 41.5);
-    scoringFlywheelMap.put(5.1, 44.67);
+    scoringFlywheelMap.put(3.78, 39.0);
+    scoringFlywheelMap.put(4.2, 40.0);
+    scoringFlywheelMap.put(5.1, 42.67);
 
     scoringTimeOfFlightMap.put(1.45, 1.083);
     scoringTimeOfFlightMap.put(2.62, 1.167);
@@ -105,7 +109,7 @@ public class ShotCalculator {
     ChassisSpeeds robotVelocity = RobotContainer.getDrivetrain().getFieldRelativeSpeeds();
     double robotAngle = robotPose.getRotation().getRadians();
 
-    if (robotRegion.isEmpty()) {
+    if (robotRegion.isEmpty() || RobotState.getInstance().killShooter) {
       return new ShotParameters(false, Rotation2d.kZero, Rotation2d.kZero, RadiansPerSecond.of(0));
     }
 
@@ -113,21 +117,31 @@ public class ShotCalculator {
 
     ShootingModes mode;
 
-    if (robotRegion.get() == Region.BLUE_ALLIANCE_ZONE
-        || robotRegion.get() == Region.RED_ALLIANCE_ZONE) {
+    Alliance alliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+
+    if (Region.isOurAllianceZone(robotRegion.get())) {
       mode = ShootingModes.SCORING;
-      realTarget = ShotConstants.hub;
+      realTarget = AllianceFlipUtil.apply(ShotConstants.hub);
+    } else if (Region.inOpposingAllianceZone(robotRegion.get())) {
+      mode = ShootingModes.PASSING;
+      if (robotPose.getTranslation().getY() > FieldConstants.fieldWidth / 2.0) {
+        realTarget =
+            alliance == Alliance.Blue ? ShotConstants.blueUpperPass : ShotConstants.redUpperPass;
+      } else {
+        realTarget =
+            alliance == Alliance.Blue ? ShotConstants.blueLowerPass : ShotConstants.redLowerPass;
+      }
     } else if (robotRegion.get() == Region.UPPER_NEUTRAL_ZONE) {
       mode = ShootingModes.PASSING;
-      realTarget = ShotConstants.upperPass;
+      realTarget =
+          alliance == Alliance.Blue ? ShotConstants.blueUpperPass : ShotConstants.redUpperPass;
     } else if (robotRegion.get() == Region.LOWER_NEUTRAL_ZONE) {
       mode = ShootingModes.PASSING;
-      realTarget = ShotConstants.lowerPass;
+      realTarget =
+          alliance == Alliance.Blue ? ShotConstants.blueLowerPass : ShotConstants.redLowerPass;
     } else {
       return new ShotParameters(false, Rotation2d.kZero, Rotation2d.kZero, RadiansPerSecond.of(0));
     }
-
-    realTarget = AllianceFlipUtil.apply(realTarget);
 
     Translation2d virtualTarget;
 
@@ -232,10 +246,10 @@ public class ShotCalculator {
         realTarget = ShotConstants.hub;
         break;
       case UPPER_NEUTRAL_ZONE:
-        realTarget = ShotConstants.upperPass;
+        realTarget = ShotConstants.blueUpperPass;
         break;
       case LOWER_NEUTRAL_ZONE:
-        realTarget = ShotConstants.lowerPass;
+        realTarget = ShotConstants.blueLowerPass;
         break;
       default:
         realTarget = new Translation2d();

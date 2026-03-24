@@ -15,13 +15,24 @@ public class ShotConstants {
 
   public static final Translation2d hub = FieldConstants.Hub.topCenterPoint.toTranslation2d();
 
-  public static final Translation2d upperPass =
+  public static final Translation2d blueUpperPass =
       new Translation2d(
-          FieldConstants.LinesVertical.allianceZone / 2, FieldConstants.fieldWidth * (2.0 / 3.0));
+          FieldConstants.LinesVertical.allianceZone / 2, FieldConstants.fieldWidth * (3.0 / 4.0));
 
-  public static final Translation2d lowerPass =
+  public static final Translation2d blueLowerPass =
       new Translation2d(
-          FieldConstants.LinesVertical.allianceZone / 2, FieldConstants.fieldWidth * (1.0 / 3.0));
+          FieldConstants.LinesVertical.allianceZone / 2, FieldConstants.fieldWidth * (1.0 / 4.0));
+
+  public static final Translation2d redUpperPass =
+      new Translation2d(
+          FieldConstants.LinesVertical.oppAllianceZone
+              + ((FieldConstants.fieldLength - FieldConstants.LinesVertical.oppAllianceZone) / 2.0),
+          FieldConstants.fieldWidth * (3.0 / 4.0));
+  public static final Translation2d redLowerPass =
+      new Translation2d(
+          FieldConstants.LinesVertical.oppAllianceZone
+              + ((FieldConstants.fieldLength - FieldConstants.LinesVertical.oppAllianceZone) / 2.0),
+          FieldConstants.fieldWidth * (1.0 / 4.0));
 
   public enum ShootingModes {
     PASSING,

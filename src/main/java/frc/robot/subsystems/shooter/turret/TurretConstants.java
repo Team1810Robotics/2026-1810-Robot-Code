@@ -17,12 +17,12 @@ public class TurretConstants {
   public static final Angle MIN_ANGLE = Degrees.of(-150);
   public static final Angle MAX_ANGLE = Degrees.of(150);
 
-  public static final double ENCODER_OFFSET = .5;
+  public static final double ENCODER_OFFSET = .491;
 
-  public static final double kP = 0.0; // 15
+  public static final double kP = 4.0; // 15
   public static final double kS = 0.225; // .2
   public static final double kD = 0.002; // .01
-  public static final double kV = 3.0; // .075
+  public static final double kV = 2.5; // .075
 
   // Motion Magic profile parameters — tune these after FF is dialed in
   public static final double MOTION_MAGIC_CRUISE_VELOCITY = 1.5; // rot/s

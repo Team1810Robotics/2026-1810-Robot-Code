@@ -74,6 +74,9 @@ public class RobotContainer {
   private static final SpindexerSubsystem spindexerSubsystem = new SpindexerSubsystem();
   private static final KickerSubsystem kickerSubsystem = new KickerSubsystem();
 
+  public boolean manualTurret = false;
+  public boolean killManual = true;
+
   private final AutoSelector autoSelector = new AutoSelector();
 
   public RobotContainer() {
@@ -87,9 +90,9 @@ public class RobotContainer {
         drivetrain.applyRequest(
             () ->
                 drive
-                    .withVelocityX(-driverXbox.getLeftY() * MaxSpeed * .3)
-                    .withVelocityY(-driverXbox.getLeftX() * MaxSpeed * .3)
-                    .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate * .3)));
+                    .withVelocityX(-driverXbox.getLeftY() * MaxSpeed * .5)
+                    .withVelocityY(-driverXbox.getLeftX() * MaxSpeed * .5)
+                    .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate * .5)));
 
     driverXbox
         .leftTrigger()
@@ -115,11 +118,11 @@ public class RobotContainer {
     //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     driverXbox
-        .rightTrigger()
+        .rightBumper()
         .and(RobotState.getInstance().checkRobotState(RobotStates.NEUTRAL))
         .onTrue(RobotState.getInstance().advanceIntakeState());
 
-    driverXbox.rightBumper().whileTrue(new ShootNoAgitate());
+    driverXbox.rightTrigger().whileTrue(new ShootNoAgitate());
 
     // driverXbox.leftBumper().whileTrue(new ShootWithAgitate());
 
@@ -168,6 +171,17 @@ public class RobotContainer {
                     RobotState.getInstance().killShooter = true;
                   }
                 }));
+
+    operatorXbox
+        .rightStick()
+        .onTrue(
+            Commands.run(
+                    () -> {
+                      turretSubsystem.set(operatorXbox.getRightX() / 10);
+                    },
+                    turretSubsystem)
+                .until(() -> operatorXbox.b().getAsBoolean())
+                .andThen(Commands.runOnce(() -> turretSubsystem.seedMotorFromAbsolute())));
   }
 
   /** Configure DogLog options and PowerDistribution */

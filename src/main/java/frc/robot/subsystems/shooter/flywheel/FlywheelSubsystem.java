@@ -16,7 +16,6 @@ import dev.doglog.DogLog;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotState;
@@ -107,6 +106,7 @@ public class FlywheelSubsystem extends SubsystemBase {
   }
 
   public boolean atTargetVelocity() {
+    if (rightMotor.getVelocity().getValueAsDouble() > targetVelocity) return true;
     return Math.abs(rightMotor.getVelocity().getValueAsDouble() - targetVelocity)
         < 2; // TODO: Tune this threshold
   }
@@ -150,19 +150,19 @@ public class FlywheelSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
-    updateGains();
+    // updateGains();
 
-    tuningCommand =
-        setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()))
-            .until(() -> velocityTarget.get() == 0);
+    // tuningCommand =
+    //     setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()))
+    //         .until(() -> velocityTarget.get() == 0);
 
-    if (velocityTarget.get() != 0) {
-      isTuning = true;
-      CommandScheduler.getInstance().schedule(tuningCommand);
-    }
+    // if (velocityTarget.get() != 0) {
+    //   isTuning = true;
+    //   CommandScheduler.getInstance().schedule(tuningCommand);
+    // }
 
-    if (velocityTarget.get() == 0) {
-      isTuning = false;
-    }
+    // if (velocityTarget.get() == 0) {
+    //   isTuning = false;
+    // }
   }
 }

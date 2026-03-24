@@ -52,6 +52,7 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
     SmartDashboard.putBoolean("Auto Selected", autoSelected);
+    SmartDashboard.putData(CommandScheduler.getInstance());
   }
 
   @Override

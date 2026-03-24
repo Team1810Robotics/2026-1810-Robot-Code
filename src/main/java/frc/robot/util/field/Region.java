@@ -3,6 +3,8 @@ package frc.robot.util.field;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rectangle2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.Optional;
 
 public enum Region {
@@ -46,5 +48,25 @@ public enum Region {
       }
     }
     return Optional.empty();
+  }
+
+  public static boolean isOurAllianceZone(Region currentRegion) {
+    if (currentRegion == BLUE_ALLIANCE_ZONE) {
+      return DriverStation.getAlliance().orElseThrow() == Alliance.Blue;
+    } else if (currentRegion == RED_ALLIANCE_ZONE) {
+      return DriverStation.getAlliance().orElseThrow() == Alliance.Red;
+    } else {
+      return false;
+    }
+  }
+
+  public static boolean inOpposingAllianceZone(Region currentRegion) {
+    if (currentRegion == BLUE_ALLIANCE_ZONE) {
+      return DriverStation.getAlliance().orElseThrow() == Alliance.Red;
+    } else if (currentRegion == RED_ALLIANCE_ZONE) {
+      return DriverStation.getAlliance().orElseThrow() == Alliance.Blue;
+    } else {
+      return false;
+    }
   }
 }
