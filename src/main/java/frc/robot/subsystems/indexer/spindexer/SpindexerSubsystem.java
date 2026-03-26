@@ -12,6 +12,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import dev.doglog.DogLog;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -24,7 +25,7 @@ public class SpindexerSubsystem extends SubsystemBase {
   private final SparkMax spinMotor;
   private SparkClosedLoopController controller;
 
-  private SpindexerState state = SpindexerState.STOP;
+  private SpindexerState spindexerState = SpindexerState.STOP;
 
   private final BooleanSubscriber tuningMode = DogLog.tunable("Spindexer/Tuning Mode", false);
   private final DoubleSubscriber tuningTarget = DogLog.tunable("Spindexer/Tuning Target", 0.0);
@@ -33,6 +34,10 @@ public class SpindexerSubsystem extends SubsystemBase {
   private double velocityTarget = 0;
 
   private final TunablePIDF tunablePIDF;
+
+  private double startSpinUpTime;
+
+  private boolean wasShooting = false;
 
   public SpindexerSubsystem() {
     spinMotor = new SparkMax(SpindexerConstants.SPIN_MOTOR, MotorType.kBrushless);
@@ -52,20 +57,13 @@ public class SpindexerSubsystem extends SubsystemBase {
 
     controller = spinMotor.getClosedLoopController();
 
-    state = SpindexerState.STOP;
+    spindexerState = SpindexerState.STOP;
 
     tunablePIDF = new TunablePIDF("Spindexer");
   }
 
-  public void setState(SpindexerState state) {
-    this.state = state;
-
-    if (state == SpindexerState.STOP) {
-      stop();
-      return;
-    }
-
-    spinMotor.set(state.getVelocity());
+  public void setSpindexerState(SpindexerState state) {
+    this.spindexerState = state;
   }
 
   public void setVelocity(double velocity) {
@@ -75,15 +73,18 @@ public class SpindexerSubsystem extends SubsystemBase {
   }
 
   public Command spinCommand(SpindexerState state) {
-    return Commands.startEnd(() -> setState(state), () -> stop(), this);
+    return Commands.startEnd(() -> setSpindexerState(state), () -> stop(), this);
   }
 
   public boolean isJammed() {
-    double target = state.getVelocity();
+    if (Timer.getFPGATimestamp() - startSpinUpTime < SpindexerConstants.SPINUP_TIME) return false;
+    if (spindexerState == SpindexerState.STOP || spindexerState == SpindexerState.OUT) return false;
+    if (!RobotState.getInstance().isShooterReady) return false;
+    double target = velocityTarget;
     double velocity = spinMotor.getEncoder().getVelocity();
-    if (target > velocity) return false;
+    if (target < velocity) return false;
 
-    return Math.abs(state.getVelocity() - spinMotor.getEncoder().getVelocity()) > 1000;
+    return Math.abs(target - velocity) > 1000;
   }
 
   public void stop() {
@@ -91,7 +92,8 @@ public class SpindexerSubsystem extends SubsystemBase {
   }
 
   public void log() {
-    DogLog.log("Spindexer/State", state);
+    DogLog.log("Spindexer/State", spindexerState);
+    DogLog.log("Spindexer/Velocity Target", velocityTarget);
     DogLog.log("Spindexer/Velocity", spinMotor.getEncoder().getVelocity());
     DogLog.log("Spindexer/Is Jammed", isJammed());
   }
@@ -121,16 +123,21 @@ public class SpindexerSubsystem extends SubsystemBase {
     }
 
     if (!tuningMode.get() && isTuning) {
-      setState(SpindexerState.STOP);
+      setSpindexerState(SpindexerState.STOP);
       isTuning = false;
     }
 
-    switch (state) {
+    switch (spindexerState) {
       case SHOOTING:
         if (RobotState.getInstance().isShooterReady) {
+          if (!wasShooting) {
+            startSpinUpTime = Timer.getFPGATimestamp();
+            wasShooting = true;
+          }
           setVelocity(SpindexerConstants.SpindexerState.IN.getVelocity());
         } else {
           stop();
+          wasShooting = false;
         }
         break;
 
@@ -138,7 +145,7 @@ public class SpindexerSubsystem extends SubsystemBase {
         spinMotor.stopMotor();
         break;
       default:
-        setVelocity(state.getVelocity());
+        setVelocity(spindexerState.getVelocity());
         break;
     }
   }

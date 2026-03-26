@@ -27,6 +27,9 @@ public class RobotState {
   private RobotStates robotState = RobotStates.NEUTRAL;
   private RobotStates previousState = robotState;
 
+  // ✅ Separate state for unjam recovery
+  private RobotStates preUnjamState = robotState;
+
   private final SpindexerSubsystem spindexerSubsystem;
   private final CommandSwerveDrivetrain drivetrain;
   private final KickerSubsystem kickerSubsystem;
@@ -42,8 +45,13 @@ public class RobotState {
   private boolean indexerJammed = false;
 
   private boolean unjamStarted = false;
-
   private double unjamStartTime;
+  private final double unjamTime = 0.1;
+
+  private double lastUnjamTime = 0;
+  private final double unjamCooldown = 1;
+
+  private boolean allowStateOverride = false;
 
   private RobotState() {
     spindexerSubsystem = RobotContainer.getSpindexerSubsystem();
@@ -61,19 +69,27 @@ public class RobotState {
 
     indexerJammed = spindexerSubsystem.isJammed();
 
-    if (indexerJammed && !unjamStarted) {
-      unjamStartTime = Timer.getFPGATimestamp();
-      unjamStarted = true;
-    }
+    // ✅ Start unjam
+    if (indexerJammed && !unjamStarted && time - lastUnjamTime > unjamCooldown) {
+      preUnjamState = robotState; // ✅ SAVE correct state
 
-    if (unjamStarted && time - unjamStartTime < 1) {
+      unjamStartTime = time;
+      unjamStarted = true;
+      lastUnjamTime = time;
+
       setState(RobotStates.REVERSE_INDEXER);
     }
 
-    if (time - unjamStartTime > 1) {
+    // ✅ End unjam
+    if (unjamStarted && time - unjamStartTime > unjamTime) {
       unjamStarted = false;
+
+      allowStateOverride = true;
+      setState(preUnjamState); // ✅ restore correct state
+      allowStateOverride = false;
     }
 
+    // Shooter readiness logic
     if (isShootingState()) {
       ShotParameters params = ShotCalculator.getInstance().calculateParameters();
 
@@ -87,14 +103,25 @@ public class RobotState {
     DogLog.log("RobotState/Shooter Ready", isShooterReady);
     DogLog.log("RobotState/State", robotState);
     DogLog.log("RobotState/Previous State", previousState);
+    DogLog.log("RobotState/Pre Unjam State", preUnjamState);
+    DogLog.log("RobotState/Indexer Jammed", indexerJammed);
+    DogLog.log("RobotState/Unjam Active", unjamStarted);
   }
 
   public void setState(RobotStates newState) {
-    if (indexerJammed && newState != RobotStates.REVERSE_INDEXER) {
+    if (!allowStateOverride && indexerJammed && newState != RobotStates.REVERSE_INDEXER) {
       return;
     }
 
-    this.previousState = this.robotState;
+    if (this.robotState == newState) {
+      return;
+    }
+
+    // Only update previousState for normal transitions
+    if (newState != RobotStates.REVERSE_INDEXER) {
+      this.previousState = this.robotState;
+    }
+
     onStateExit();
     this.robotState = newState;
     applyStates();
@@ -152,7 +179,7 @@ public class RobotState {
     hoodSubsystem.setState(HoodState.NEUTRAL);
 
     kickerSubsystem.setState(KickerState.STOP);
-    spindexerSubsystem.setState(SpindexerState.STOP);
+    spindexerSubsystem.setSpindexerState(SpindexerState.STOP);
   }
 
   private void intaking() {
@@ -163,14 +190,14 @@ public class RobotState {
     hoodSubsystem.setState(HoodState.NEUTRAL);
 
     kickerSubsystem.setState(KickerState.STOP);
-    spindexerSubsystem.setState(SpindexerState.STOP);
+    spindexerSubsystem.setSpindexerState(SpindexerState.STOP);
   }
 
   private void scoringNoAgitation() {
     flywheelSubsystem.setState(FlywheelState.SCORING);
     hoodSubsystem.setState(HoodState.SCORING);
 
-    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    spindexerSubsystem.setSpindexerState(SpindexerState.SHOOTING);
     kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
@@ -181,7 +208,7 @@ public class RobotState {
     flywheelSubsystem.setState(FlywheelState.SCORING);
     hoodSubsystem.setState(HoodState.SCORING);
 
-    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    spindexerSubsystem.setSpindexerState(SpindexerState.SHOOTING);
     kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
@@ -189,12 +216,12 @@ public class RobotState {
     flywheelSubsystem.setState(FlywheelState.PASSING);
     hoodSubsystem.setState(HoodState.PASSING);
 
-    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    spindexerSubsystem.setSpindexerState(SpindexerState.SHOOTING);
     kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
   private void reverseIndexer() {
-    spindexerSubsystem.setState(SpindexerState.OUT);
+    spindexerSubsystem.setSpindexerState(SpindexerState.OUT);
     kickerSubsystem.setState(KickerState.OUT);
   }
 
@@ -217,7 +244,6 @@ public class RobotState {
     if (instance == null) {
       instance = new RobotState();
     }
-
     return instance;
   }
 

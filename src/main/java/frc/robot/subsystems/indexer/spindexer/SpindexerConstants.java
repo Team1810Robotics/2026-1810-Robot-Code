@@ -7,8 +7,10 @@ public class SpindexerConstants {
   public static final double kS = .125;
   public static final double kV = .0021;
 
+  public static final double SPINUP_TIME = .5;
+
   public enum SpindexerState {
-    IN(2500),
+    IN(2000),
     OUT(-3000),
     STOP(0),
     SHOOTING(0);

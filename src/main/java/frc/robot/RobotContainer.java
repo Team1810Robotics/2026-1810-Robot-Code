@@ -140,7 +140,7 @@ public class RobotContainer {
 
     driverController
         .R2()
-        .onTrue(
+        .whileTrue(
             Commands.runOnce(
                 () -> {
                   Region botRegion = Region.getRegion(drivetrain.getPose()).orElseThrow();

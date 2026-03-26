@@ -116,17 +116,17 @@ public class Vision extends SubsystemBase {
       return;
     }
 
-    PoseEstimate botPoseMT2 = getBotpose();
+    PoseEstimate botPose = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
 
     boolean fail = false;
 
-    if (botPoseMT2 == null) {
+    if (botPose == null) {
       log();
       return;
     }
 
-    if (botPoseMT2.rawFiducials.length == 1) {
-      LimelightHelpers.RawFiducial fid = botPoseMT2.rawFiducials[0];
+    if (botPose.rawFiducials.length == 1) {
+      LimelightHelpers.RawFiducial fid = botPose.rawFiducials[0];
 
       if (fid.ambiguity > .5 || fid.distToCamera > 3) {
         fail = true;
@@ -134,7 +134,7 @@ public class Vision extends SubsystemBase {
     }
 
     if (!fail) {
-      drivetrain.addVisionMeasurement(botPoseMT2.pose, botPoseMT2.timestampSeconds);
+      drivetrain.addVisionMeasurement(botPose.pose, botPose.timestampSeconds);
     }
 
     log();

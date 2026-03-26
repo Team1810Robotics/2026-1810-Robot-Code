@@ -85,6 +85,10 @@ public class DeploySubsystem extends SubsystemBase {
   public void setState(DeployState state) {
     this.deployState = state;
     this.deployTarget = state.getPosition();
+
+    if (state == DeployState.AGITATE) {
+      agitationState = AgitationState.DOWN; // reset cycle
+    }
   }
 
   public DeployState getState() {
@@ -181,6 +185,8 @@ public class DeploySubsystem extends SubsystemBase {
   }
 
   public void setPosition(Rotation2d deployTarget) {
+    this.deployTarget = deployTarget;
+
     if (encoder.isConnected()) {
       double pidOut =
           intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());

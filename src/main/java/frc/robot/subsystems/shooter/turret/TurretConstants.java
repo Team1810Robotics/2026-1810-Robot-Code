@@ -19,10 +19,10 @@ public class TurretConstants {
 
   public static final double ENCODER_OFFSET = .491;
 
-  public static final double kP = 4.0; 
-  public static final double kS = 0.225; 
-  public static final double kD = 0.002; 
-  public static final double kV = 2.5; 
+  public static final double kP = 4.0;
+  public static final double kS = 0.225;
+  public static final double kD = 0.002;
+  public static final double kV = 2.5;
 
   public static final double MOTION_MAGIC_CRUISE_VELOCITY = 1.5; // rot/s
   public static final double MOTION_MAGIC_ACCELERATION = 4; // rot/s²
