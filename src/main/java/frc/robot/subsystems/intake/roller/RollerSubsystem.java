@@ -14,13 +14,14 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.state.RobotState;
 import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 
 public class RollerSubsystem extends SubsystemBase {
   private final SparkMax rollerMotor;
   private SparkClosedLoopController rollerController;
 
-  private RollerState rollerState;
+  private RollerState rollerState = RollerState.STOP;
 
   private DoubleSubscriber kP = DogLog.tunable("Intake/Roller/kP", 0.0);
   private DoubleSubscriber kS = DogLog.tunable("Intake/Roller/kS", 0.1);
@@ -95,6 +96,13 @@ public class RollerSubsystem extends SubsystemBase {
     switch (rollerState) {
       case STOP:
         rollerMotor.stopMotor();
+        break;
+      case SHOOTING:
+        if (RobotState.getInstance().isShooterReady) {
+          rollerController.setSetpoint(RollerState.INTAKE.getVelocity(), ControlType.kVelocity);
+        } else {
+          rollerMotor.stopMotor();
+        }
         break;
       default:
         rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);

@@ -6,7 +6,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.revrobotics.util.StatusLogger;
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -30,8 +29,6 @@ public class Robot extends TimedRobot {
     StatusLogger.stop();
 
     m_robotContainer = new RobotContainer();
-
-    CameraServer.startAutomaticCapture();
   }
 
   @Override

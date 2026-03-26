@@ -1,5 +1,7 @@
 package frc.robot.state;
 
+import dev.doglog.DogLog;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.RobotContainer;
@@ -22,7 +24,8 @@ import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 
 public class RobotState {
 
-  private RobotStates robotState;
+  private RobotStates robotState = RobotStates.NEUTRAL;
+  private RobotStates previousState = robotState;
 
   private final SpindexerSubsystem spindexerSubsystem;
   private final CommandSwerveDrivetrain drivetrain;
@@ -36,6 +39,12 @@ public class RobotState {
   private boolean flywheelSpunUp = false;
   public boolean isShooterReady = false;
 
+  private boolean indexerJammed = false;
+
+  private boolean unjamStarted = false;
+
+  private double unjamStartTime;
+
   private RobotState() {
     spindexerSubsystem = RobotContainer.getSpindexerSubsystem();
     drivetrain = RobotContainer.getDrivetrain();
@@ -48,7 +57,24 @@ public class RobotState {
   }
 
   public void periodic() {
-    if (isScoringState()) {
+    double time = Timer.getFPGATimestamp();
+
+    indexerJammed = spindexerSubsystem.isJammed();
+
+    if (indexerJammed && !unjamStarted) {
+      unjamStartTime = Timer.getFPGATimestamp();
+      unjamStarted = true;
+    }
+
+    if (unjamStarted && time - unjamStartTime < 1) {
+      setState(RobotStates.REVERSE_INDEXER);
+    }
+
+    if (time - unjamStartTime > 1) {
+      unjamStarted = false;
+    }
+
+    if (isShootingState()) {
       ShotParameters params = ShotCalculator.getInstance().calculateParameters();
 
       if (flywheelSubsystem.atTargetVelocity() && !flywheelSpunUp) {
@@ -57,9 +83,18 @@ public class RobotState {
 
       isShooterReady = flywheelSpunUp && turretSubsystem.atTargetAngle() && params.isValid();
     }
+
+    DogLog.log("RobotState/Shooter Ready", isShooterReady);
+    DogLog.log("RobotState/State", robotState);
+    DogLog.log("RobotState/Previous State", previousState);
   }
 
   public void setState(RobotStates newState) {
+    if (indexerJammed && newState != RobotStates.REVERSE_INDEXER) {
+      return;
+    }
+
+    this.previousState = this.robotState;
     onStateExit();
     this.robotState = newState;
     applyStates();
@@ -71,6 +106,10 @@ public class RobotState {
 
   public RobotStates getState() {
     return robotState;
+  }
+
+  public RobotStates getPreviousState() {
+    return previousState;
   }
 
   private void applyStates() {
@@ -102,10 +141,6 @@ public class RobotState {
     if (isShootingState()) {
       flywheelSpunUp = false;
       isShooterReady = false;
-    }
-    switch (robotState) {
-      default:
-        break;
     }
   }
 

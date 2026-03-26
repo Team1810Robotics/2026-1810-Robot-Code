@@ -11,7 +11,8 @@ public class RollerConstants {
     INTAKE(-5000),
     AUTO_INTAKE(-5000),
     OUT(2500),
-    STOP(0);
+    STOP(0),
+    SHOOTING(0);
 
     private double velocity;
 

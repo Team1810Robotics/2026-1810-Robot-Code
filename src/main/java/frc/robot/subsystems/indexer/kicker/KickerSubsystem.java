@@ -1,5 +1,7 @@
 package frc.robot.subsystems.indexer.kicker;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -20,7 +22,7 @@ public class KickerSubsystem extends SubsystemBase {
   private final BooleanSubscriber tuningMode = DogLog.tunable("Kicker/Tuning Mode", false);
   private boolean isTuning = false;
 
-  private KickerState state;
+  private KickerState state = KickerState.STOP;
 
   public KickerSubsystem() {
     this.kickerMotor = new TalonFX(KickerConstants.KICKER_MOTOR);
@@ -30,6 +32,8 @@ public class KickerSubsystem extends SubsystemBase {
     cfg.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     cfg.CurrentLimits.StatorCurrentLimitEnable = true;
     cfg.CurrentLimits.StatorCurrentLimit = 80;
+
+    cfg.Feedback.SensorToMechanismRatio = 3;
 
     kickerMotor.getConfigurator().apply(cfg);
   }
@@ -48,6 +52,7 @@ public class KickerSubsystem extends SubsystemBase {
 
   public void log() {
     DogLog.log("Kicker/State", state);
+    DogLog.log("Kicker/Velocity", kickerMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
   }
 
   // public void updateGains() {
@@ -71,14 +76,14 @@ public class KickerSubsystem extends SubsystemBase {
     switch (state) {
       case SHOOTING:
         if (RobotState.getInstance().isShooterReady) {
-          setState(KickerState.IN);
+          kickerMotor.set(KickerState.IN.getPower());
         } else {
-          setState(KickerState.STOP);
+          kickerMotor.stopMotor();
         }
         break;
       case STOP:
         kickerMotor.stopMotor();
-
+        break;
       default:
         kickerMotor.set(state.getPower());
         break;

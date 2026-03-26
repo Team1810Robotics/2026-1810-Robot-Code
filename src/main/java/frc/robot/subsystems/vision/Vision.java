@@ -101,7 +101,6 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
-
     // Update bot orientation for MT2 pose estimation + LL imu fusing
     LimelightHelpers.SetRobotOrientation(
         limelightName,
@@ -119,13 +118,24 @@ public class Vision extends SubsystemBase {
 
     PoseEstimate botPoseMT2 = getBotpose();
 
+    boolean fail = false;
+
     if (botPoseMT2 == null) {
       log();
       return;
     }
 
-    // Add the vision measurement to the drivetrain's pose estimator with appropriate timestamp
-    drivetrain.addVisionMeasurement(botPoseMT2.pose, botPoseMT2.timestampSeconds);
+    if (botPoseMT2.rawFiducials.length == 1) {
+      LimelightHelpers.RawFiducial fid = botPoseMT2.rawFiducials[0];
+
+      if (fid.ambiguity > .5 || fid.distToCamera > 3) {
+        fail = true;
+      }
+    }
+
+    if (!fail) {
+      drivetrain.addVisionMeasurement(botPoseMT2.pose, botPoseMT2.timestampSeconds);
+    }
 
     log();
   }

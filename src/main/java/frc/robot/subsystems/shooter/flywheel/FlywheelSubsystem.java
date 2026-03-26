@@ -152,7 +152,7 @@ public class FlywheelSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
-    // updateGains();
+    updateGains();
 
     switch (flywheelState) {
       case PASSING:
