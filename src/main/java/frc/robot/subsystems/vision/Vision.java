@@ -37,7 +37,7 @@ public class Vision extends SubsystemBase {
     this.layout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
     LimelightHelpers.setPipelineIndex(limelightName, 0);
-    LimelightHelpers.SetIMUAssistAlpha(limelightName, .005);
+    LimelightHelpers.SetIMUAssistAlpha(limelightName, .01);
     LimelightHelpers.SetIMUMode(limelightName, 1);
   }
 
@@ -116,7 +116,7 @@ public class Vision extends SubsystemBase {
       return;
     }
 
-    PoseEstimate botPose = LimelightHelpers.getBotPoseEstimate_wpiBlue(limelightName);
+    PoseEstimate botPose = getBotpose();
 
     boolean fail = false;
 
@@ -125,13 +125,13 @@ public class Vision extends SubsystemBase {
       return;
     }
 
-    if (botPose.rawFiducials.length == 1) {
-      LimelightHelpers.RawFiducial fid = botPose.rawFiducials[0];
+    // if (botPose.rawFiducials.length == 1) {
+    //   LimelightHelpers.RawFiducial fid = botPose.rawFiducials[0];
 
-      if (fid.ambiguity > .5 || fid.distToCamera > 3) {
-        fail = true;
-      }
-    }
+    //   if (fid.ambiguity > .5 || fid.distToCamera > 3) {
+    //     fail = true;
+    //   }
+    // }
 
     if (!fail) {
       drivetrain.addVisionMeasurement(botPose.pose, botPose.timestampSeconds);

@@ -10,7 +10,7 @@ public class TurretConstants {
   public static final int TURRET_MOTOR_ID = 17;
   public static final int TURRET_ENCODER_ID = 1;
 
-  public static final double ROBOT_RELATIVE_OFFSET_DEG = 143.5;
+  public static final double ROBOT_RELATIVE_OFFSET_DEG = 150;
 
   public static final double GEAR_RATIO = 32.0;
 

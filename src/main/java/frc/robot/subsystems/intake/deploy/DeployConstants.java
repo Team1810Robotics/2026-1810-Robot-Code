@@ -15,7 +15,7 @@ public class DeployConstants {
   public static double kS = 0.75;
   public static double kG = 0.461;
 
-  public static double ENCODER_OFFSET = Units.degreesToRotations(43);
+  public static double ENCODER_OFFSET = Units.degreesToRotations(14);
 
   public static double GEAR_RATIO = 3;
 
@@ -24,7 +24,7 @@ public class DeployConstants {
   public enum DeployState {
     DEPLOY(Rotation2d.fromDegrees(14.5)),
     RETRACT(Rotation2d.fromDegrees(115.0)),
-    AGITATE(Rotation2d.fromDegrees(30));
+    AGITATE(Rotation2d.fromDegrees(37.5));
 
     private Rotation2d position;
 

@@ -99,7 +99,7 @@ public class TurretSubsystem extends SubsystemBase {
     unwrappedEncoder = lastEncoderRaw;
     seedMotorFromAbsolute();
 
-    setDefaultCommand(setFieldRelativeAngleCommand());
+    // setDefaultCommand(setFieldRelativeAngleCommand());
   }
 
   private void updateEncoderUnwrap() {
@@ -207,6 +207,11 @@ public class TurretSubsystem extends SubsystemBase {
         fieldRelativeAngle.minus(RobotContainer.getDrivetrain().getPose().getRotation());
 
     DogLog.log("Turret/FieldRelative/Calculated RR Angle", robotRelativeAngle.getDegrees());
+
+    if (robotRelativeAngle.getDegrees() > 0) {
+      robotRelativeAngle =
+          robotRelativeAngle.minus(Rotation2d.fromDegrees(9)); // DON'T ASK. I DON'T KNOW.
+    }
 
     setRobotRelativeAngle(robotRelativeAngle);
   }

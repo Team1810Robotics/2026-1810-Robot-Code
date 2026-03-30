@@ -209,9 +209,9 @@ public class HoodSubsystem extends SubsystemBase {
         break;
     }
 
-    // tuningCommand =
-    //     setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))
-    //         .until(() -> tuningTarget.get() == 0);
+    // setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))
+    //     .until(() -> tuningTarget.get() == 0)
+    //     .schedule();
   }
 
   public void clearCache() {

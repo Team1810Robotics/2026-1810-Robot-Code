@@ -10,19 +10,19 @@ public class SpindexerConstants {
   public static final double SPINUP_TIME = .5;
 
   public enum SpindexerState {
-    IN(2000),
-    OUT(-3000),
+    IN(.3),
+    OUT(-.6),
     STOP(0),
-    SHOOTING(0);
+    SHOOTING(.3);
 
-    private final double velocity;
+    private final double power;
 
-    private SpindexerState(double velocity) {
-      this.velocity = velocity;
+    private SpindexerState(double power) {
+      this.power = power;
     }
 
-    public double getVelocity() {
-      return velocity;
+    public double getPower() {
+      return power;
     }
   }
 }

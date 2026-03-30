@@ -71,7 +71,7 @@ public class DeploySubsystem extends SubsystemBase {
 
     feedforward = new ArmFeedforward(DeployConstants.kS, DeployConstants.kG, 0);
 
-    if (encoder.get() < .4) {
+    if (encoder.get() < .2) {
       deployState = DeployConstants.DeployState.RETRACT;
       deployTarget = deployState.getPosition();
 
@@ -225,14 +225,14 @@ public class DeploySubsystem extends SubsystemBase {
 
     log();
 
-    switch (deployState) {
-      case AGITATE:
-        agitate();
-        break;
-      default:
-        setPosition(deployState.getPosition());
-        break;
-    }
+    // switch (deployState) {
+    //   case AGITATE:
+    //     agitate();
+    //     break;
+    //   default:
+    //     setPosition(deployState.getPosition());
+    //     break;
+    // }
 
     // updateGains();
   }

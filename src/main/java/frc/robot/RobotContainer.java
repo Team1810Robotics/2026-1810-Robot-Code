@@ -143,7 +143,8 @@ public class RobotContainer {
         .whileTrue(
             Commands.runOnce(
                 () -> {
-                  Region botRegion = Region.getRegion(drivetrain.getPose()).orElseThrow();
+                  Region botRegion =
+                      Region.getRegion(drivetrain.getPose()).orElse(Region.BLUE_ALLIANCE_ZONE);
 
                   if (botRegion == Region.BLUE_ALLIANCE_ZONE
                       || botRegion == Region.RED_ALLIANCE_ZONE) {

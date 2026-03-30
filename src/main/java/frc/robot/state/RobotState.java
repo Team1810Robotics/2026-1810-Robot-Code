@@ -1,6 +1,8 @@
 package frc.robot.state;
 
 import dev.doglog.DogLog;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -46,12 +48,14 @@ public class RobotState {
 
   private boolean unjamStarted = false;
   private double unjamStartTime;
-  private final double unjamTime = 0.1;
+  private final double unjamTime = 0.15;
 
   private double lastUnjamTime = 0;
-  private final double unjamCooldown = 1;
+  private final double unjamCooldown = .75;
 
   private boolean allowStateOverride = false;
+
+  private final Debouncer jamDebouncer = new Debouncer(0.1, DebounceType.kBoth);
 
   private RobotState() {
     spindexerSubsystem = RobotContainer.getSpindexerSubsystem();
@@ -67,11 +71,12 @@ public class RobotState {
   public void periodic() {
     double time = Timer.getFPGATimestamp();
 
-    indexerJammed = spindexerSubsystem.isJammed();
+    indexerJammed = spindexerSubsystem.isJammed() || kickerSubsystem.isJammed();
 
-    // ✅ Start unjam
+    indexerJammed = jamDebouncer.calculate(indexerJammed);
+
     if (indexerJammed && !unjamStarted && time - lastUnjamTime > unjamCooldown) {
-      preUnjamState = robotState; // ✅ SAVE correct state
+      preUnjamState = robotState;
 
       unjamStartTime = time;
       unjamStarted = true;
@@ -80,16 +85,14 @@ public class RobotState {
       setState(RobotStates.REVERSE_INDEXER);
     }
 
-    // ✅ End unjam
     if (unjamStarted && time - unjamStartTime > unjamTime) {
       unjamStarted = false;
 
       allowStateOverride = true;
-      setState(preUnjamState); // ✅ restore correct state
+      setState(preUnjamState);
       allowStateOverride = false;
     }
 
-    // Shooter readiness logic
     if (isShootingState()) {
       ShotParameters params = ShotCalculator.getInstance().calculateParameters();
 

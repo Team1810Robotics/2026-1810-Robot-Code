@@ -2,7 +2,6 @@ package frc.robot.subsystems.indexer.spindexer;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -66,12 +65,6 @@ public class SpindexerSubsystem extends SubsystemBase {
     this.spindexerState = state;
   }
 
-  public void setVelocity(double velocity) {
-    velocityTarget = velocity;
-
-    controller.setSetpoint(velocity, ControlType.kVelocity);
-  }
-
   public Command spinCommand(SpindexerState state) {
     return Commands.startEnd(() -> setSpindexerState(state), () -> stop(), this);
   }
@@ -80,11 +73,8 @@ public class SpindexerSubsystem extends SubsystemBase {
     if (Timer.getFPGATimestamp() - startSpinUpTime < SpindexerConstants.SPINUP_TIME) return false;
     if (spindexerState == SpindexerState.STOP || spindexerState == SpindexerState.OUT) return false;
     if (!RobotState.getInstance().isShooterReady) return false;
-    double target = velocityTarget;
-    double velocity = spinMotor.getEncoder().getVelocity();
-    if (target < velocity) return false;
 
-    return Math.abs(target - velocity) > 1000;
+    return spinMotor.getOutputCurrent() > 38.0;
   }
 
   public void stop() {
@@ -93,9 +83,8 @@ public class SpindexerSubsystem extends SubsystemBase {
 
   public void log() {
     DogLog.log("Spindexer/State", spindexerState);
-    DogLog.log("Spindexer/Velocity Target", velocityTarget);
-    DogLog.log("Spindexer/Velocity", spinMotor.getEncoder().getVelocity());
     DogLog.log("Spindexer/Is Jammed", isJammed());
+    DogLog.log("Spindexer/Current", spinMotor.getOutputCurrent());
   }
 
   public void updateGains() {
@@ -117,15 +106,16 @@ public class SpindexerSubsystem extends SubsystemBase {
     log();
     // updateGains();
 
-    if (tuningMode.get()) {
-      isTuning = true;
-      controller.setSetpoint(tuningTarget.get(), ControlType.kVelocity);
-    }
+    // if (tuningMode.get()) {
+    //   isTuning = true;
+    //   spinMotor.set(SpindexerConstants.SpindexerState.IN.getPower());
+    // }
 
-    if (!tuningMode.get() && isTuning) {
-      setSpindexerState(SpindexerState.STOP);
-      isTuning = false;
-    }
+    // if (!tuningMode.get() && isTuning) {
+    //   spinMotor.stopMotor();
+    //   // setSpindexerState(SpindexerState.STOP);
+    //   isTuning = false;
+    // }
 
     switch (spindexerState) {
       case SHOOTING:
@@ -134,7 +124,8 @@ public class SpindexerSubsystem extends SubsystemBase {
             startSpinUpTime = Timer.getFPGATimestamp();
             wasShooting = true;
           }
-          setVelocity(SpindexerConstants.SpindexerState.IN.getVelocity());
+          spinMotor.set(spindexerState.getPower());
+          // setVelocity(SpindexerConstants.SpindexerState.IN.getVelocity());
         } else {
           stop();
           wasShooting = false;
@@ -145,7 +136,7 @@ public class SpindexerSubsystem extends SubsystemBase {
         spinMotor.stopMotor();
         break;
       default:
-        setVelocity(spindexerState.getVelocity());
+        spinMotor.set(spindexerState.getPower());
         break;
     }
   }

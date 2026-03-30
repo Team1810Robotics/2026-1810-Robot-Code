@@ -1,7 +1,9 @@
 package frc.robot.subsystems.indexer.kicker;
 
 public class KickerConstants {
-  public static int KICKER_MOTOR = 12;
+  public static final int KICKER_MOTOR = 12;
+
+  public static final double SPINUP_TIME = .5;
 
   public enum KickerState {
     IN(1),

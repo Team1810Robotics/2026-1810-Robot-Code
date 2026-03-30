@@ -57,21 +57,21 @@ public class ShotCalculator {
     minDistance = 1;
     phaseDelay = 0.03;
 
-    scoringHoodMap.put(1.48, Rotation2d.fromDegrees(0));
-    scoringHoodMap.put(1.94, Rotation2d.fromDegrees(1));
-    scoringHoodMap.put(2.54, Rotation2d.fromDegrees(2));
-    scoringHoodMap.put(3.0, Rotation2d.fromDegrees(3.5));
-    scoringHoodMap.put(3.78, Rotation2d.fromDegrees(5));
-    scoringHoodMap.put(4.2, Rotation2d.fromDegrees(7));
-    scoringHoodMap.put(5.1, Rotation2d.fromDegrees(8.5));
+    scoringHoodMap.put(1.491, Rotation2d.fromDegrees(0));
+    scoringHoodMap.put(1.984, Rotation2d.fromDegrees(1));
+    scoringHoodMap.put(2.5, Rotation2d.fromDegrees(2.5));
+    scoringHoodMap.put(3.1, Rotation2d.fromDegrees(4));
+    scoringHoodMap.put(3.475, Rotation2d.fromDegrees(6));
+    scoringHoodMap.put(3.978, Rotation2d.fromDegrees(8.5)); // prob redo up to here
+    scoringHoodMap.put(4.61, Rotation2d.fromDegrees(10.0));
 
-    scoringFlywheelMap.put(1.48, 28.0);
-    scoringFlywheelMap.put(1.94, 30.5);
-    scoringFlywheelMap.put(2.52, 33.5);
-    scoringFlywheelMap.put(3.0, 37.0);
-    scoringFlywheelMap.put(3.78, 39.0);
-    scoringFlywheelMap.put(4.2, 40.0);
-    scoringFlywheelMap.put(5.1, 42.67);
+    scoringFlywheelMap.put(1.491, 29.75);
+    scoringFlywheelMap.put(1.984, 31.5);
+    scoringFlywheelMap.put(2.5, 34.5);
+    scoringFlywheelMap.put(3.1, 37.0);
+    scoringFlywheelMap.put(3.475, 39.25);
+    scoringFlywheelMap.put(3.978, 40.25);
+    scoringFlywheelMap.put(4.61, 41.75);
 
     scoringTimeOfFlightMap.put(1.45, 1.083);
     scoringTimeOfFlightMap.put(2.62, 1.167);
