@@ -1,5 +1,6 @@
 package frc.robot.subsystems.indexer.kicker;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -12,7 +13,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.state.RobotState;
+import frc.robot.RobotState;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 
 public class KickerSubsystem extends SubsystemBase {
@@ -65,8 +66,7 @@ public class KickerSubsystem extends SubsystemBase {
     // Only care when shooter is ready (same as spindexer)
     if (!RobotState.getInstance().isShooterReady) return false;
 
-    // Jam condition: velocity too low
-    return kickerMotor.getSupplyCurrent().getValueAsDouble() > 45.0;
+    return kickerMotor.getStatorCurrent().getValueAsDouble() > KickerConstants.JAM_CURRENT.in(Amps);
   }
 
   public void stop() {
@@ -77,8 +77,7 @@ public class KickerSubsystem extends SubsystemBase {
     DogLog.log("Kicker/State", state);
     DogLog.log("Kicker/Velocity", kickerMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
     DogLog.log("Kicker/Is Jammed", isJammed());
-    DogLog.log("Kicker/Stator Current", kickerMotor.getStatorCurrent().getValueAsDouble());
-    DogLog.log("Kicker/Supply Current", kickerMotor.getSupplyCurrent().getValueAsDouble());
+    DogLog.log("Kicker/Current", kickerMotor.getStatorCurrent().getValueAsDouble(), Amps);
   }
 
   // public void updateGains() {
@@ -100,15 +99,9 @@ public class KickerSubsystem extends SubsystemBase {
     log();
 
     // if (tuningMode.get()) {
-    //   isTuning = true;
-    //   kickerMotor.set(KickerConstants.KickerState.IN.getPower());
-    //   setState(KickerState.IN);
-    // }
-
-    // if (!tuningMode.get() && isTuning) {
-    //   kickerMotor.stopMotor();
-    //   setState(KickerState.STOP);
-    //   isTuning = false;
+    //   kickerMotor.set(KickerState.IN.getPower());
+    // } else {
+    //   stop();
     // }
 
     switch (state) {

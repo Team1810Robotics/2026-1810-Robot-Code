@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.state.RobotState;
+import frc.robot.RobotState;
 import frc.robot.subsystems.indexer.spindexer.SpindexerConstants.SpindexerState;
 import frc.robot.util.TunablePIDF;
 import frc.robot.util.TunablePIDF.TunablePIDFGains;
@@ -85,6 +85,7 @@ public class SpindexerSubsystem extends SubsystemBase {
     DogLog.log("Spindexer/State", spindexerState);
     DogLog.log("Spindexer/Is Jammed", isJammed());
     DogLog.log("Spindexer/Current", spinMotor.getOutputCurrent());
+    DogLog.log("Spindexer/Velocity", spinMotor.getEncoder().getVelocity());
   }
 
   public void updateGains() {
@@ -107,14 +108,9 @@ public class SpindexerSubsystem extends SubsystemBase {
     // updateGains();
 
     // if (tuningMode.get()) {
-    //   isTuning = true;
     //   spinMotor.set(SpindexerConstants.SpindexerState.IN.getPower());
-    // }
-
-    // if (!tuningMode.get() && isTuning) {
-    //   spinMotor.stopMotor();
-    //   // setSpindexerState(SpindexerState.STOP);
-    //   isTuning = false;
+    // } else {
+    //   stop();
     // }
 
     switch (spindexerState) {

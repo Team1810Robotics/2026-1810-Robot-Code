@@ -37,12 +37,12 @@ public class DeploySubsystem extends SubsystemBase {
 
   private AgitationState agitationState = AgitationState.DOWN;
 
-  public final DoubleSubscriber kP = DogLog.tunable("Intake/kP", 4.0);
-  public final DoubleSubscriber kD = DogLog.tunable("Intake/kD", 0.25);
-  public final DoubleSubscriber kS = DogLog.tunable("Intake/kS", 0.75);
-  public final DoubleSubscriber kG = DogLog.tunable("Intake/kG", 0.461);
+  // public final DoubleSubscriber kP = DogLog.tunable("Intake/kP", 4.0);
+  // public final DoubleSubscriber kD = DogLog.tunable("Intake/kD", 0.25);
+  // public final DoubleSubscriber kS = DogLog.tunable("Intake/kS", 0.75);
+  // public final DoubleSubscriber kG = DogLog.tunable("Intake/kG", 0.461);
 
-  public double lastkP, lastkD, lastkS, lastkG;
+  // public double lastkP, lastkD, lastkS, lastkG;
 
   public final DoubleSubscriber targetSubscriber = DogLog.tunable("Intake/DeployTarget", 0.0);
 
@@ -206,18 +206,18 @@ public class DeploySubsystem extends SubsystemBase {
     DogLog.log("Intake/Deploy/Raw Encoder", encoder.get());
   }
 
-  public void updateGains() {
-    if (lastkP != kP.get() || lastkD != kD.get() || lastkS != kS.get() || lastkG != kG.get()) {
-      intakePIDController.setPID(kP.get(), 0, kD.get());
-      feedforward.setKg(kG.get());
-      feedforward.setKs(kS.get());
+  // public void updateGains() {
+  //   if (lastkP != kP.get() || lastkD != kD.get() || lastkS != kS.get() || lastkG != kG.get()) {
+  //     intakePIDController.setPID(kP.get(), 0, kD.get());
+  //     feedforward.setKg(kG.get());
+  //     feedforward.setKs(kS.get());
 
-      lastkP = kP.get();
-      lastkD = kD.get();
-      lastkS = kS.get();
-      lastkG = kG.get();
-    }
-  }
+  //     lastkP = kP.get();
+  //     lastkD = kD.get();
+  //     lastkS = kS.get();
+  //     lastkG = kG.get();
+  //   }
+  // }
 
   @Override
   public void periodic() {
@@ -225,14 +225,14 @@ public class DeploySubsystem extends SubsystemBase {
 
     log();
 
-    // switch (deployState) {
-    //   case AGITATE:
-    //     agitate();
-    //     break;
-    //   default:
-    //     setPosition(deployState.getPosition());
-    //     break;
-    // }
+    switch (deployState) {
+      case AGITATE:
+        agitate();
+        break;
+      default:
+        setPosition(deployState.getPosition());
+        break;
+    }
 
     // updateGains();
   }

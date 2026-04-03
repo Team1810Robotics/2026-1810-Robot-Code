@@ -3,7 +3,6 @@ package frc.robot.subsystems.shooter.flywheel;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -16,25 +15,21 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.FlywheelState;
-import frc.robot.util.TunablePIDF;
-import frc.robot.util.TunablePIDF.TunablePIDFGains;
 
 public class FlywheelSubsystem extends SubsystemBase {
   private final TalonFX rightMotor;
   private final TalonFX leftMotor;
 
-  private final TunablePIDF frontTunablePIDF;
-  private final TunablePIDF backTunablePIDF;
+  // private final TunablePIDF frontTunablePIDF;
+  // private final TunablePIDF backTunablePIDF;
 
   private final DoubleSubscriber velocityTarget = DogLog.tunable("Flywheel/VelocityTarget", 0.0);
 
-  private boolean isTuning = false;
-
   private AngularVelocity frontTargetVelocity = RotationsPerSecond.of(0);
   private AngularVelocity backTargetVelocity = RotationsPerSecond.of(0);
-
-  private Command tuningCommand = setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()));
 
   private FlywheelState flywheelState = FlywheelState.IDLE;
 
@@ -76,8 +71,8 @@ public class FlywheelSubsystem extends SubsystemBase {
 
     leftMotor.getConfigurator().apply(backConfig);
 
-    frontTunablePIDF = new TunablePIDF("Flywheel/Front");
-    backTunablePIDF = new TunablePIDF("Flywheel/Back");
+    // frontTunablePIDF = new TunablePIDF("Flywheel/Front");
+    // backTunablePIDF = new TunablePIDF("Flywheel/Back");
   }
 
   public Command dutyCycleCommand(double dutyCycle) {
@@ -104,10 +99,10 @@ public class FlywheelSubsystem extends SubsystemBase {
 
   public void setVelocity(AngularVelocity velocity) {
     frontTargetVelocity = velocity;
-    backTargetVelocity = velocity; // TODO: Add the times back
+    backTargetVelocity = velocity.times(.95); // TODO: Add the times back
 
     rightMotor.setControl(new VelocityVoltage(frontTargetVelocity));
-    // leftMotor.setControl(new VelocityVoltage(backTargetVelocity));
+    leftMotor.setControl(new VelocityVoltage(backTargetVelocity));
   }
 
   public Command setVelocityCommand(AngularVelocity velocity) {
@@ -127,32 +122,32 @@ public class FlywheelSubsystem extends SubsystemBase {
     rightMotor.stopMotor();
   }
 
-  public void updateGains() {
-    TunablePIDFGains frontGains = frontTunablePIDF.getGains();
-    TunablePIDFGains backGains = backTunablePIDF.getGains();
+  // public void updateGains() {
+  //   TunablePIDFGains frontGains = frontTunablePIDF.getGains();
+  //   TunablePIDFGains backGains = backTunablePIDF.getGains();
 
-    if (frontGains.hasChanged() || backGains.hasChanged()) {
-      return;
-    }
+  //   if (!frontGains.hasChanged() && !backGains.hasChanged()) {
+  //     return;
+  //   }
 
-    Slot0Configs frontGainConfig = new Slot0Configs();
-    frontGainConfig.kP = frontGains.kP();
-    frontGainConfig.kI = frontGains.kI();
-    frontGainConfig.kD = frontGains.kD();
-    frontGainConfig.kS = frontGains.kS();
-    frontGainConfig.kV = frontGains.kV();
+  //   Slot0Configs frontGainConfig = new Slot0Configs();
+  //   frontGainConfig.kP = frontGains.kP();
+  //   frontGainConfig.kI = frontGains.kI();
+  //   frontGainConfig.kD = frontGains.kD();
+  //   frontGainConfig.kS = frontGains.kS();
+  //   frontGainConfig.kV = frontGains.kV();
 
-    rightMotor.getConfigurator().apply(frontGainConfig);
+  //   rightMotor.getConfigurator().apply(frontGainConfig);
 
-    Slot0Configs backGainConfig = new Slot0Configs();
-    backGainConfig.kP = frontGains.kP();
-    backGainConfig.kI = frontGains.kI();
-    backGainConfig.kD = frontGains.kD();
-    backGainConfig.kS = frontGains.kS();
-    backGainConfig.kV = frontGains.kV();
+  //   Slot0Configs backGainConfig = new Slot0Configs();
+  //   backGainConfig.kP = frontGains.kP();
+  //   backGainConfig.kI = frontGains.kI();
+  //   backGainConfig.kD = frontGains.kD();
+  //   backGainConfig.kS = frontGains.kS();
+  //   backGainConfig.kV = frontGains.kV();
 
-    leftMotor.getConfigurator().apply(backGainConfig);
-  }
+  //   leftMotor.getConfigurator().apply(backGainConfig);
+  // }
 
   public void log() {
     DogLog.log(
@@ -174,37 +169,39 @@ public class FlywheelSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
-    updateGains();
+    // updateGains();
 
-    // switch (flywheelState) {
-    //   case PASSING:
-    //     ShotParameters passingParams = ShotCalculator.getInstance().calculateParameters();
-
-    //     if (!passingParams.isValid()) {
-    //       idleMotor();
-    //     } else {
-    //       setVelocity(passingParams.flywheelVelocity());
-    //     }
-    //     break;
-    //   case SCORING:
-    //     ShotParameters scoringParams = ShotCalculator.getInstance().calculateParameters();
-
-    //     if (!scoringParams.isValid()) {
-    //       idleMotor();
-    //     } else {
-    //       setVelocity(scoringParams.flywheelVelocity());
-    //     }
-    //     break;
-    //   case IDLE:
-    //     idleMotor();
-
-    //     break;
-    //   default:
-    //     break;
+    // if (velocityTarget.get() != 0) {
+    //   setVelocity(RotationsPerSecond.of(velocityTarget.get()));
+    // } else {
+    //   stop();
     // }
 
-    setVelocityCommand(RotationsPerSecond.of(velocityTarget.get()))
-        .until(() -> velocityTarget.get() == 0)
-        .schedule();
+    switch (flywheelState) {
+      case PASSING:
+        ShotParameters passingParams = ShotCalculator.getInstance().calculateParameters();
+
+        if (!passingParams.isValid()) {
+          idleMotor();
+        } else {
+          setVelocity(passingParams.flywheelVelocity());
+        }
+        break;
+      case SCORING:
+        ShotParameters scoringParams = ShotCalculator.getInstance().calculateParameters();
+
+        if (!scoringParams.isValid()) {
+          idleMotor();
+        } else {
+          setVelocity(scoringParams.flywheelVelocity());
+        }
+        break;
+      case IDLE:
+        idleMotor();
+
+        break;
+      default:
+        break;
+    }
   }
 }

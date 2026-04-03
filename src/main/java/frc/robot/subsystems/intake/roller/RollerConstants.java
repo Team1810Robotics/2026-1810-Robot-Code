@@ -7,10 +7,12 @@ public class RollerConstants {
   public static final double kS = 0.1;
   public static final double kV = .0025;
 
+  public static final double MAX_VELOCITY = 6000;
+
   public enum RollerState {
     INTAKE(-5000),
     AUTO_INTAKE(-5000),
-    OUT(2500),
+    OUT(MAX_VELOCITY),
     STOP(0),
     SHOOTING(0);
 

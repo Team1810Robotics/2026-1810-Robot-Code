@@ -57,30 +57,46 @@ public class ShotCalculator {
     minDistance = 1;
     phaseDelay = 0.03;
 
-    scoringHoodMap.put(1.491, Rotation2d.fromDegrees(0));
-    scoringHoodMap.put(1.984, Rotation2d.fromDegrees(1));
-    scoringHoodMap.put(2.5, Rotation2d.fromDegrees(2.5));
-    scoringHoodMap.put(3.1, Rotation2d.fromDegrees(4));
-    scoringHoodMap.put(3.475, Rotation2d.fromDegrees(6));
-    scoringHoodMap.put(3.978, Rotation2d.fromDegrees(8.5)); // prob redo up to here
-    scoringHoodMap.put(4.61, Rotation2d.fromDegrees(10.0));
+    scoringHoodMap.put(1.491, Rotation2d.fromDegrees(0)); // -.5
+    scoringHoodMap.put(2.091, Rotation2d.fromDegrees(5));
+    scoringHoodMap.put(2.48, Rotation2d.fromDegrees(6));
+    scoringHoodMap.put(3.02, Rotation2d.fromDegrees(7));
+    scoringHoodMap.put(3.39, Rotation2d.fromDegrees(8.5));
+    scoringHoodMap.put(3.5, Rotation2d.fromDegrees(9.5));
+    scoringHoodMap.put(4.11, Rotation2d.fromDegrees(11.5));
+    scoringHoodMap.put(4.4, Rotation2d.fromDegrees(13));
+    scoringHoodMap.put(4.435, Rotation2d.fromDegrees(13));
+    scoringHoodMap.put(4.683, Rotation2d.fromDegrees(14.5));
+    scoringHoodMap.put(5.05, Rotation2d.fromDegrees(17));
+    scoringHoodMap.put(5.606, Rotation2d.fromDegrees(19));
+    scoringHoodMap.put(6.032, Rotation2d.fromDegrees(20));
 
-    scoringFlywheelMap.put(1.491, 29.75);
-    scoringFlywheelMap.put(1.984, 31.5);
-    scoringFlywheelMap.put(2.5, 34.5);
-    scoringFlywheelMap.put(3.1, 37.0);
-    scoringFlywheelMap.put(3.475, 39.25);
-    scoringFlywheelMap.put(3.978, 40.25);
-    scoringFlywheelMap.put(4.61, 41.75);
+    scoringFlywheelMap.put(1.491, 28.50); // -1.25
+    scoringFlywheelMap.put(2.091, 31.75);
+    scoringFlywheelMap.put(2.48, 33.25);
+    scoringFlywheelMap.put(3.02, 34.75);
+    scoringFlywheelMap.put(3.39, 36.25);
+    scoringFlywheelMap.put(3.5, 36.75);
+    scoringFlywheelMap.put(4.11, 38.5);
+    scoringFlywheelMap.put(4.4, 39.0);
+    scoringFlywheelMap.put(4.683, 39.75);
+    scoringFlywheelMap.put(5.05, 40.75);
+    scoringFlywheelMap.put(5.606, 41.5);
+    scoringFlywheelMap.put(6.032, 43.0);
 
-    scoringTimeOfFlightMap.put(1.45, 1.083);
-    scoringTimeOfFlightMap.put(2.62, 1.167);
-    scoringTimeOfFlightMap.put(3.23, 1.217);
-    scoringTimeOfFlightMap.put(4.03, 1.3);
-    scoringTimeOfFlightMap.put(5.39, 1.433);
+    scoringTimeOfFlightMap.put(1.658, 0.917);
+    scoringTimeOfFlightMap.put(2.092, 0.967);
+    scoringTimeOfFlightMap.put(2.467, 1.117);
+    scoringTimeOfFlightMap.put(2.96, 1.167);
+    scoringTimeOfFlightMap.put(3.4, 1.223);
+    scoringTimeOfFlightMap.put(4.106, 1.267);
+    scoringTimeOfFlightMap.put(4.57, 1.167); // vro idk (i do)
+    scoringTimeOfFlightMap.put(5.05, 1.183);
+    scoringTimeOfFlightMap.put(5.5, 1.133);
+    scoringTimeOfFlightMap.put(6.1, 1.133);
 
     passingHoodMap.put(3.8, Rotation2d.fromDegrees(5));
-    passingHoodMap.put(5.0, Rotation2d.fromDegrees(7));
+    passingHoodMap.put(5.0, Rotation2d.fromDegrees(7)); // , 3.4, , 2.96,
     passingHoodMap.put(6.7, Rotation2d.fromDegrees(12));
 
     passingFlywheelMap.put(3.8, 40.0);
@@ -198,7 +214,7 @@ public class ShotCalculator {
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
 
       Rotation2d turretAngleTurretFrame =
-          RobotContainer.getTurretSubsystem().robotRelativeToTurret(turretAngle);
+          RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
 
       if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
           || turretAngleTurretFrame.getDegrees() < TurretConstants.MIN_ANGLE.in(Degrees)) {

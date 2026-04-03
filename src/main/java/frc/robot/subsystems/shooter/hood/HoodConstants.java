@@ -10,7 +10,7 @@ public class HoodConstants {
   public static final double GEAR_RATIO_ENCODER = 18.2;
 
   public static final double kP = 300.0;
-
+  public static final double kD = 0.0;
   public static final double kS = 0.23;
 
   public static final Translation3d turretToHood = new Translation3d(.114, .078, .074);

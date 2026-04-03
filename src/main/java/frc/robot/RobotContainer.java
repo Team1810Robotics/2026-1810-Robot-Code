@@ -10,16 +10,13 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import frc.robot.RobotState.RobotStates;
 import frc.robot.auto.AutoSelector;
-import frc.robot.state.RobotState;
-import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
@@ -93,14 +90,19 @@ public class RobotContainer {
 
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(
-            () ->
-                drive
-                    .withVelocityX(-driverController.getLeftY() * MaxSpeed * .5)
-                    .withVelocityY(-driverController.getLeftX() * MaxSpeed * .5)
-                    .withRotationalRate(-driverController.getRightX() * MaxAngularRate * .5)));
+            () -> {
+              if (RobotState.getInstance().getState() == RobotStates.SCORING_WITH_AGITATION) {
+                return brake;
+              }
+
+              return drive
+                  .withVelocityX(-driverController.getLeftY() * MaxSpeed * 0.5)
+                  .withVelocityY(-driverController.getLeftX() * MaxSpeed * 0.5)
+                  .withRotationalRate(-driverController.getRightX() * MaxAngularRate * 0.5);
+            }));
 
     driverController
-        .L1()
+        .L2()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -155,14 +157,16 @@ public class RobotContainer {
                 }));
 
     driverController
-        .R2()
-        .or(driverController.L2())
+        .L1()
+        .or(driverController.R2())
         .onFalse(
             Commands.runOnce(
                 () -> {
                   RobotStates previousState = RobotState.getInstance().getPreviousState();
 
-                  if (previousState == RobotStates.REVERSE_INDEXER) {
+                  if (previousState == RobotStates.REVERSE_INDEXER
+                      || previousState == RobotStates.SCORING_NO_AGITATION
+                      || previousState == RobotStates.SCORING_WITH_AGITATION) {
                     RobotState.getInstance()
                         .setState(
                             deploySubsystem.getState() == DeployState.DEPLOY
@@ -175,7 +179,7 @@ public class RobotContainer {
                 }));
 
     driverController
-        .L2()
+        .L1()
         .onTrue(RobotState.getInstance().setStateCommand(RobotStates.SCORING_WITH_AGITATION));
 
     driverController
@@ -186,16 +190,16 @@ public class RobotContainer {
 
     // reset the field-centric heading on left bumper press
     driverController.options().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-    driverController
-        .L3()
-        .onTrue(
-            Commands.runOnce(
-                () ->
-                    drivetrain.resetPose(
-                        new Pose2d(
-                            Inches.of(27 / 2).in(Meters),
-                            Inches.of(27 / 2).in(Meters),
-                            Rotation2d.kZero))));
+    // driverController
+    //     .L3()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () ->
+    //                 drivetrain.resetPose(
+    //                     new Pose2d(
+    //                         Inches.of(27 / 2).in(Meters),
+    //                         Inches.of(27 / 2).in(Meters),
+    //                         Rotation2d.kZero))));
 
     operatorController
         .R3()

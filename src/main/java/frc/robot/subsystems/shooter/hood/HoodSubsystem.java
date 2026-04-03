@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -31,16 +30,7 @@ public class HoodSubsystem extends SubsystemBase {
 
   private final DoubleSubscriber tuningTarget = DogLog.tunable("Hood/TuningTarget", 0.0);
 
-  private boolean isTuning = false;
-
-  public final DoubleSubscriber kP = DogLog.tunable("Hood/Gains/kP", HoodConstants.kP);
-  public final DoubleSubscriber kD = DogLog.tunable("Hood/Gains/kD", 0.0);
-
-  public final DoubleSubscriber kS = DogLog.tunable("Hood/Gains/kS", HoodConstants.kS);
-
-  private double lastkP, lastkD, lastkS;
-
-  private Command tuningCommand;
+  // private final TunablePIDF tunablePIDF;
 
   private Rotation2d position;
 
@@ -74,6 +64,8 @@ public class HoodSubsystem extends SubsystemBase {
 
     lastEncoderRaw = 0;
     unwrappedEncoder = 0;
+
+    // tunablePIDF = new TunablePIDF("Hood");
 
     hoodMotor.setPosition(Rotations.of(0));
   }
@@ -130,6 +122,7 @@ public class HoodSubsystem extends SubsystemBase {
   }
 
   public void log() {
+    DogLog.log("Hood/State", hoodState);
     DogLog.log("Hood/Position", getMotorPosition().getDegrees(), Degrees);
     DogLog.log("Hood/Volts", hoodMotor.getMotorVoltage().getValueAsDouble(), Volts);
   }
@@ -159,22 +152,21 @@ public class HoodSubsystem extends SubsystemBase {
             }));
   }
 
-  public void updateGains() {
-    if (kP.get() == lastkP && kD.get() == lastkD && kS.get() == lastkS) {
-      return;
-    }
+  // public void updateGains() {
+  //   TunablePIDFGains gains = tunablePIDF.getGains();
 
-    Slot0Configs slot0Configs = new Slot0Configs();
-    slot0Configs.kP = kP.get();
-    slot0Configs.kD = kD.get();
-    slot0Configs.kS = kS.get();
+  //   if (gains.hasChanged()) {
+  //     Slot0Configs slot0Configs = new Slot0Configs();
+  //     slot0Configs.kP = gains.kP();
+  //     slot0Configs.kD = gains.kD();
+  //     slot0Configs.kS = gains.kS();
 
-    lastkP = kP.get();
-    lastkD = kD.get();
-    lastkS = kS.get();
+  //     slot0Configs.StaticFeedforwardSign = StaticFeedforwardSignValue.UseClosedLoopSign;
 
-    hoodMotor.getConfigurator().apply(slot0Configs);
-  }
+  //     hoodMotor.getConfigurator().apply(slot0Configs);
+  //     return;
+  //   }
+  // }
 
   @Override
   public void periodic() {
@@ -182,6 +174,12 @@ public class HoodSubsystem extends SubsystemBase {
     // updateGains();
 
     if (zeroing) return;
+
+    // if (tuningTarget.get() != 0) {
+    //   setPosition(Rotation2d.fromDegrees(tuningTarget.get()));
+    // } else {
+    //   stop();
+    // }
 
     switch (hoodState) {
       case PASSING:
@@ -208,10 +206,6 @@ public class HoodSubsystem extends SubsystemBase {
       default:
         break;
     }
-
-    // setPositionCommand(Rotation2d.fromDegrees(tuningTarget.get()))
-    //     .until(() -> tuningTarget.get() == 0)
-    //     .schedule();
   }
 
   public void clearCache() {

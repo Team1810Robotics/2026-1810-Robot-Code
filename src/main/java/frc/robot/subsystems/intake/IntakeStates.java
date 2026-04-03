@@ -5,6 +5,7 @@ import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.roller.RollerConstants;
 import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 
+// I'm like 90% sure this doesn't do anthing but I'm scared to delete it so here we are
 public enum IntakeStates {
   INTAKE(RollerConstants.RollerState.INTAKE, DeployConstants.DeployState.DEPLOY),
   OUT(RollerConstants.RollerState.OUT, DeployConstants.DeployState.DEPLOY),
