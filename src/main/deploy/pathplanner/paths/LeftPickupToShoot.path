@@ -44,12 +44,7 @@
       "linkedName": "LeftShootFromTrench"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.9212598425196841,
-      "rotationDegrees": 179.48993844493438
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [],
@@ -63,7 +58,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 180.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": "Left",

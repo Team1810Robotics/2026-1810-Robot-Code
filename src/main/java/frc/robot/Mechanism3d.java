@@ -29,30 +29,24 @@ public class Mechanism3d {
   private HoodSubsystem hoodSubsystem = RobotContainer.getHoodSubsystem();
 
   public void log() {
-    Rotation2d hoodAngle = hoodSubsystem.getMotorPosition();
-    Rotation2d intakeAngle = deploySubsystem.getPosition().times(-1);
-    Rotation2d turretAngle = turretSubsystem.getTurretAngleRobotRelative();
 
     boolean sim = Robot.isSimulation();
 
-    Pose3d turretPose =
+    Rotation2d hoodAngle = sim ? hoodSubsystem.getSimPos() : hoodSubsystem.getMotorPosition();
+    Rotation2d intakeAngle =
         sim
-            ? turretSubsystem.simPose
-            : new Pose3d(
-                TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(turretAngle));
+            ? deploySubsystem.getTargetPosition().times(-1)
+            : deploySubsystem.getPosition().times(-1);
+    Rotation2d turretAngle = turretSubsystem.getFieldAngle();
+
+    Pose3d turretPose =
+        new Pose3d(TurretConstants.ROBOT_TO_TURRET.getTranslation(), new Rotation3d(turretAngle));
     Pose3d intakePose =
-        new Pose3d(
-            DeployConstants.robotToIntake,
-            new Rotation3d(
-                0,
-                sim ? -deploySubsystem.getTargetPosition().getRadians() : intakeAngle.getRadians(),
-                0));
+        new Pose3d(DeployConstants.robotToIntake, new Rotation3d(0, intakeAngle.getRadians(), 0));
     Pose3d hoodPose =
         turretPose.transformBy(
             new Transform3d(
-                HoodConstants.turretToHood,
-                new Rotation3d(
-                    0, sim ? hoodSubsystem.getSimPos().getRadians() : hoodAngle.getRadians(), 0)));
+                HoodConstants.turretToHood, new Rotation3d(0, hoodAngle.getRadians(), 0)));
 
     DogLog.log("Mechanisms/Turret", turretPose);
     DogLog.log("Mechanisms/Intake", intakePose);

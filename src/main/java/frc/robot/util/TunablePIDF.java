@@ -33,6 +33,7 @@ public class TunablePIDF {
    * @param prefix the prefix to be used for gains storing in NT
    */
   public TunablePIDF(String prefix) {
+    prefix += "/Gains";
     kPSubscriber = DogLog.tunable(prefix + "/kP", 0.0);
     kISubscriber = DogLog.tunable(prefix + "/kI", 0.0);
     kDSubscriber = DogLog.tunable(prefix + "/kD", 0.0);

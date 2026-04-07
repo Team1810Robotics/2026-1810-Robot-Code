@@ -10,18 +10,18 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import frc.robot.RobotState.RobotStates;
 import frc.robot.auto.AutoSelector;
-import frc.robot.state.RobotState;
-import frc.robot.state.RobotState.RobotStates;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
+import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
@@ -47,9 +47,12 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
-  private static final CommandXboxController driverXbox =
-      new CommandXboxController(0); // controllers
-  private final CommandXboxController operatorXbox = new CommandXboxController(1);
+  // private static final CommandXboxController driverXbox =
+  //     new CommandXboxController(0); // controllers
+  // private final CommandXboxController operatorXbox = new CommandXboxController(1);
+
+  private final CommandPS5Controller driverController = new CommandPS5Controller(0);
+  private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -87,21 +90,26 @@ public class RobotContainer {
 
     drivetrain.setDefaultCommand(
         drivetrain.applyRequest(
-            () ->
-                drive
-                    .withVelocityX(-driverXbox.getLeftY() * MaxSpeed * .5)
-                    .withVelocityY(-driverXbox.getLeftX() * MaxSpeed * .5)
-                    .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate * .5)));
+            () -> {
+              if (RobotState.getInstance().getState() == RobotStates.SCORING_WITH_AGITATION) {
+                return brake;
+              }
 
-    driverXbox
-        .leftBumper()
+              return drive
+                  .withVelocityX(-driverController.getLeftY() * MaxSpeed * 0.5)
+                  .withVelocityY(-driverController.getLeftX() * MaxSpeed * 0.5)
+                  .withRotationalRate(-driverController.getRightX() * MaxAngularRate * 0.5);
+            }));
+
+    driverController
+        .L2()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
                     drive
-                        .withVelocityX(-driverXbox.getLeftY() * MaxSpeed)
-                        .withVelocityY(-driverXbox.getLeftX() * MaxSpeed)
-                        .withRotationalRate(-driverXbox.getRightX() * MaxAngularRate)));
+                        .withVelocityX(-driverController.getLeftY() * MaxSpeed)
+                        .withVelocityY(-driverController.getLeftX() * MaxSpeed)
+                        .withRotationalRate(-driverController.getRightX() * MaxAngularRate)));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
@@ -116,8 +124,8 @@ public class RobotContainer {
     //     .and(driverXbox.x())
     //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-    driverXbox
-        .rightBumper()
+    driverController
+        .R1()
         .onTrue(
             Commands.runOnce(
                 () -> {
@@ -126,20 +134,19 @@ public class RobotContainer {
                     case NEUTRAL:
                       robotState.setState(RobotStates.INTAKING);
                       break;
-                    case INTAKING:
-                      robotState.setState(RobotStates.NEUTRAL);
-                      break;
                     default:
+                      robotState.setState(RobotStates.NEUTRAL);
                       break;
                   }
                 }));
 
-    driverXbox
-        .rightTrigger()
-        .onTrue(
+    driverController
+        .R2()
+        .whileTrue(
             Commands.runOnce(
                 () -> {
-                  Region botRegion = Region.getRegion(drivetrain.getPose()).orElseThrow();
+                  Region botRegion =
+                      Region.getRegion(drivetrain.getPose()).orElse(Region.BLUE_ALLIANCE_ZONE);
 
                   if (botRegion == Region.BLUE_ALLIANCE_ZONE
                       || botRegion == Region.RED_ALLIANCE_ZONE) {
@@ -149,36 +156,60 @@ public class RobotContainer {
                   }
                 }));
 
-    driverXbox
-        .leftTrigger()
+    driverController
+        .L1()
+        .or(driverController.R2())
+        .onFalse(
+            Commands.runOnce(
+                () -> {
+                  RobotStates previousState = RobotState.getInstance().getPreviousState();
+
+                  if (previousState == RobotStates.REVERSE_INDEXER
+                      || previousState == RobotStates.SCORING_NO_AGITATION
+                      || previousState == RobotStates.SCORING_WITH_AGITATION) {
+                    RobotState.getInstance()
+                        .setState(
+                            deploySubsystem.getState() == DeployState.DEPLOY
+                                ? RobotStates.INTAKING
+                                : RobotStates.NEUTRAL);
+                    return;
+                  }
+
+                  RobotState.getInstance().setState(previousState);
+                }));
+
+    driverController
+        .L1()
         .onTrue(RobotState.getInstance().setStateCommand(RobotStates.SCORING_WITH_AGITATION));
 
-    driverXbox.a().onTrue(RobotState.getInstance().setStateCommand(RobotStates.REVERSE_INDEXER));
+    driverController
+        .cross()
+        .onTrue(RobotState.getInstance().setStateCommand(RobotStates.REVERSE_INDEXER));
 
-    driverXbox.povDown().onTrue(hoodSubsystem.zero());
+    driverController.povDown().onTrue(hoodSubsystem.zero());
 
     // reset the field-centric heading on left bumper press
-    driverXbox.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-    driverXbox
-        .leftStick()
-        .onTrue(
-            Commands.runOnce(
-                () ->
-                    drivetrain.resetPose(
-                        new Pose2d(
-                            Inches.of(27 / 2).in(Meters),
-                            Inches.of(27 / 2).in(Meters),
-                            Rotation2d.kZero))));
+    driverController.options().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    // driverController
+    //     .L3()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () ->
+    //                 drivetrain.resetPose(
+    //                     new Pose2d(
+    //                         Inches.of(27 / 2).in(Meters),
+    //                         Inches.of(27 / 2).in(Meters),
+    //                         Rotation2d.kZero))));
 
-    operatorXbox
-        .rightStick()
+    operatorController
+        .R3()
         .onTrue(
             Commands.run(
                     () -> {
-                      turretSubsystem.set(operatorXbox.getRightX() / 10);
+                      turretSubsystem.set(operatorController.getRightX() / 10);
                     },
                     turretSubsystem)
-                .until(() -> operatorXbox.b().getAsBoolean())
+                .until(() -> operatorController.circle().getAsBoolean())
                 .andThen(Commands.runOnce(() -> turretSubsystem.seedMotorFromAbsolute())));
   }
 
@@ -191,6 +222,8 @@ public class RobotContainer {
             .withLogExtras(false)
             .withCaptureNt(false)
             .withCaptureConsole(false));
+
+    DogLog.setPdh(new PowerDistribution(63, ModuleType.kRev));
   }
 
   public Command getAutonomousCommand() {

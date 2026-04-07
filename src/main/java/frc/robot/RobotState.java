@@ -1,8 +1,11 @@
-package frc.robot.state;
+package frc.robot;
 
+import dev.doglog.DogLog;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.indexer.kicker.KickerConstants.KickerState;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
@@ -22,7 +25,11 @@ import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 
 public class RobotState {
 
-  private RobotStates robotState;
+  private RobotStates robotState = RobotStates.NEUTRAL;
+  private RobotStates previousState = robotState;
+
+  // ✅ Separate state for unjam recovery
+  private RobotStates preUnjamState = robotState;
 
   private final SpindexerSubsystem spindexerSubsystem;
   private final CommandSwerveDrivetrain drivetrain;
@@ -36,6 +43,19 @@ public class RobotState {
   private boolean flywheelSpunUp = false;
   public boolean isShooterReady = false;
 
+  private boolean indexerJammed = false;
+
+  private boolean unjamStarted = false;
+  private double unjamStartTime;
+  private final double unjamTime = 0.15;
+
+  private double lastUnjamTime = 0;
+  private final double unjamCooldown = .75;
+
+  private boolean allowStateOverride = false;
+
+  private final Debouncer jamDebouncer = new Debouncer(0.1, DebounceType.kBoth);
+
   private RobotState() {
     spindexerSubsystem = RobotContainer.getSpindexerSubsystem();
     drivetrain = RobotContainer.getDrivetrain();
@@ -48,7 +68,31 @@ public class RobotState {
   }
 
   public void periodic() {
-    if (isScoringState()) {
+    double time = Timer.getFPGATimestamp();
+
+    indexerJammed = spindexerSubsystem.isJammed() || kickerSubsystem.isJammed();
+
+    indexerJammed = jamDebouncer.calculate(indexerJammed);
+
+    if (indexerJammed && !unjamStarted && time - lastUnjamTime > unjamCooldown) {
+      preUnjamState = robotState;
+
+      unjamStartTime = time;
+      unjamStarted = true;
+      lastUnjamTime = time;
+
+      setState(RobotStates.REVERSE_INDEXER);
+    }
+
+    if (unjamStarted && time - unjamStartTime > unjamTime) {
+      unjamStarted = false;
+
+      allowStateOverride = true;
+      setState(preUnjamState);
+      allowStateOverride = false;
+    }
+
+    if (isShootingState()) {
       ShotParameters params = ShotCalculator.getInstance().calculateParameters();
 
       if (flywheelSubsystem.atTargetVelocity() && !flywheelSpunUp) {
@@ -57,9 +101,29 @@ public class RobotState {
 
       isShooterReady = flywheelSpunUp && turretSubsystem.atTargetAngle() && params.isValid();
     }
+
+    DogLog.log("RobotState/Shooter Ready", isShooterReady);
+    DogLog.log("RobotState/State", robotState);
+    DogLog.log("RobotState/Previous State", previousState);
+    DogLog.log("RobotState/Pre Unjam State", preUnjamState);
+    DogLog.log("RobotState/Indexer Jammed", indexerJammed);
+    DogLog.log("RobotState/Unjam Active", unjamStarted);
   }
 
   public void setState(RobotStates newState) {
+    if (!allowStateOverride && indexerJammed && newState != RobotStates.REVERSE_INDEXER) {
+      return;
+    }
+
+    if (this.robotState == newState) {
+      return;
+    }
+
+    // Only update previousState for normal transitions
+    if (newState != RobotStates.REVERSE_INDEXER) {
+      this.previousState = this.robotState;
+    }
+
     onStateExit();
     this.robotState = newState;
     applyStates();
@@ -71,6 +135,10 @@ public class RobotState {
 
   public RobotStates getState() {
     return robotState;
+  }
+
+  public RobotStates getPreviousState() {
+    return previousState;
   }
 
   private void applyStates() {
@@ -103,10 +171,6 @@ public class RobotState {
       flywheelSpunUp = false;
       isShooterReady = false;
     }
-    switch (robotState) {
-      default:
-        break;
-    }
   }
 
   private void neutral() {
@@ -117,7 +181,7 @@ public class RobotState {
     hoodSubsystem.setState(HoodState.NEUTRAL);
 
     kickerSubsystem.setState(KickerState.STOP);
-    spindexerSubsystem.setState(SpindexerState.STOP);
+    spindexerSubsystem.setSpindexerState(SpindexerState.STOP);
   }
 
   private void intaking() {
@@ -128,14 +192,14 @@ public class RobotState {
     hoodSubsystem.setState(HoodState.NEUTRAL);
 
     kickerSubsystem.setState(KickerState.STOP);
-    spindexerSubsystem.setState(SpindexerState.STOP);
+    spindexerSubsystem.setSpindexerState(SpindexerState.STOP);
   }
 
   private void scoringNoAgitation() {
     flywheelSubsystem.setState(FlywheelState.SCORING);
     hoodSubsystem.setState(HoodState.SCORING);
 
-    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    spindexerSubsystem.setSpindexerState(SpindexerState.SHOOTING);
     kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
@@ -146,7 +210,7 @@ public class RobotState {
     flywheelSubsystem.setState(FlywheelState.SCORING);
     hoodSubsystem.setState(HoodState.SCORING);
 
-    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    spindexerSubsystem.setSpindexerState(SpindexerState.SHOOTING);
     kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
@@ -154,12 +218,12 @@ public class RobotState {
     flywheelSubsystem.setState(FlywheelState.PASSING);
     hoodSubsystem.setState(HoodState.PASSING);
 
-    spindexerSubsystem.setState(SpindexerState.SHOOTING);
+    spindexerSubsystem.setSpindexerState(SpindexerState.SHOOTING);
     kickerSubsystem.setState(KickerState.SHOOTING);
   }
 
   private void reverseIndexer() {
-    spindexerSubsystem.setState(SpindexerState.OUT);
+    spindexerSubsystem.setSpindexerState(SpindexerState.OUT);
     kickerSubsystem.setState(KickerState.OUT);
   }
 
@@ -182,7 +246,6 @@ public class RobotState {
     if (instance == null) {
       instance = new RobotState();
     }
-
     return instance;
   }
 

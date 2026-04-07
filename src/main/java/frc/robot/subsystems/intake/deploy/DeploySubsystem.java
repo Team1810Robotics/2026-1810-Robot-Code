@@ -37,12 +37,12 @@ public class DeploySubsystem extends SubsystemBase {
 
   private AgitationState agitationState = AgitationState.DOWN;
 
-  public final DoubleSubscriber kP = DogLog.tunable("Intake/kP", 4.0);
-  public final DoubleSubscriber kD = DogLog.tunable("Intake/kD", 0.25);
-  public final DoubleSubscriber kS = DogLog.tunable("Intake/kS", 0.75);
-  public final DoubleSubscriber kG = DogLog.tunable("Intake/kG", 0.461);
+  // public final DoubleSubscriber kP = DogLog.tunable("Intake/kP", 4.0);
+  // public final DoubleSubscriber kD = DogLog.tunable("Intake/kD", 0.25);
+  // public final DoubleSubscriber kS = DogLog.tunable("Intake/kS", 0.75);
+  // public final DoubleSubscriber kG = DogLog.tunable("Intake/kG", 0.461);
 
-  public double lastkP, lastkD, lastkS, lastkG;
+  // public double lastkP, lastkD, lastkS, lastkG;
 
   public final DoubleSubscriber targetSubscriber = DogLog.tunable("Intake/DeployTarget", 0.0);
 
@@ -71,7 +71,7 @@ public class DeploySubsystem extends SubsystemBase {
 
     feedforward = new ArmFeedforward(DeployConstants.kS, DeployConstants.kG, 0);
 
-    if (encoder.get() < .4) {
+    if (encoder.get() < .2) {
       deployState = DeployConstants.DeployState.RETRACT;
       deployTarget = deployState.getPosition();
 
@@ -85,6 +85,10 @@ public class DeploySubsystem extends SubsystemBase {
   public void setState(DeployState state) {
     this.deployState = state;
     this.deployTarget = state.getPosition();
+
+    if (state == DeployState.AGITATE) {
+      agitationState = AgitationState.DOWN; // reset cycle
+    }
   }
 
   public DeployState getState() {
@@ -181,6 +185,8 @@ public class DeploySubsystem extends SubsystemBase {
   }
 
   public void setPosition(Rotation2d deployTarget) {
+    this.deployTarget = deployTarget;
+
     if (encoder.isConnected()) {
       double pidOut =
           intakePIDController.calculate(getPosition().getRadians(), deployTarget.getRadians());
@@ -200,18 +206,18 @@ public class DeploySubsystem extends SubsystemBase {
     DogLog.log("Intake/Deploy/Raw Encoder", encoder.get());
   }
 
-  public void updateGains() {
-    if (lastkP != kP.get() || lastkD != kD.get() || lastkS != kS.get() || lastkG != kG.get()) {
-      intakePIDController.setPID(kP.get(), 0, kD.get());
-      feedforward.setKg(kG.get());
-      feedforward.setKs(kS.get());
+  // public void updateGains() {
+  //   if (lastkP != kP.get() || lastkD != kD.get() || lastkS != kS.get() || lastkG != kG.get()) {
+  //     intakePIDController.setPID(kP.get(), 0, kD.get());
+  //     feedforward.setKg(kG.get());
+  //     feedforward.setKs(kS.get());
 
-      lastkP = kP.get();
-      lastkD = kD.get();
-      lastkS = kS.get();
-      lastkG = kG.get();
-    }
-  }
+  //     lastkP = kP.get();
+  //     lastkD = kD.get();
+  //     lastkS = kS.get();
+  //     lastkG = kG.get();
+  //   }
+  // }
 
   @Override
   public void periodic() {

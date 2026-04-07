@@ -37,7 +37,7 @@ public class Vision extends SubsystemBase {
     this.layout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
     LimelightHelpers.setPipelineIndex(limelightName, 0);
-    LimelightHelpers.SetIMUAssistAlpha(limelightName, .005);
+    LimelightHelpers.SetIMUAssistAlpha(limelightName, .01);
     LimelightHelpers.SetIMUMode(limelightName, 1);
   }
 
@@ -101,7 +101,6 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
-
     // Update bot orientation for MT2 pose estimation + LL imu fusing
     LimelightHelpers.SetRobotOrientation(
         limelightName,
@@ -117,15 +116,26 @@ public class Vision extends SubsystemBase {
       return;
     }
 
-    PoseEstimate botPoseMT2 = getBotpose();
+    PoseEstimate botPose = getBotpose();
 
-    if (botPoseMT2 == null) {
+    boolean fail = false;
+
+    if (botPose == null) {
       log();
       return;
     }
 
-    // Add the vision measurement to the drivetrain's pose estimator with appropriate timestamp
-    drivetrain.addVisionMeasurement(botPoseMT2.pose, botPoseMT2.timestampSeconds);
+    // if (botPose.rawFiducials.length == 1) {
+    //   LimelightHelpers.RawFiducial fid = botPose.rawFiducials[0];
+
+    //   if (fid.ambiguity > .5 || fid.distToCamera > 3) {
+    //     fail = true;
+    //   }
+    // }
+
+    if (!fail) {
+      drivetrain.addVisionMeasurement(botPose.pose, botPose.timestampSeconds);
+    }
 
     log();
   }

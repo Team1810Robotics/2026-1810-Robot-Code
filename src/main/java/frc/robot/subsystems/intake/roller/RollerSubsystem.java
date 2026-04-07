@@ -6,7 +6,6 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import dev.doglog.DogLog;
@@ -14,19 +13,20 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotState;
 import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 
 public class RollerSubsystem extends SubsystemBase {
   private final SparkMax rollerMotor;
   private SparkClosedLoopController rollerController;
 
-  private RollerState rollerState;
+  private RollerState rollerState = RollerState.STOP;
 
-  private DoubleSubscriber kP = DogLog.tunable("Intake/Roller/kP", 0.0);
-  private DoubleSubscriber kS = DogLog.tunable("Intake/Roller/kS", 0.1);
-  private DoubleSubscriber kV = DogLog.tunable("Intake/Roller/kV", 0.0025);
+  // private DoubleSubscriber kP = DogLog.tunable("Intake/Roller/kP", 0.0);
+  // private DoubleSubscriber kS = DogLog.tunable("Intake/Roller/kS", 0.1);
+  // private DoubleSubscriber kV = DogLog.tunable("Intake/Roller/kV", 0.0025);
 
-  private double lastkP, lastkS, lastkV;
+  // private double lastkP, lastkS, lastkV;
 
   private DoubleSubscriber target = DogLog.tunable("Intake/Roller/Target", 0.0);
 
@@ -73,20 +73,21 @@ public class RollerSubsystem extends SubsystemBase {
     DogLog.log("Intake/Roller/Voltage", rollerMotor.getBusVoltage());
   }
 
-  public void updateGains() {
-    if (kP.get() != lastkP || kS.get() != lastkS || kV.get() != lastkV) {
-      SparkMaxConfig spmCFG = new SparkMaxConfig();
+  // public void updateGains() {
+  //   if (kP.get() != lastkP || kS.get() != lastkS || kV.get() != lastkV) {
+  //     SparkMaxConfig spmCFG = new SparkMaxConfig();
 
-      ClosedLoopConfig cfg = new ClosedLoopConfig();
-      cfg.p(kP.get()).feedForward.kV(kV.get()).kS(kS.get());
+  //     ClosedLoopConfig cfg = new ClosedLoopConfig();
+  //     cfg.p(kP.get()).feedForward.kV(kV.get()).kS(kS.get());
 
-      spmCFG.apply(cfg);
+  //     spmCFG.apply(cfg);
 
-      rollerMotor.configure(spmCFG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  //     rollerMotor.configure(spmCFG, ResetMode.kResetSafeParameters,
+  // PersistMode.kPersistParameters);
 
-      rollerController = rollerMotor.getClosedLoopController();
-    }
-  }
+  //     rollerController = rollerMotor.getClosedLoopController();
+  //   }
+  // }
 
   @Override
   public void periodic() {
@@ -95,6 +96,13 @@ public class RollerSubsystem extends SubsystemBase {
     switch (rollerState) {
       case STOP:
         rollerMotor.stopMotor();
+        break;
+      case SHOOTING:
+        if (RobotState.getInstance().isShooterReady) {
+          rollerController.setSetpoint(RollerState.INTAKE.getVelocity(), ControlType.kVelocity);
+        } else {
+          rollerMotor.stopMotor();
+        }
         break;
       default:
         rollerController.setSetpoint(rollerState.getVelocity(), ControlType.kVelocity);
