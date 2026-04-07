@@ -10,14 +10,14 @@ public class TurretConstants {
   public static final int TURRET_MOTOR_ID = 17;
   public static final int TURRET_ENCODER_ID = 1;
 
-  public static final double ROBOT_RELATIVE_OFFSET_DEG = 144.5;
+  public static final double ROBOT_RELATIVE_OFFSET_DEG = 136;
 
   public static final double GEAR_RATIO = 32.0;
 
   public static final Angle MIN_ANGLE = Degrees.of(-150);
   public static final Angle MAX_ANGLE = Degrees.of(150);
 
-  public static final double ENCODER_OFFSET = .238;
+  public static final double ENCODER_OFFSET = .26; // 25x
 
   public static final double kP = 4.0;
   public static final double kS = 0.225;

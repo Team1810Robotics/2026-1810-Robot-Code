@@ -8,8 +8,6 @@ import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.ctre.phoenix6.SignalLogger;
-import com.revrobotics.util.StatusLogger;
 import dev.doglog.DogLog;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
@@ -33,11 +31,6 @@ public class Robot extends TimedRobot {
   private double loops = 0.0;
 
   public Robot() {
-    SignalLogger.stop();
-
-    StatusLogger.disableAutoLogging();
-    StatusLogger.stop();
-
     // Adjust loop overrun warning timeout
     try {
       Field watchdogField = IterativeRobotBase.class.getDeclaredField("m_watchdog");

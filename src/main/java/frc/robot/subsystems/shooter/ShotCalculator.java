@@ -64,8 +64,8 @@ public class ShotCalculator {
     scoringHoodMap.put(3.39, Rotation2d.fromDegrees(8.5));
     scoringHoodMap.put(3.5, Rotation2d.fromDegrees(9.5));
     scoringHoodMap.put(4.11, Rotation2d.fromDegrees(11.5));
-    scoringHoodMap.put(4.4, Rotation2d.fromDegrees(13));
-    scoringHoodMap.put(4.435, Rotation2d.fromDegrees(13));
+    scoringHoodMap.put(4.4, Rotation2d.fromDegrees(12.5));
+    scoringHoodMap.put(4.435, Rotation2d.fromDegrees(12.75));
     scoringHoodMap.put(4.683, Rotation2d.fromDegrees(14.5));
     scoringHoodMap.put(5.05, Rotation2d.fromDegrees(17));
     scoringHoodMap.put(5.606, Rotation2d.fromDegrees(19));
@@ -77,8 +77,8 @@ public class ShotCalculator {
     scoringFlywheelMap.put(3.02, 34.75);
     scoringFlywheelMap.put(3.39, 36.25);
     scoringFlywheelMap.put(3.5, 36.75);
-    scoringFlywheelMap.put(4.11, 38.5);
-    scoringFlywheelMap.put(4.4, 39.0);
+    scoringFlywheelMap.put(4.11, 38.0);
+    scoringFlywheelMap.put(4.4, 38.5);
     scoringFlywheelMap.put(4.683, 39.75);
     scoringFlywheelMap.put(5.05, 40.75);
     scoringFlywheelMap.put(5.606, 41.5);
@@ -197,8 +197,12 @@ public class ShotCalculator {
 
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
 
-      if (turretAngle.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
-          || turretAngle.getDegrees() < TurretConstants.MIN_ANGLE.in(Degrees)) {
+      Rotation2d turretAngleTurretFrame =
+          RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
+
+      if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+          || turretAngleTurretFrame.getDegrees()
+              < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
         isValid = false;
       } else {
         isValid = true;
@@ -217,7 +221,8 @@ public class ShotCalculator {
           RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
 
       if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
-          || turretAngleTurretFrame.getDegrees() < TurretConstants.MIN_ANGLE.in(Degrees)) {
+          || turretAngleTurretFrame.getDegrees()
+              < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
         isValid = false;
       } else {
         isValid = true;
