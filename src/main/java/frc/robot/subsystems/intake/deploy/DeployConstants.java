@@ -7,7 +7,7 @@ import edu.wpi.first.math.util.Units;
 public class DeployConstants {
   public static final int LEFT_DELPOY_MOTOR_ID = 9;
   public static final int RIGHT_DEPLOY_MOTOR_ID = 10;
-  public static final int LEFT_ENCODER_ID = 0;
+  public static final int LEFT_ENCODER_ID = 1;
 
   public static double kP = 4;
   public static double kD = 0.25;

@@ -34,7 +34,7 @@ import frc.robot.subsystems.vision.VisionConstants;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
-  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * .5;
+  private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond) * 1;
 
   private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 

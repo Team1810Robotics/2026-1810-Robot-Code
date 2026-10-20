@@ -53,7 +53,6 @@ public class Mechanism3d {
                 HoodConstants.turretToHood,
                 new Rotation3d(
                     0, sim ? hoodSubsystem.getSimPos().getRadians() : hoodAngle.getRadians(), 0)));
-
     DogLog.log("Mechanisms/Turret", turretPose);
     DogLog.log("Mechanisms/Intake", intakePose);
     DogLog.log("Mechanisms/Hood", hoodPose);

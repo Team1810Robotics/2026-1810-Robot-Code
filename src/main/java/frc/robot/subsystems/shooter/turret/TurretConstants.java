@@ -8,7 +8,7 @@ import edu.wpi.first.units.measure.Angle;
 
 public class TurretConstants {
   public static final int TURRET_MOTOR_ID = 17;
-  public static final int TURRET_ENCODER_ID = 1;
+  public static final int TURRET_ENCODER_ID = 0;
 
   public static final double ROBOT_RELATIVE_OFFSET_DEG = 146;
 
@@ -17,10 +17,10 @@ public class TurretConstants {
   public static final Angle MIN_ANGLE = Degrees.of(-150);
   public static final Angle MAX_ANGLE = Degrees.of(150);
 
-  public static final double ENCODER_OFFSET = .491;
+  public static final double ENCODER_OFFSET = .4591;
 
-  public static final double kP = 4.0; // 15
-  public static final double kS = 0.225; // .2
+  public static final double kP = 4.0; // 15 4.0
+  public static final double kS = 0.225; // .
   public static final double kD = 0.002; // .01
   public static final double kV = 2.5; // .075
 
