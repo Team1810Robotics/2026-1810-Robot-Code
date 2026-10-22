@@ -14,6 +14,7 @@ import dev.doglog.DogLog;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -30,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 import frc.robot.subsystems.drive.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.field.FieldConstants;
 import frc.robot.util.field.Region;
@@ -400,6 +402,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     Translation2d hub = FieldConstants.Hub.topCenterPoint.toTranslation2d();
 
     return hub.minus(robot).getAngle();
+  }
+
+  public Rotation2d getAngleToHubFromTurret() {
+    Pose2d robot = getState().Pose;
+    Transform2d robotToTurret =
+        new Transform2d(
+            TurretConstants.ROBOT_TO_TURRET.getTranslation().toTranslation2d(),
+            TurretConstants.ROBOT_TO_TURRET.getRotation().toRotation2d());
+    Translation2d turret = robot.transformBy(robotToTurret).getTranslation();
+    Translation2d hub = FieldConstants.Hub.topCenterPoint.toTranslation2d();
+
+    return hub.minus(turret).getAngle();
   }
 
   public Distance getDistanceToHub() {

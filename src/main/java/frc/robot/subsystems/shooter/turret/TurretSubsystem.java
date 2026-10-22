@@ -58,11 +58,9 @@ public class TurretSubsystem extends SubsystemBase {
     config.Feedback.SensorToMechanismRatio = TurretConstants.GEAR_RATIO;
 
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-TurretConstants.MAX_ANGLE.in(Rotations);
+    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = TurretConstants.MAX_ANGLE.in(Rotations);
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-TurretConstants.MIN_ANGLE.in(Rotations);
+    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = TurretConstants.MIN_ANGLE.in(Rotations);
 
     config.CurrentLimits.StatorCurrentLimitEnable = true;
     config.CurrentLimits.StatorCurrentLimit = 120;
@@ -135,8 +133,7 @@ TurretConstants.MIN_ANGLE.in(Rotations);
 
   public void setRobotRelativeAngle(Rotation2d robotRelativeAngle) {
     setMotorAngle(
-
-robotRelativeAngle.plus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG)),
+        robotRelativeAngle.plus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG)),
         0.0);
   }
 
@@ -165,8 +162,7 @@ robotRelativeAngle.plus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OF
   }
 
   public Rotation2d getRobotRelativeAngle() {
-    return
-getMotorAngle().minus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG));
+    return getMotorAngle().minus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFSET_DEG));
   }
 
   public Rotation2d getFieldAngle() {
@@ -222,14 +218,12 @@ getMotorAngle().minus(Rotation2d.fromDegrees(TurretConstants.ROBOT_RELATIVE_OFFS
 
   public void log() {
     DogLog.log("Turret/Motor Angle (motor frame)", getMotorAngle().getDegrees(), Degrees);
-    DogLog.log("Turret/Motor Angle (robot frame)", getRobotRelativeAngle().getDegrees(),
-Degrees);
+    DogLog.log("Turret/Motor Angle (robot frame)", getRobotRelativeAngle().getDegrees(), Degrees);
     DogLog.log("Turret/Motor Angle (field frame)", getFieldAngle().getDegrees(), Degrees);
     DogLog.log("Turret/Encoder Position", getEncoderPosition().getDegrees(), Degrees);
     DogLog.log("Turret/Raw Encoder", turretEncoder.get(), Rotations);
     DogLog.log("Turret/Volts", turretMotor.getMotorVoltage().getValueAsDouble(), Volts);
-    DogLog.log("Turret/Velocity", turretMotor.getVelocity().getValueAsDouble(),
-RotationsPerSecond);
+    DogLog.log("Turret/Velocity", turretMotor.getVelocity().getValueAsDouble(), RotationsPerSecond);
     DogLog.log("Turret/At Setpoint", atTargetAngle());
   }
 
@@ -239,8 +233,7 @@ RotationsPerSecond);
     log();
     // updateGains();
 
-    if (Math.abs(turretMotor.getPosition().getValueAsDouble() -
-getEncoderPosition().getRotations())
+    if (Math.abs(turretMotor.getPosition().getValueAsDouble() - getEncoderPosition().getRotations())
         > Degrees.of(2.5).in(Rotations)) {
       seedMotorFromAbsolute();
     }

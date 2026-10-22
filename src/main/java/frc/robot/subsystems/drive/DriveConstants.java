@@ -20,6 +20,11 @@ public class DriveConstants {
   private static final double realTranlationkP = 1.5;
   private static final double realHeadingkP = 3.25;
 
+  private static final double turnkP = 0.5;
+  private static final double turnkI = 0;
+  private static final double turnkD = 0;
+
   public static final PIDConstants realTranslationConstants = new PIDConstants(realTranlationkP);
   public static final PIDConstants realHeadingConstants = new PIDConstants(realHeadingkP);
+  public static final PIDConstants turnConstants = new PIDConstants(turnkP, turnkI, turnkD);
 }

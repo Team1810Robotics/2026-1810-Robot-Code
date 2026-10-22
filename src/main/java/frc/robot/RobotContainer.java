@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import dev.doglog.DogLog;
 import dev.doglog.DogLogOptions;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.RobotState.RobotStates;
 import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
+import frc.robot.subsystems.drive.DriveConstants;
 import frc.robot.subsystems.drive.TunerConstants;
 import frc.robot.subsystems.indexer.kicker.KickerSubsystem;
 import frc.robot.subsystems.indexer.spindexer.SpindexerSubsystem;
@@ -27,11 +29,10 @@ import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodSubsystem;
+import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.field.Region;
-
-
 
 // import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 
@@ -51,13 +52,21 @@ public class RobotContainer {
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
   private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
+  private final SwerveRequest.FieldCentricFacingAngle faceAngle =
+      new SwerveRequest.FieldCentricFacingAngle()
+          .withCenterOfRotation(TurretConstants.ROBOT_TO_TURRET.getTranslation().toTranslation2d())
+          .withMaxAbsRotationalRate(MaxAngularRate)
+          .withHeadingPID(
+              DriveConstants.turnConstants.kP,
+              DriveConstants.turnConstants.kI,
+              DriveConstants.turnConstants.kD);
+
   // private static final CommandXboxController driverXbox =
   //     new CommandXboxController(0); // controllers
   // private final CommandXboxController operatorXbox = new CommandXboxController(1);
 
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
-
 
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -89,9 +98,6 @@ public class RobotContainer {
   public RobotContainer() {
     configureBindings();
     configureDogLog();
-
-
-
   }
 
   private void configureBindings() {
@@ -118,6 +124,17 @@ public class RobotContainer {
                         .withVelocityX(-driverController.getLeftY() * MaxSpeed)
                         .withVelocityY(-driverController.getLeftX() * MaxSpeed)
                         .withRotationalRate(-driverController.getRightX() * MaxAngularRate)));
+
+    driverController
+        .b()
+        .whileTrue(
+            drivetrain.applyRequest(
+                () ->
+                    faceAngle
+                        .withTargetDirection(
+                            drivetrain.getAngleToHubFromTurret().plus(Rotation2d.fromDegrees(90)))
+                        .withVelocityX(-driverController.getLeftY() * MaxSpeed)
+                        .withVelocityY(-driverController.getLeftX() * MaxSpeed)));
 
     // Run SysId routines when holding back/start and X/Y.
     // Note that each routine should be run exactly once in a single log.
