@@ -89,7 +89,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     tunablePIDF = new TunablePIDF("Turret");
 
-    setDefaultCommand(setFieldRelativeAngleCommand());
+    // setDefaultCommand(setFieldRelativeAngleCommand());
   }
 
   public Rotation2d motorToField(Rotation2d motorAngle) {
