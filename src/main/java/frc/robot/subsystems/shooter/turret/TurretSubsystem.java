@@ -227,20 +227,21 @@ public class TurretSubsystem extends SubsystemBase {
     DogLog.log("Turret/At Setpoint", atTargetAngle());
   }
 
-    //   @Override
-    //   public void periodic() {
-    //     updateEncoderUnwrap();
-    //     log();
-    //     // updateGains();
+  //   @Override
+  //   public void periodic() {
+  //     updateEncoderUnwrap();
+  //     log();
+  //     // updateGains();
 
-    //     if (Math.abs(turretMotor.getPosition().getValueAsDouble() - getEncoderPosition().getRotations())
-    //         > Degrees.of(2.5).in(Rotations)) {
-    //       seedMotorFromAbsolute();
-    //     }
-    //   }
+  //     if (Math.abs(turretMotor.getPosition().getValueAsDouble() -
+  // getEncoderPosition().getRotations())
+  //         > Degrees.of(2.5).in(Rotations)) {
+  //       seedMotorFromAbsolute();
+  //     }
+  //   }
 
-    //   public void clearCache() {
-    //     motorPosition = null;
-    //     encoderPosition = null;
-    //   }
+  //   public void clearCache() {
+  //     motorPosition = null;
+  //     encoderPosition = null;
+  //   }
 }

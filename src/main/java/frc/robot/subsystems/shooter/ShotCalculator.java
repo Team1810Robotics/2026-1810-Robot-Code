@@ -197,16 +197,16 @@ public class ShotCalculator {
 
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
 
-    //   Rotation2d turretAngleTurretFrame =
-    //       RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
+      //   Rotation2d turretAngleTurretFrame =
+      //       RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
 
-    //   if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
-    //       || turretAngleTurretFrame.getDegrees()
-    //           < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
-    //     isValid = false;
-    //   } else {
-    //     isValid = true;
-    //   }
+      //   if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+      //       || turretAngleTurretFrame.getDegrees()
+      //           < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
+      //     isValid = false;
+      //   } else {
+      //     isValid = true;
+      //   }
 
       hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
       flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
@@ -217,16 +217,16 @@ public class ShotCalculator {
 
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
 
-    //   Rotation2d turretAngleTurretFrame =
-    //       RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
+      //   Rotation2d turretAngleTurretFrame =
+      //       RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
 
-    //   if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
-    //       || turretAngleTurretFrame.getDegrees()
-    //           < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
-    //     isValid = false;
-    //   } else {
-    //     isValid = true;
-    //   }
+      //   if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+      //       || turretAngleTurretFrame.getDegrees()
+      //           < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
+      //     isValid = false;
+      //   } else {
+      //     isValid = true;
+      //   }
 
       hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
       flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
