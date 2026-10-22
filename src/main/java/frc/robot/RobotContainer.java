@@ -26,11 +26,11 @@ import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
+import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.field.Region;
-import frc.robot.subsystems.shooter.stationary.StaticHoodCommand;
-import frc.robot.subsystems.shooter.stationary.StaticHoodSubsystem;
+
 
 
 // import frc.robot.subsystems.shooter.turret.TurretSubsystem;
@@ -58,7 +58,6 @@ public class RobotContainer {
   private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
-  private final StaticHoodSubsystem staticHood = new StaticHoodSubsystem();
 
   // subsystems :)
   private static final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -92,7 +91,6 @@ public class RobotContainer {
     configureDogLog();
 
 
-  staticHood.setDefaultCommand(new StaticHoodCommand(staticHood));
 
   }
 

@@ -3,15 +3,14 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.subsystems.shooter.turret.TurretConstants;
 import frc.robot.util.field.FieldConstants;
+import frc.robot.subsystems.shooter.turret.TurretConstants;
+
 
 public class ShotConstants {
-  public static final Transform2d robotToTurret =
-      new Transform2d(
-          TurretConstants.ROBOT_TO_TURRET.getX(),
-          TurretConstants.ROBOT_TO_TURRET.getY(),
-          Rotation2d.kZero);
+//   public static final Transform2d robotToTurret =
+    //   new Transform2d(
+    //       Rotation2d.kZero);
 
   public static final Translation2d hub = FieldConstants.Hub.topCenterPoint.toTranslation2d();
 

@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.subsystems.shooter.hood;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.subsystems.shooter.hood.HoodConstants;
 import frc.robot.subsystems.shooter.hood.HoodConstants.HoodState;
 
 // import frc.robot.subsystems.shooter.ShotCalculator;

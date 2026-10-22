@@ -17,6 +17,7 @@ import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.FlywheelState;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
+import frc.robot.subsystems.shooter.hood.HoodSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodConstants.HoodState;
 
 // import frc.robot.subsystems.shooter.ShotCalculator;
