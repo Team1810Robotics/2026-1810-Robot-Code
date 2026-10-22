@@ -17,9 +17,10 @@ import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.shooter.ShotCalculator;
 import frc.robot.util.HubStateUtil;
 import java.lang.reflect.Field;
+
+// import frc.robot.subsystems.shooter.ShotCalculator;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -49,9 +50,9 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     loops++;
 
-    ShotCalculator.getInstance().clearParams();
+    // ShotCalculator.getInstance().clearParams();
     RobotContainer.getDeploySubsystem().clearCache();
-    RobotContainer.getTurretSubsystem().clearCache();
+    // RobotContainer.getTurretSubsystem().clearCache();
     RobotContainer.getHoodSubsystem().clearCache();
 
     RobotContainer.getLeftVision().clearCache();
@@ -60,7 +61,7 @@ public class Robot extends TimedRobot {
     RobotState.getInstance().periodic();
     CommandScheduler.getInstance().run();
 
-    Mechanism3d.getInstance().log();
+    // Mechanism3d.getInstance().log();
     HubStateUtil.log();
 
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());

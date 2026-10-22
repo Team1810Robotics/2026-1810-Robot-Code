@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.hood;
+package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
@@ -20,9 +20,11 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import frc.robot.subsystems.shooter.ShotCalculator;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
+import frc.robot.subsystems.shooter.hood.HoodConstants;
 import frc.robot.subsystems.shooter.hood.HoodConstants.HoodState;
+
+// import frc.robot.subsystems.shooter.ShotCalculator;
+// import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 
 public class HoodSubsystem extends SubsystemBase {
   private final TalonFX hoodMotor;
@@ -181,31 +183,31 @@ public class HoodSubsystem extends SubsystemBase {
     //   stop();
     // }
 
-    switch (hoodState) {
-      case PASSING:
-        ShotParameters passingParams = ShotCalculator.getInstance().calculateParameters();
+    // switch (hoodState) {
+    //   case PASSING:
+    //     ShotParameters passingParams = ShotCalculator.getInstance().calculateParameters();
 
-        if (!passingParams.isValid()) {
-          idle();
-        } else {
-          setPosition(passingParams.hoodAngle());
-        }
-        break;
-      case SCORING:
-        ShotParameters scoringParams = ShotCalculator.getInstance().calculateParameters();
+    //     if (!passingParams.isValid()) {
+    //       idle();
+    //     } else {
+    //       setPosition(passingParams.hoodAngle());
+    //     }
+    //     break;
+    //   case SCORING:
+    //     ShotParameters scoringParams = ShotCalculator.getInstance().calculateParameters();
 
-        if (!scoringParams.isValid()) {
-          idle();
-        } else {
-          setPosition(scoringParams.hoodAngle());
-        }
-        break;
-      case NEUTRAL:
-        setPosition(Rotation2d.kZero);
-        break;
-      default:
-        break;
-    }
+    //     if (!scoringParams.isValid()) {
+    //       idle();
+    //     } else {
+    //       setPosition(scoringParams.hoodAngle());
+    //     }
+    //     break;
+    //   case NEUTRAL:
+    //     setPosition(Rotation2d.kZero);
+    //     break;
+    //   default:
+    //     break;
+    // }
   }
 
   public void clearCache() {
@@ -221,11 +223,11 @@ public class HoodSubsystem extends SubsystemBase {
   public Rotation2d getSimPos() {
     return this.simPos;
   }
-
-  @Override
-  public void simulationPeriodic() {
-    ShotParameters params = ShotCalculator.getInstance().calculateParameters();
-
-    setSimPosition(params.hoodAngle());
-  }
 }
+//   @Override
+//   public void simulationPeriodic() {
+//     ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+
+//     setSimPosition(params.hoodAngle());
+//   }
+// }

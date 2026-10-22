@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.RobotState.RobotStates;
 import frc.robot.auto.AutoSelector;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
@@ -25,11 +26,11 @@ import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
-import frc.robot.subsystems.shooter.hood.HoodSubsystem;
-import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionConstants;
 import frc.robot.util.field.Region;
+
+// import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -51,7 +52,7 @@ public class RobotContainer {
   //     new CommandXboxController(0); // controllers
   // private final CommandXboxController operatorXbox = new CommandXboxController(1);
 
-  private final CommandPS5Controller driverController = new CommandPS5Controller(0);
+  private final CommandXboxController driverController = new CommandXboxController(0);
   private final CommandPS5Controller operatorController = new CommandPS5Controller(1);
 
   // subsystems :)
@@ -62,7 +63,7 @@ public class RobotContainer {
   private static final Vision rightVision = new Vision(VisionConstants.RIGHT_LIMELIGHT_NAME);
 
   // Shooter Subsystems
-  private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
+  // private static final TurretSubsystem turretSubsystem = new TurretSubsystem();
   private static final FlywheelSubsystem flywheelSubsystem = new FlywheelSubsystem();
   private static final HoodSubsystem hoodSubsystem = new HoodSubsystem();
 
@@ -102,7 +103,7 @@ public class RobotContainer {
             }));
 
     driverController
-        .L2()
+        .leftTrigger()
         .whileTrue(
             drivetrain.applyRequest(
                 () ->
@@ -125,7 +126,7 @@ public class RobotContainer {
     //     .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
     driverController
-        .R1()
+        .rightBumper()
         .onTrue(
             Commands.runOnce(
                 () -> {
@@ -141,7 +142,7 @@ public class RobotContainer {
                 }));
 
     driverController
-        .R2()
+        .rightTrigger()
         .whileTrue(
             Commands.runOnce(
                 () -> {
@@ -157,8 +158,8 @@ public class RobotContainer {
                 }));
 
     driverController
-        .L1()
-        .or(driverController.R2())
+        .leftBumper()
+        .or(driverController.rightTrigger())
         .onFalse(
             Commands.runOnce(
                 () -> {
@@ -179,17 +180,17 @@ public class RobotContainer {
                 }));
 
     driverController
-        .L1()
+        .leftBumper()
         .onTrue(RobotState.getInstance().setStateCommand(RobotStates.SCORING_WITH_AGITATION));
 
     driverController
-        .cross()
+        .a()
         .onTrue(RobotState.getInstance().setStateCommand(RobotStates.REVERSE_INDEXER));
 
     driverController.povDown().onTrue(hoodSubsystem.zero());
 
     // reset the field-centric heading on left bumper press
-    driverController.options().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+    driverController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
     // driverController
     //     .L3()
     //     .onTrue(
@@ -201,16 +202,16 @@ public class RobotContainer {
     //                         Inches.of(27 / 2).in(Meters),
     //                         Rotation2d.kZero))));
 
-    operatorController
-        .R3()
-        .onTrue(
-            Commands.run(
-                    () -> {
-                      turretSubsystem.set(operatorController.getRightX() / 10);
-                    },
-                    turretSubsystem)
-                .until(() -> operatorController.circle().getAsBoolean())
-                .andThen(Commands.runOnce(() -> turretSubsystem.seedMotorFromAbsolute())));
+    //   operatorController
+    //       .R3()
+    //       .onTrue(
+    //           Commands.run(
+    //                   () -> {
+    //                     turretSubsystem.set(operatorController.getRightX() / 10);
+    //                   },
+    //                   turretSubsystem)
+    //               .until(() -> operatorController.circle().getAsBoolean())
+    //               .andThen(Commands.runOnce(() -> turretSubsystem.seedMotorFromAbsolute())));
   }
 
   /** Configure DogLog options and PowerDistribution */
@@ -250,9 +251,9 @@ public class RobotContainer {
     return rightVision;
   }
 
-  public static TurretSubsystem getTurretSubsystem() {
-    return turretSubsystem;
-  }
+  // public static TurretSubsystem getTurretSubsystem() {
+  //   return turretSubsystem;
+  // }
 
   public static FlywheelSubsystem getFlywheelSubsystem() {
     return flywheelSubsystem;

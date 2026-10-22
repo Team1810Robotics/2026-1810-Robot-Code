@@ -15,13 +15,13 @@ import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
-import frc.robot.subsystems.shooter.ShotCalculator;
-import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.FlywheelState;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodConstants.HoodState;
-import frc.robot.subsystems.shooter.hood.HoodSubsystem;
-import frc.robot.subsystems.shooter.turret.TurretSubsystem;
+
+// import frc.robot.subsystems.shooter.ShotCalculator;
+// import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
+// import frc.robot.subsystems.shooter.turret.TurretSubsystem;
 
 public class RobotState {
 
@@ -38,7 +38,7 @@ public class RobotState {
   private final RollerSubsystem rollerSubsystem;
   private final HoodSubsystem hoodSubsystem;
   private final FlywheelSubsystem flywheelSubsystem;
-  private final TurretSubsystem turretSubsystem;
+  // private final TurretSubsystem turretSubsystem;
 
   private boolean flywheelSpunUp = false;
   public boolean isShooterReady = false;
@@ -64,7 +64,7 @@ public class RobotState {
     rollerSubsystem = RobotContainer.getRollerSubsystem();
     hoodSubsystem = RobotContainer.getHoodSubsystem();
     flywheelSubsystem = RobotContainer.getFlywheelSubsystem();
-    turretSubsystem = RobotContainer.getTurretSubsystem();
+    // turretSubsystem = RobotContainer.getTurretSubsystem();
   }
 
   public void periodic() {
@@ -92,15 +92,15 @@ public class RobotState {
       allowStateOverride = false;
     }
 
-    if (isShootingState()) {
-      ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+    // if (isShootingState()) {
+    //   ShotParameters params = ShotCalculator.getInstance().calculateParameters();
 
-      if (flywheelSubsystem.atTargetVelocity() && !flywheelSpunUp) {
-        flywheelSpunUp = true;
-      }
+    //   if (flywheelSubsystem.atTargetVelocity() && !flywheelSpunUp) {
+    //     flywheelSpunUp = true;
+    //   }
 
-      isShooterReady = flywheelSpunUp && turretSubsystem.atTargetAngle() && params.isValid();
-    }
+    //   isShooterReady = flywheelSpunUp && turretSubsystem.atTargetAngle() && params.isValid();
+    // }
 
     DogLog.log("RobotState/Shooter Ready", isShooterReady);
     DogLog.log("RobotState/State", robotState);
