@@ -91,7 +91,7 @@ TurretConstants.MIN_ANGLE.in(Rotations);
 
     tunablePIDF = new TunablePIDF("Turret");
 
-    setDefaultCommand(setFieldRelativeAngleCommand());
+    // setDefaultCommand(setFieldRelativeAngleCommand());
   }
 
   public Rotation2d motorToField(Rotation2d motorAngle) {

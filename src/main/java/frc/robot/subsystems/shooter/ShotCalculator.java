@@ -201,16 +201,16 @@ RadiansPerSecond.of(0));
 
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
 
-      Rotation2d turretAngleTurretFrame =
-          RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
+    //   Rotation2d turretAngleTurretFrame =
+    //       RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
 
-      if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
-          || turretAngleTurretFrame.getDegrees()
-              < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
-        isValid = false;
-      } else {
-        isValid = true;
-      }
+    //   if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+    //       || turretAngleTurretFrame.getDegrees()
+    //           < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
+    //     isValid = false;
+    //   } else {
+    //     isValid = true;
+    //   }
 
       hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
       flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
@@ -221,16 +221,16 @@ RadiansPerSecond.of(0));
 
       turretAngle = virtualTarget.minus(turretPose.getTranslation()).getAngle();
 
-      Rotation2d turretAngleTurretFrame =
-          RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
+    //   Rotation2d turretAngleTurretFrame =
+    //       RobotContainer.getTurretSubsystem().fieldToMotor(turretAngle);
 
-      if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
-          || turretAngleTurretFrame.getDegrees()
-              < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
-        isValid = false;
-      } else {
-        isValid = true;
-      }
+    //   if (turretAngleTurretFrame.getDegrees() > TurretConstants.MAX_ANGLE.in(Degrees)
+    //       || turretAngleTurretFrame.getDegrees()
+    //           < TurretConstants.MIN_ANGLE.in(Degrees)) { // I AM BAD DELETE ME LATER
+    //     isValid = false;
+    //   } else {
+    //     isValid = true;
+    //   }
 
       hoodAngle = scoringHoodMap.get(distanceToVirtualTarget);
       flywheelVelocity = RotationsPerSecond.of(scoringFlywheelMap.get(distanceToVirtualTarget));
@@ -239,15 +239,13 @@ RadiansPerSecond.of(0));
     DogLog.log("ShotCalculator/Distance To Target", distanceToRealTarget, Meters);
     DogLog.log("ShotCalculator/Real Target", new Pose2d(realTarget, Rotation2d.kZero));
     DogLog.log("ShotCalculator/Virtual Target", new Pose2d(virtualTarget, Rotation2d.kZero));
-
-    DogLog.log("ShotCalculator/Parameters/Is Valid", isValid);
     DogLog.log("ShotCalculator/Parameters/Turret Angle", turretAngle.getDegrees(), Degrees);
     DogLog.log("ShotCalculator/Parameters/Hood Angle", hoodAngle.getDegrees(), Degrees);
     DogLog.log(
         "ShotCalculator/Parameters/Flywheel Velocity", flywheelVelocity.in(RotationsPerSecond));
     DogLog.log("ShotCalculator/Mode", mode.toString());
 
-    latestParams = new ShotParameters(isValid, turretAngle, hoodAngle, flywheelVelocity);
+    latestParams = new ShotParameters(true, turretAngle, hoodAngle, flywheelVelocity);
 
     return latestParams;
   }
