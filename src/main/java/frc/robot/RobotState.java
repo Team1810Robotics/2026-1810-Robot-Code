@@ -15,6 +15,8 @@ import frc.robot.subsystems.intake.deploy.DeployConstants.DeployState;
 import frc.robot.subsystems.intake.deploy.DeploySubsystem;
 import frc.robot.subsystems.intake.roller.RollerConstants.RollerState;
 import frc.robot.subsystems.intake.roller.RollerSubsystem;
+import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.FlywheelState;
 import frc.robot.subsystems.shooter.flywheel.FlywheelSubsystem;
 import frc.robot.subsystems.shooter.hood.HoodConstants.HoodState;
@@ -93,15 +95,15 @@ public class RobotState {
       allowStateOverride = false;
     }
 
-    // if (isShootingState()) {
-    //   ShotParameters params = ShotCalculator.getInstance().calculateParameters();
+    if (isShootingState()) {
+      ShotParameters params = ShotCalculator.getInstance().calculateParameters();
 
-    //   if (flywheelSubsystem.atTargetVelocity() && !flywheelSpunUp) {
-    //     flywheelSpunUp = true;
-    //   }
+      if (flywheelSubsystem.atTargetVelocity() && !flywheelSpunUp) {
+        flywheelSpunUp = true;
+      }
 
-    //   isShooterReady = flywheelSpunUp && turretSubsystem.atTargetAngle() && params.isValid();
-    // }
+      isShooterReady = flywheelSpunUp && params.isValid();
+    }
 
     DogLog.log("RobotState/Shooter Ready", isShooterReady);
     DogLog.log("RobotState/State", robotState);

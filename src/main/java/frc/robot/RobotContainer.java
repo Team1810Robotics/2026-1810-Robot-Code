@@ -132,7 +132,7 @@ public class RobotContainer {
                 () ->
                     faceAngle
                         .withTargetDirection(
-                            drivetrain.getAngleToHubFromTurret().plus(Rotation2d.fromDegrees(90)))
+                            drivetrain.getAngleToHubFromTurret().plus(Rotation2d.fromDegrees(85)))
                         .withVelocityX(-driverController.getLeftY() * MaxSpeed)
                         .withVelocityY(-driverController.getLeftX() * MaxSpeed)));
 
@@ -207,9 +207,9 @@ public class RobotContainer {
         .leftBumper()
         .onTrue(RobotState.getInstance().setStateCommand(RobotStates.SCORING_WITH_AGITATION));
 
-    driverController
-        .a()
-        .onTrue(RobotState.getInstance().setStateCommand(RobotStates.REVERSE_INDEXER));
+    // driverController
+    //     .a()
+    //     .onTrue(RobotState.getInstance().setStateCommand(RobotStates.REVERSE_INDEXER));
 
     driverController.povDown().onTrue(hoodSubsystem.zero());
 

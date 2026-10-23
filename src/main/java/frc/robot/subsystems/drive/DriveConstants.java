@@ -20,7 +20,7 @@ public class DriveConstants {
   private static final double realTranlationkP = 1.5;
   private static final double realHeadingkP = 3.25;
 
-  private static final double turnkP = 0.5;
+  private static final double turnkP = 3.5;
   private static final double turnkI = 0;
   private static final double turnkD = 0;
 

@@ -15,6 +15,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.shooter.ShotCalculator;
+import frc.robot.subsystems.shooter.ShotCalculator.ShotParameters;
 import frc.robot.subsystems.shooter.flywheel.FlywheelConstants.FlywheelState;
 
 // import frc.robot.subsystems.shooter.ShotCalculator;
@@ -170,39 +172,38 @@ public class FlywheelSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     log();
-    // updateGains();
 
-    // if (velocityTarget.get() != 0) {
-    //   setVelocity(RotationsPerSecond.of(velocityTarget.get()));
-    // } else {
-    //   stop();
-    // }
+    if (velocityTarget.get() != 0) {
+      setVelocity(RotationsPerSecond.of(velocityTarget.get()));
+    } else {
+      stop();
+    }
 
-    // switch (flywheelState) {
-    //   case PASSING:
-    //     ShotParameters passingParams = ShotCalculator.getInstance().calculateParameters();
+    switch (flywheelState) {
+      case PASSING:
+        ShotParameters passingParams = ShotCalculator.getInstance().calculateParameters();
 
-    //     if (!passingParams.isValid()) {
-    //       idleMotor();
-    //     } else {
-    //       setVelocity(passingParams.flywheelVelocity());
-    //     }
-    //     break;
-    //   case SCORING:
-    //     ShotParameters scoringParams = ShotCalculator.getInstance().calculateParameters();
+        if (!passingParams.isValid()) {
+          idleMotor();
+        } else {
+          setVelocity(passingParams.flywheelVelocity());
+        }
+        break;
+      case SCORING:
+        ShotParameters scoringParams = ShotCalculator.getInstance().calculateParameters();
 
-    //     if (!scoringParams.isValid()) {
-    //       idleMotor();
-    //     } else {
-    //       setVelocity(scoringParams.flywheelVelocity());
-    //     }
-    //     break;
-    //   case IDLE:
-    //     idleMotor();
+        if (!scoringParams.isValid()) {
+          idleMotor();
+        } else {
+          setVelocity(scoringParams.flywheelVelocity());
+        }
+        break;
+      case IDLE:
+        idleMotor();
 
-    //     break;
-    //   default:
-    //     break;
-    // }
+        break;
+      default:
+        break;
+    }
   }
 }
